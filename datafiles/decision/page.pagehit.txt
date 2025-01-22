@@ -1,0 +1,66 @@
+<!-- visits a page -->
+<div class="bundle-form">
+    <div class="bundle-form-header mb-10">
+        <h3>Visits a page</h3>
+        <h6 class="text-muted">Trigger actions on a page/url hit.</h6>
+    </div>
+    <form id="campaignevent_form" novalidate="" autocomplete="false" data-toggle="ajax" role="form" name="campaignevent" method="post" action="/savenewevent">
+        <input type="hidden" id="campaignevent_canvasSettings_droppedX" name="campaignevent[canvasSettings][droppedX]" autocomplete="false">
+        <input type="hidden" id="campaignevent_canvasSettings_droppedY" name="campaignevent[canvasSettings][droppedY]" autocomplete="false">
+        <div class="row">
+            <div class="form-group col-xs-12">
+            <label class="control-label" for="campaignevent_name">
+            Name</label>
+            <input type="text" id="campaignevent_name" name="campaignevent[name]" class="form-control" autocomplete="false">
+            </div>
+        </div>
+        <input type="hidden" id="campaignevent_anchor" name="campaignevent[anchor]" autocomplete="false" value="leadsource">
+        <div class="row">
+            <div class="form-group col-xs-12">
+            <div id="campaignevent_properties">
+                <div class="row">
+                    <div class="form-group col-xs-12 ">
+                        <label class="control-label" for="campaignevent_properties_pages" data-toggle="tooltip" data-container="body" data-placement="top" title="" data-original-title="Select the pages this trigger applies to. If none are selected, it'll apply to any page.">
+                        Limit to Pages <i class="ri-question-line"></i></label>
+                        <div class="choice-wrapper">
+                        <select id="campaignevent_properties_pages" name="campaignevent[properties][pages][]" class="form-control" autocomplete="false" multiple="multiple" style="display: none;"></select>
+                        <div class="chosen-container chosen-container-multi" title="" id="campaignevent_properties_pages_chosen" style="width: 100%;">
+                            <ul class="chosen-choices">
+                                <li class="search-field">
+                                    <input class="chosen-search-input default" type="text" autocomplete="off" value="Choose one or more..." style="width: 151.781px;">
+                                </li>
+                            </ul>
+                            <div class="chosen-drop">
+                                <ul class="chosen-results"></ul>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-xs-12">
+                        <label class="control-label" for="campaignevent_properties_url" data-toggle="tooltip" data-container="body" data-placement="top" title="" data-original-title="Insert the URL of the page where you placed the tracking pixel. It is possible to use wildcard (*). Example: *product/123* will match http://web.com/product/1234.htm. Separate multiple URLs with a comma.">
+                        URL <i class="ri-question-line"></i></label>
+                        <input type="text" id="campaignevent_properties_url" name="campaignevent[properties][url]" class="form-control" autocomplete="false">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-xs-12">
+                        <label class="control-label" for="campaignevent_properties_referer" data-toggle="tooltip" data-container="body" data-placement="top" title="" data-original-title="Insert the Referrer URL of the page where you placed the tracking pixel. It is possible to use wildcard (*). Example: *product/123* will match http://web.com/product/1234.htm. Multiple Referrer URLs separate with comma.">
+                        Referrer <i class="ri-question-line"></i></label>
+                        <input type="text" id="campaignevent_properties_referer" name="campaignevent[properties][referer]" class="form-control" autocomplete="false">
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        <input type="hidden" id="campaignevent_type" name="campaignevent[type]" autocomplete="false" value="page.pagehit">
+        <input type="hidden" id="campaignevent_eventType" name="campaignevent[eventType]" autocomplete="false" value="decision">
+        <input type="hidden" id="campaignevent_anchorEventType" name="campaignevent[anchorEventType]" autocomplete="false" value="source">
+        <input type="hidden" id="campaignevent_eventId" name="campaignevent[eventId]" autocomplete="false" value="0">
+        <input type="hidden" id="campaignevent_eventOrder" name="campaignevent[eventOrder]" autocomplete="false" value="0">
+        <input type="hidden" id="campaignevent_parentEventId" name="campaignevent[parentEventId]" autocomplete="false" value="0">
+        <input type="hidden" id="campaignevent_campaignId" name="campaignevent[campaignId]" autocomplete="false" value="mautic_6681a9e103baa2882f63d600f0e5d2be522f4b3f">
+        <input type="hidden" id="campaignevent__token" name="campaignevent[_token]" autocomplete="false" value="c18e52.Zb3a65dbMykn1jeH4djK6cIg3fM_lN6j7M4KZq4Zomk.N9u8gvUIYx5R4X2zoomvkLVHuYlv0pzLpvpfEsF46SAsieKkzwNZH06Edg">
+    </form>
+</div>

@@ -1,0 +1,227 @@
+<!-- Update contact owner -->
+<div class="bundle-form">
+    <div class="bundle-form-header mb-10">
+        <h3>Update contact owner</h3>
+        <h6 class="text-muted">This action will update contact owner as part of a campaign</h6>
+    </div>
+    <form id="campaignevent_form" novalidate="" autocomplete="false" data-toggle="ajax" role="form" name="campaignevent" method="post" action="/savenewevent">
+        <input type="hidden" id="campaignevent_canvasSettings_droppedX" name="campaignevent[canvasSettings][droppedX]" autocomplete="false">
+        <input type="hidden" id="campaignevent_canvasSettings_droppedY" name="campaignevent[canvasSettings][droppedY]" autocomplete="false">
+        <div class="row">
+            <div class="form-group col-xs-12">
+            <label class="control-label" for="campaignevent_name">
+            Name</label>
+            <input type="text" id="campaignevent_name" name="campaignevent[name]" class="form-control" autocomplete="false">
+            </div>
+        </div>
+        <div>
+            <div class="row">
+            <div class="form-group col-xs-12">
+                <label class="control-label" data-toggle="tooltip" data-container="body" data-placement="top" title="" data-original-title="This event will be executed for newly added Contacts to the Campaign, even if the scheduled date is in the past. For scheduled Emails, it is recommended that you unpublish the Email if you would not like Contacts to receive it after that date. All dates are in the Contact's timezone.">
+                Execute this event... <i class="ri-question-line"></i></label>
+                <div class="choice-wrapper">
+                    <div class="btn-group btn-block" data-toggle="buttons">
+                        <label class="btn btn-default active">
+                        <input type="radio" id="campaignevent_triggerMode_0" name="campaignevent[triggerMode]" onchange="Mautic.campaignToggleTimeframes();" autocomplete="false" value="immediate" checked="checked">
+                        immediately
+                        </label>
+                        <label class="btn btn-default">
+                        <input type="radio" id="campaignevent_triggerMode_1" name="campaignevent[triggerMode]" onchange="Mautic.campaignToggleTimeframes();" autocomplete="false" value="interval">
+                        at a relative time period
+                        </label>
+                        <label class="btn btn-default">
+                        <input type="radio" id="campaignevent_triggerMode_2" name="campaignevent[triggerMode]" onchange="Mautic.campaignToggleTimeframes();" autocomplete="false" value="date">
+                        at a specific date/time
+                        </label>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <div class="hide" id="triggerDate">
+            <div class="row">
+                <div class="form-group col-xs-12">
+                    <div class="input-group">
+                        <span class="input-group-addon preaddon">
+                        <i class="fa fa-calendar"></i>
+                        </span>
+                        <input autocomplete="false" type="text" id="campaignevent_triggerDate" name="campaignevent[triggerDate]" required="required" class="form-control calendar-activated" data-toggle="datetime">
+                    </div>
+                </div>
+            </div>
+            </div>
+            <div class="hide" id="triggerInterval">
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="row">
+                        <div class="form-group col-xs-12">
+                        <div class="input-group">
+                            <span class="input-group-addon preaddon">
+                            <i class="symbol-hashtag"></i>
+                            </span>
+                            <input autocomplete="false" type="text" id="campaignevent_triggerInterval" name="campaignevent[triggerInterval]" required="required" class="form-control" value="1">
+                        </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-8">
+                    <div class="row">
+                        <div class="form-group col-xs-12 ">
+                        <div class="choice-wrapper">
+                            <select id="campaignevent_triggerIntervalUnit" name="campaignevent[triggerIntervalUnit]" class="form-control" autocomplete="false" style="display: none;">
+                                <option value="i">minute(s)</option>
+                                <option value="h">hour(s)</option>
+                                <option value="d" selected="selected">day(s)</option>
+                                <option value="m">month(s)</option>
+                                <option value="y">year(s)</option>
+                            </select>
+                            <div class="chosen-container chosen-container-single" title="" id="campaignevent_triggerIntervalUnit_chosen" style="width: 100%;">
+                                <a class="chosen-single">
+                                    <span>day(s)</span>
+                                    <div><b></b></div>
+                                </a>
+                                <div class="chosen-drop">
+                                    <div class="chosen-search">
+                                    <input class="chosen-search-input" type="text" autocomplete="off">
+                                    </div>
+                                    <ul class="chosen-results"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="interval_settings">
+                <hr>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div style="display:inline-block; font-weight: 600;">Send from </div>
+                        <div style="width: 75px; display:inline-block; margin:0 10px 0 10px;">
+                        <input type="text" id="campaignevent_triggerHour" name="campaignevent[triggerHour]" required="required" class="form-control calendar-activated" data-toggle="time" data-format="H:i" autocomplete="off">
+                        </div>
+                        <div style="display:inline-block; font-weight: 600;"> or between the hours of </div>
+                        <div style="width: 75px;display:inline-block; margin:0 10px 0 10px;">
+                        <input type="text" id="campaignevent_triggerRestrictedStartHour" name="campaignevent[triggerRestrictedStartHour]" required="required" class="form-control calendar-activated" data-toggle="time" data-format="H:i" autocomplete="off">
+                        </div>
+                        <div style="display:inline-block; font-weight: 600;"> and </div>
+                        <div style="width: 75px; display:inline-block; margin:0 10px 0 10px;">
+                        <input type="text" id="campaignevent_triggerRestrictedStopHour" name="campaignevent[triggerRestrictedStopHour]" required="required" class="form-control calendar-activated" data-toggle="time" data-format="H:i" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row mt-5">
+                    <div class="col-sm-12" style="font-weight: 600;">Schedule only on the selected days of the week:</div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-3">
+                        <div class="checkbox">
+                        <label><input type="checkbox" id="campaignevent_triggerRestrictedDaysOfWeek_0" name="campaignevent[triggerRestrictedDaysOfWeek][]" autocomplete="false" value="1">     <label for="campaignevent_triggerRestrictedDaysOfWeek_0">
+                        Monday</label>
+                        </label>
+                        </div>
+                        <div class="checkbox">
+                        <label><input type="checkbox" id="campaignevent_triggerRestrictedDaysOfWeek_1" name="campaignevent[triggerRestrictedDaysOfWeek][]" autocomplete="false" value="2">     <label for="campaignevent_triggerRestrictedDaysOfWeek_1">
+                        Tuesday</label>
+                        </label>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="checkbox">
+                        <label><input type="checkbox" id="campaignevent_triggerRestrictedDaysOfWeek_2" name="campaignevent[triggerRestrictedDaysOfWeek][]" autocomplete="false" value="3">     <label for="campaignevent_triggerRestrictedDaysOfWeek_2">
+                        Wednesday</label>
+                        </label>
+                        </div>
+                        <div class="checkbox">
+                        <label><input type="checkbox" id="campaignevent_triggerRestrictedDaysOfWeek_3" name="campaignevent[triggerRestrictedDaysOfWeek][]" autocomplete="false" value="4">     <label for="campaignevent_triggerRestrictedDaysOfWeek_3">
+                        Thursday</label>
+                        </label>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="checkbox">
+                        <label><input type="checkbox" id="campaignevent_triggerRestrictedDaysOfWeek_4" name="campaignevent[triggerRestrictedDaysOfWeek][]" autocomplete="false" value="5">     <label for="campaignevent_triggerRestrictedDaysOfWeek_4">
+                        Friday</label>
+                        </label>
+                        </div>
+                        <div class="checkbox">
+                        <label><input type="checkbox" id="campaignevent_triggerRestrictedDaysOfWeek_5" name="campaignevent[triggerRestrictedDaysOfWeek][]" autocomplete="false" value="6">     <label for="campaignevent_triggerRestrictedDaysOfWeek_5">
+                        Saturday</label>
+                        </label>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="checkbox">
+                        <label><input type="checkbox" id="campaignevent_triggerRestrictedDaysOfWeek_6" name="campaignevent[triggerRestrictedDaysOfWeek][]" autocomplete="false" value="0">     <label for="campaignevent_triggerRestrictedDaysOfWeek_6">
+                        Sunday</label>
+                        </label>
+                        </div>
+                        <div class="checkbox">
+                        <label><input type="checkbox" id="campaignevent_triggerRestrictedDaysOfWeek_7" name="campaignevent[triggerRestrictedDaysOfWeek][]" autocomplete="false" value="-1">     <label for="campaignevent_triggerRestrictedDaysOfWeek_7">
+                        Weekdays</label>
+                        </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        <input type="hidden" id="campaignevent_anchor" name="campaignevent[anchor]" autocomplete="false" value="leadsource">
+        <div class="row">
+            <div class="form-group col-xs-12">
+            <div id="campaignevent_properties">
+                <div class="row">
+                    <div class="form-group col-xs-12 ">
+                        <label class="control-label required" for="campaignevent_properties_owner">
+                        Add to the following:</label>
+                        <div class="choice-wrapper">
+                        <select id="campaignevent_properties_owner" name="campaignevent[properties][owner]" class="form-control" autocomplete="false" style="display: none;">
+                            <option value="1">kumar, dinesh</option>
+                            <option value="2">subuser, subuser</option>
+                        </select>
+                        <div class="chosen-container chosen-container-single" title="" id="campaignevent_properties_owner_chosen" style="width: 100%;">
+                            <a class="chosen-single">
+                                <span>kumar, dinesh</span>
+                                <div><b></b></div>
+                            </a>
+                            <div class="chosen-drop">
+                                <div class="chosen-search">
+                                    <input class="chosen-search-input" type="text" autocomplete="off">
+                                </div>
+                                <ul class="chosen-results">
+                                    <li class="active-result result-selected" data-option-array-index="0">kumar, dinesh</li>
+                                    <li class="active-result" data-option-array-index="1">subuser, subuser</li>
+                                </ul>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="campaignevent_properties_buttons" class="bottom-form-buttons hide">
+                    <button type="submit" id="campaignevent_properties_buttons_apply" name="campaignevent[properties][buttons][apply]" class="btn btn-default btn-apply">
+                    <i class="ri-check-line "></i>
+                    Save
+                    </button>
+                    <button type="submit" id="campaignevent_properties_buttons_save" name="campaignevent[properties][buttons][save]" class="btn btn-default btn-save">
+                    <i class="ri-save-line "></i>
+                    Save &amp; Close
+                    </button>
+                    <button type="submit" id="campaignevent_properties_buttons_cancel" name="campaignevent[properties][buttons][cancel]" class="btn btn-default btn-cancel">
+                    <i class="ri-close-line "></i>
+                    Cancel
+                    </button>
+                </div>
+            </div>
+            </div>
+        </div>
+        <input type="hidden" id="campaignevent_type" name="campaignevent[type]" autocomplete="false" value="lead.changeowner">
+        <input type="hidden" id="campaignevent_eventType" name="campaignevent[eventType]" autocomplete="false" value="action">
+        <input type="hidden" id="campaignevent_anchorEventType" name="campaignevent[anchorEventType]" autocomplete="false" value="source">
+        
+        <input type="hidden" id="campaignevent_eventId" name="campaignevent[eventId]" autocomplete="false" value="0">
+        <input type="hidden" id="campaignevent_eventOrder" name="campaignevent[eventOrder]" autocomplete="false" value="0">
+        <input type="hidden" id="campaignevent_parentEventId" name="campaignevent[parentEventId]" autocomplete="false" value="0">
+        <input type="hidden" id="campaignevent_campaignId" name="campaignevent[campaignId]" autocomplete="false" value="mautic_e1d9a3f97a35ca1aa45cbca68abbe3ef5daa8e52">
+        <input type="hidden" id="campaignevent__token" name="campaignevent[_token]" autocomplete="false" value="9cbf8a2138d4172973c815f.Fs7yLmQklKYpKR4S4jS_OOi_ZFx75LHVuf0GsDqGumk.XPiifzVW0vxvTUchlwPFTrDnUgYkncCi2pJehQLB3wZzr6JxPEDWzxlQfQ">
+    </form>
+</div>

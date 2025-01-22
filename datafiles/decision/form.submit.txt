@@ -1,0 +1,44 @@
+<!-- submit form -->
+<div class="bundle-form">
+    <div class="bundle-form-header mb-10">
+        <h3>Submits form</h3>
+        <h6 class="text-muted">Trigger actions when a contact submits a form</h6>
+    </div>
+    <form id="campaignevent_form" novalidate="" autocomplete="false" data-toggle="ajax" role="form" name="campaignevent" method="post" action="/savenewevent">
+        <input type="hidden" id="campaignevent_canvasSettings_droppedX" name="campaignevent[canvasSettings][droppedX]" autocomplete="false">
+        <input type="hidden" id="campaignevent_canvasSettings_droppedY" name="campaignevent[canvasSettings][droppedY]" autocomplete="false">
+        <div class="row">
+            <div class="form-group col-xs-12">
+            <label class="control-label" for="campaignevent_name">
+            Name</label>
+            <input type="text" id="campaignevent_name" name="campaignevent[name]" class="form-control" autocomplete="false">
+            </div>
+        </div>
+        <input type="hidden" id="campaignevent_anchor" name="campaignevent[anchor]" autocomplete="false" value="leadsource">
+        <div class="row">
+            <div class="form-group col-xs-12">
+            <div id="campaignevent_properties">
+                <div class="row">
+                    <div class="form-group col-xs-12 ">
+                        <label class="control-label" for="campaignevent_properties_forms" data-toggle="tooltip" data-container="body" data-placement="top" title="" data-original-title="Select the form(s) that will trigger the actions for dripflow.">
+                        Limit to Forms <i class="ri-question-line"></i></label>
+                        <div class="choice-wrapper">
+                        <select id="campaignevent_properties_forms" name="campaignevent[properties][forms][]" class="form-control" autocomplete="false" multiple="multiple" style="display: none;"></select>
+                        
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        <input type="hidden" id="campaignevent_type" name="campaignevent[type]" autocomplete="false" value="form.submit">
+        <input type="hidden" id="campaignevent_eventType" name="campaignevent[eventType]" autocomplete="false" value="decision">
+        <input type="hidden" id="campaignevent_anchorEventType" name="campaignevent[anchorEventType]" autocomplete="false" value="source">
+        
+        <input type="hidden" id="campaignevent_eventId" name="campaignevent[eventId]" autocomplete="false" value="0">
+        <input type="hidden" id="campaignevent_eventOrder" name="campaignevent[eventOrder]" autocomplete="false" value="0">
+        <input type="hidden" id="campaignevent_parentEventId" name="campaignevent[parentEventId]" autocomplete="false" value="0">
+        <input type="hidden" id="campaignevent_campaignId" name="campaignevent[campaignId]" autocomplete="false" value="mautic_6681a9e103baa2882f63d600f0e5d2be522f4b3f">
+        <input type="hidden" id="campaignevent__token" name="campaignevent[_token]" autocomplete="false" value="322d5.xDkF6eTVyYegcYyn9v_UHV1EaqCfKuzmEj9JT4RJBl0.ll9jgIaGmbDWRsaTta6xZCojDtrPbK6OWAscO-soTRSNDT2mvI2jsckjzQ">
+    </form>
+</div>

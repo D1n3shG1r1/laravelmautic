@@ -1,0 +1,75 @@
+<!-- request dynamic content -->
+<div class="bundle-form">
+    <div class="bundle-form-header mb-10">
+        <h3>Request dynamic content</h3>
+        <h6 class="text-muted">This is the top level for a dynamic content request.</h6>
+    </div>
+    <form id="campaignevent_form" novalidate="" autocomplete="false" data-toggle="ajax" role="form" name="campaignevent" method="post" action="/savenewevent">
+        <input type="hidden" id="campaignevent_canvasSettings_droppedX" name="campaignevent[canvasSettings][droppedX]" autocomplete="false">
+        <input type="hidden" id="campaignevent_canvasSettings_droppedY" name="campaignevent[canvasSettings][droppedY]" autocomplete="false">
+        <div class="row">
+            <div class="form-group col-xs-12">
+            <label class="control-label" for="campaignevent_name">
+            Name</label>
+            <input type="text" id="campaignevent_name" name="campaignevent[name]" class="form-control" autocomplete="false">
+            </div>
+        </div>
+        <input type="hidden" id="campaignevent_anchor" name="campaignevent[anchor]" autocomplete="false" value="leadsource">
+        <div class="row">
+            <div class="form-group col-xs-12">
+            <div id="campaignevent_properties">
+                <div class="row">
+                    <div class="form-group col-xs-12">
+                        <label class="control-label required" for="campaignevent_properties_dwc_slot_name" data-toggle="tooltip" data-container="body" data-placement="top" title="" data-original-title="The name of the slot the contact is requesting.">
+                        Requested Slot Name <i class="ri-question-line"></i></label>
+                        <input type="text" id="campaignevent_properties_dwc_slot_name" name="campaignevent[properties][dwc_slot_name]" required="required" class="form-control" autocomplete="false">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-xs-12 ">
+                        <label class="control-label required" for="campaignevent_properties_dynamicContent" data-toggle="tooltip" data-container="body" data-placement="top" title="" data-original-title="Select the default dynamic content to show.">
+                        Select Default Content <i class="ri-question-line"></i></label>
+                        <div class="choice-wrapper">
+                        <select id="campaignevent_properties_dynamicContent" name="campaignevent[properties][dynamicContent]" required="required" class="form-control dynamicContent-select" onchange="Mautic.disabledDynamicContentAction()" data-chosen-lookup="dynamicContent:getLookupChoiceList&amp;top_level=translation&amp;where=e.isCampaignBased+%3D+1" data-model="dynamicContent" data-new-route="/s/dwc/new" data-header="New Dynamic Content" data-chosen-placeholder="Search options..." autocomplete="false" style="display: none;">
+                            <option value="" selected="selected"></option>
+                            <option value="new">Create new...</option>
+                        </select>
+                        <div class="chosen-container chosen-container-single" title="" id="campaignevent_properties_dynamicContent_chosen" style="width: 100%;">
+                            <a class="chosen-single chosen-default">
+                                <span>Search options...</span>
+                                <div><b></b></div>
+                            </a>
+                            <div class="chosen-drop">
+                                <div class="chosen-search">
+                                    <input class="chosen-search-input" type="text" autocomplete="off">
+                                </div>
+                                <ul class="chosen-results"></ul>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" id="campaignevent_properties_newDynamicContentButton" name="campaignevent[properties][newDynamicContentButton]" class="btn btn-primary btn-nospin" onclick="Mautic.loadNewWindow({
+                    &quot;windowUrl&quot;: &quot;/s/dwc/new?contentOnly=1&amp;updateSelect=campaignevent_properties_dynamicContent&quot;
+                    })">
+                <i class="ri-add-line "></i>
+                New Dynamic Content
+                </button>
+                <button type="button" id="campaignevent_properties_editDynamicContentButton" name="campaignevent[properties][editDynamicContentButton]" class="btn btn-primary btn-nospin" onclick="Mautic.loadNewWindow(Mautic.standardDynamicContentUrl({&quot;windowUrl&quot;: &quot;/s/dwc/edit/dynamicContentId?contentOnly=1&amp;updateSelect=campaignevent_properties_dynamicContent&quot;}))" disabled="1">
+                <i class="ri-edit-line "></i>
+                Edit Dynamic Content
+                </button>
+            </div>
+            </div>
+        </div>
+        <input type="hidden" id="campaignevent_type" name="campaignevent[type]" autocomplete="false" value="dwc.decision">
+        <input type="hidden" id="campaignevent_eventType" name="campaignevent[eventType]" autocomplete="false" value="decision">
+        <input type="hidden" id="campaignevent_anchorEventType" name="campaignevent[anchorEventType]" autocomplete="false" value="source">
+        
+        <input type="hidden" id="campaignevent_eventId" name="campaignevent[eventId]" autocomplete="false" value="0">
+        <input type="hidden" id="campaignevent_eventOrder" name="campaignevent[eventOrder]" autocomplete="false" value="0">
+        <input type="hidden" id="campaignevent_parentEventId" name="campaignevent[parentEventId]" autocomplete="false" value="0">
+        <input type="hidden" id="campaignevent_campaignId" name="campaignevent[campaignId]" autocomplete="false" value="mautic_6681a9e103baa2882f63d600f0e5d2be522f4b3f">
+        <input type="hidden" id="campaignevent__token" name="campaignevent[_token]" autocomplete="false" value="15bccefb.B1adBE-GV5WAOrqkOB6qxmgtIxgA6UnMKWFyWJiOcpY.VTD7bS3VB6L2DfCQe0_Pvx9KR2JQrwukY1UnLPfvOd9OYqVLF949o-lo-w">
+    </form>
+</div>

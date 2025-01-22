@@ -1,0 +1,12 @@
+.requiredBorder{
+    border:1px solid#a94442;
+}
+
+.requiredTxt{
+    color:#a94442;
+}
+
+#campaignSourceModal .modal-header{
+    padding: 5px 15px 0px 15px;
+    display: inline-block;
+}
