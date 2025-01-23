@@ -24,6 +24,7 @@
         "vite": "^5.4.14"
     },
     "dependencies": {
+        "@headlessui/react": "^2.2.0",
         "@inertiajs/react": "^2.0.3",
         "jsplumb": "^2.15.6",
         "react-router-dom": "^7.1.3"

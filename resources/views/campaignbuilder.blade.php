@@ -379,7 +379,7 @@
                     </h4>
                     <select id="ConditionList" class="campaign-event-selector" style="display: none;" data-eventType="condition" onChange="selectDecision(event);">
                         <option value=""></option>
-
+                        
                         <?php
                         foreach($conditions as $condition){
                             $tmpCondId = $condition["id"];

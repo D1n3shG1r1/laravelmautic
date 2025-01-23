@@ -1,3 +1,153 @@
+body {
+    font-family: "Source Sans 3",Helvetica,Arial,sans-serif;
+    font-size: 13px;
+    line-height: 1.3856;
+    color: #262d33;
+    background-color: #f8f8f8;
+}
+
+.hide {
+    display: none!important;
+}
+
+#CampaignEventPanel {
+    position: absolute;
+    padding: 10px 20px;
+    background-color: #ededed;
+    border: 1px solid #cdcdcd;
+    border-radius: 4px;
+    z-index: 1035;
+}
+
+#campaign-builder {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    overflow: auto;
+    width: 100%;
+    height: 600px;
+}
+
+.workflow-node {
+    width: 200px;
+    height: 45px;
+    background: #fff;
+    /*border: 1px solid #ddd;*/
+    border-radius: 3px;
+    text-align: left;
+    /*line-height: 45px;*/
+    font-family: Arial, sans-serif;
+    /*font-weight: bold;*/
+    cursor: move;
+    color: #262d33;
+    /*color: #333;*/
+    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.2);
+    position: absolute;
+}
+
+/*Defining node colors */
+/*
+.workflow-node[data-type="source"] {
+    border: solid 1px #fdb933;
+}
+
+.workflow-node[data-type="decision"] {
+    border: solid 1px #00b49d;
+}
+
+.workflow-node[data-type="action"] {
+    border: solid 1px #9babeb;
+}
+
+.workflow-node[data-type="condition"] {
+    border: solid 1px #ffb79f;
+}
+*/
+
+
+.workflow-nodee[data-type="client"] {
+    border-color: #ff5722; /* Red */
+    background: #fff3e0;  /* Light red background */
+}
+
+.workflow-nodee[data-type="email"] {
+    border-color: #03a9f4; /* Blue */
+    background: #e3f2fd;   /* Light blue background */
+}
+
+.workflow-nodee[data-type="action"] {
+    border-color: #4caf50; /* Green */
+    background: #e8f5e9;   /* Light green background */
+}
+
+.workflow-nodee[data-type="decision"] {
+    
+    width: 100px;
+    height: 100px;
+    border-color: #ffeb3b; /* Yellow */
+    background: #fffde7;   /* Light yellow background */
+    border-radius: 50%;
+}
+
+.workflow-nodee[data-type="condition"] {
+    width: 120px;
+    height: 50px;
+    border-color: #9c27b0; /* Purple */
+    background: #f3e5f5;   /* Light purple background */
+    border-radius: 8px;
+}
+
+/* node endpoints*/
+/*.jtk-endpoint{
+
+}
+
+.jtk-endpoint .jtk-endpoint-left{
+
+}
+
+.jtk-endpoint .jtk-endpoint-right{
+
+}
+
+.jtk-endpoint .jtk-endpoint-top{
+
+}
+
+.jtk-endpoint .jtk-endpoint-bottom{
+
+}*/
+
+/* Connector lines */
+.jsPlumb_connector {
+    stroke-width: 2px;
+    stroke: #4caf50; /* Green connector line */
+    fill: none;
+}
+
+.select2-container .select2-selection--multiple {
+    min-height: 40px; /* Adjust the height */
+    overflow-y: auto;
+}
+
+
+#CampaignEventPanel{
+    left: 523px;
+    top: 85px;
+    /* width: 500px; */
+    /* height: 280px; */
+    margin: auto;
+}
+
+#CampaignEventPanelGroups{
+    width: 500px;
+    height: 280px;
+}
+
+.EventGroupList{
+    width: 200px;
+}
+
 .requiredBorder{
     border:1px solid#a94442;
 }

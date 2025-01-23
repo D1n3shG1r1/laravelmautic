@@ -7,6 +7,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/',[Campaign::class, 'index']);
 Route::get('/campaignbuilder',[Campaign::class, 'campaignBuilder']);
 Route::post('/newevent',[Campaign::class, 'getEventHtml']);
 Route::post('/savenewevent',[Campaign::class, 'saveEvent']);
