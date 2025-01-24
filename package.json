@@ -26,6 +26,7 @@
     "dependencies": {
         "@headlessui/react": "^2.2.0",
         "@inertiajs/react": "^2.0.3",
+        "chosen-js": "^1.8.7",
         "jsplumb": "^2.15.6",
         "react-router-dom": "^7.1.3"
     }

@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+
+import DropdownWithChosen from "@/Components/DropdownWithChosen";
 import InputLabel from "@/Components/InputLabel";
 import TextInput from '@/Components/TextInput';
 //import Dropdown from '@/Components/Dropdown';
@@ -7,19 +9,330 @@ import TextInput from '@/Components/TextInput';
 
 const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
     console.log(Params);
-    const campaignId = Params.campaignId;
+    const CSRFTOKEN = csrfToken;
+    const CAMPAIGN_ID = Params.campaignId;
     const segments = Params.segments;
     const decisions = Params.decisions;
     const actions = Params.actions;
     const conditions = Params.conditions;
+
+    useEffect(() => {
+      // Apply chosen.js to all elements with the 'campaign-event-selector' class
+      if (window.jQuery) {
+        
+        // Initialize the Select2 plugin
+        $('#contactSegments').select2({
+          placeholder: "Select contact segments",
+          allowClear: true,
+          width: '100%', // Makes it responsive
+          dropdownParent: $('#campaignSourceModal'), // Ensures dropdown is within the modal
+        });
+  
+        // Cleanup function to destroy chosen instances
+        return () => {
+          //$('.campaign-event-selector').chosen('destroy');
+          $('#contactSegments').select2('destroy');
+        };
+      }
+    }, []); // Empty dependency array ensures it only runs once when the component mounts
+  
+    // Prevent modal from closing on backdrop click
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        // Check if the click is outside any modal content (i.e., the modal backdrop)
+        const modalElements = document.querySelectorAll('.modal');
+        modalElements.forEach(modalElement => {
+          if (event.target === modalElement) {
+            event.stopPropagation();
+          }
+        });
+      };
+  
+      // Add event listener to the document to detect clicks on the backdrop
+      document.addEventListener('click', handleClickOutside);
+  
+      // Cleanup the event listener when the component is unmounted
+      return () => {
+        document.removeEventListener('click', handleClickOutside);
+      };
+    }, []);
+  
+    /*Create Add Source Node */
+    const createAddSourceNode = () => {
+      //show the options to Add-Campaign-Source
+        
+      const CampaignEventPanelElm = document.getElementById("CampaignEventPanel");
+      const parentLeft = 545;
+      const left = parentLeft - 150;
+      const top = 85;
+       
+      CampaignEventPanelElm.classList.remove("hide");
+      //CampaignEventPanelElm.style.left = left + "" + "px";
+      CampaignEventPanelElm.style.top = top + "" + "px";
+      //CampaignEventPanelElm.style.width = "500px";
+      //CampaignEventPanelElm.style.height = "280px";
+
+      document.getElementById("CampaignEventPanelLists").classList.remove("hide");
+      document.getElementById("SourceGroupList").classList.remove("hide");
+
+    };
+  
+    useEffect(() => {
+      // Calling createAddSourceNode when the component mounts
+      createAddSourceNode();
+    }, []); // Empty dependency array ensures it only runs once when the component mounts
+  
+    // Select event type
+    const [eventType, setEventType] = useState(null);
+    const [parentNodeId, setParentNodeId] = useState(null);
+    const [anchor, setAnchor] = useState(null);
+  
+    const selectEvent = (event, type) => {
+      const anchorData = event.target.dataset.anchor;
+      const parentnodeid = event.target.dataset.parentnodeid;
+  
+      setParentNodeId(parentnodeid);
+      setAnchor(anchorData);
+  
+      type = type.toLowerCase();
+  
+      // Set the event type to trigger conditional rendering
+      if (['source', 'decision', 'action', 'condition'].includes(type)) {
+        setEventType(type);
+      } else {
+        // Reset state if no valid type is provided
+        setEventType(null);
+      }
+    };
+
+    const handleSelectChange = (event, value) => {
+      const selectedOption = event.target.selectedOptions[0];
+      const selectedFunction = selectedOption.getAttribute('data-function');
+
+      if (selectedFunction === "selectCampaignSource") {
+        selectCampaignSource(event);
+      }
+    };
+
+    const contactSourceDropdownOptions = [
+      {
+        title:"Contacts that are members of the selected segments will be automatically added to this campaign.",
+        value: "lists",
+        label: "Contact Segments",
+        function: "selectCampaignSource",
+        className:"option_campaignLeadSource_lists",
+        id:"campaignLeadSource_lists"
+      },
+      {
+        title:"Contacts created from submissions for the selected forms will be automatically added to this campaign.",
+        value: "forms",
+        label: "Campaign Forms",
+        function: "selectOtherFunction",
+        className:"option_campaignLeadSource_forms",
+        id:"campaignLeadSource_forms"
+      },
+    ];
+
+    
+    const selectCampaignSource = (event) =>{
+      const sourceType = event.target.value;
+      const optionVal = event.target.selectedOptions[0].value;
+      const optionDataHref = event.target.selectedOptions[0].dataset.href;
+      const optionDataTarget = event.target.selectedOptions[0].dataset.target;
+
+      const CampaignEventPanelElm = document.getElementById("CampaignEventPanel");
+      CampaignEventPanelElm.classList.add("hide");
+      
+      document.getElementById("CampaignEventPanelLists").classList.add("hide");
+      document.getElementById("SourceGroupList").classList.add("hide");
+
+      //show modal
+      const campaignSourceModal = new bootstrap.Modal(document.getElementById('campaignSourceModal'));
+      campaignSourceModal.show();
+    }
+
+    const addSource = (srcElmId) => {
+      // add campaign-source to source-node
+      //contactSegments
+
+      const srcElm = document.getElementById(srcElmId);
+      const srcVal = srcElm.value;
+      //const srcSlctOptArr = srcElm.selectedOptions;
+      const srcSlctOptArr = Array.from(srcElm.selectedOptions); // Convert HTMLCollection to an array
+      var selectedSegments = [];
+      var selectedSegmentsStr = '';
+
+      var selectedSegmentsTxt = [];
+      var selectedSegmentsTxtStr = '';
+
+      //console.log(srcElm);
+      //console.log(srcVal);
+      //console.log(srcSlctOptArr);
+
+      // Loop through selected options and collect their values
+      srcSlctOptArr.forEach((v, i) => {
+          var tmpOptVal = v.value; // Directly use v (the current option)
+          var tmpOptTxt = v.text;
+          selectedSegments[i] = tmpOptVal;
+          selectedSegmentsTxt[i] = tmpOptTxt;
+      });
+
+      if (selectedSegments.length == 0){
+          document.getElementById("contactSourceErrMsg").classList.remove("hide");
+          document.getElementById("contactSourceErrMsg").classList.add("requiredTxt");
+          document.getElementById("contactSegmentsLable").classList.add("requiredTxt");
+
+          const select2Element = document.querySelector("#campaignSourceModal .select2-selection.select2-selection--multiple");
+          if (select2Element) {
+              select2Element.classList.add("required");
+          }
+
+          return false;
+      }else{
+
+          // Add and remove classes for elements
+          document.getElementById("contactSourceErrMsg").classList.add("hide");
+          document.getElementById("contactSourceErrMsg").classList.remove("requiredTxt");
+          document.getElementById("contactSegmentsLable").classList.remove("requiredTxt");
+
+          const select2Element = document.querySelector("#campaignSourceModal .select2-selection.select2-selection--multiple");
+          if (select2Element) {
+              select2Element.classList.remove("required");
+          }
+
+          // Join selected segments into strings if there are any
+          if (selectedSegments.length > 0) {
+              selectedSegmentsStr = selectedSegments.join(",");
+              selectedSegmentsTxtStr = selectedSegmentsTxt.join(",");
+          }
+
+          
+          //add campaign segments    
+          var url = 'addcampaignsegment';
+          var postJson = {"_token":CSRFTOKEN, "campaignId":CAMPAIGN_ID, "segments":selectedSegmentsStr,"segmentsName":selectedSegmentsTxtStr};
+          httpRequest(url, postJson, function(resp){
+          
+              if(resp.C == 100){
+                  const segmentsName = resp.R.segmentsName;
+                  var truncateSegmentsName = truncateString(segmentsName, 18);
+                  //hide initial source node
+                  const newSrcElmNode = document.getElementById("CampaignEvent_newsource");
+                  newSrcElmNode.classList.add('hide');
+
+                  // create campaign/contact source
+                  var nodeType = 'source';
+                  var nodeId = 'CampaignEvent_lists'; //'CampaignEvent_new-'+generateSecureUniqueId();
+                  var nodeContent = '<i class="mr-sm fa fa-list"></i> '+truncateSegmentsName;
+                  var dataConnected = '';
+                  var eventOrder = 0;
+                  const propJson = {
+                      "type":nodeType,
+                      "id":nodeId,
+                      "parentNodeId":"",
+                      "parentNodeType":"",
+                      "eventOrder":eventOrder,
+                      "content":nodeContent,
+                      "dataConnected":dataConnected
+                  };
+
+                  const x = 545;
+                  const y = 50;
+                  createNode(propJson, x, y);
+
+                  //close source list modal
+                  const action = 'add';
+                  const modalId = 'campaignSourceModal';
+                  closeModal(action,modalId);
+              }
+          });
+      }
+    };
+
+    const closeModal = (action,modalId) => {
+          
+        if(modalId == "campaignSourceModal"){
+            
+            if(action == 'cancel'){
+                
+                const contactSourceErrMsgElm = document.getElementById("contactSourceErrMsg");
+                contactSourceErrMsgElm.classList.add("hide");
+                contactSourceErrMsgElm.classList.remove("requiredTxt");
+                const contactSegmentsLableElm = document.getElementById("contactSegmentsLable");
+                contactSegmentsLableElm.classList.remove("requiredTxt");
+
+                const CampaignEventPanelElm = document.getElementById("CampaignEventPanel");
+                CampaignEventPanelElm.classList.remove("hide");
+                document.getElementById("CampaignEventPanelLists").classList.remove("hide");
+                document.getElementById("SourceGroupList").classList.remove("hide");
+                const SourceList = document.getElementById("SourceList");
+                SourceList.value = '';
+                
+                const event = new Event('chosen:updated');
+                SourceList.dispatchEvent(event);
+                
+            }else if(action == 'add'){
+                
+                const CampaignEventPanelElm = document.getElementById("CampaignEventPanel");
+                CampaignEventPanelElm.classList.add("hide");
+                
+                document.getElementById("CampaignEventPanelLists").classList.add("hide");
+                document.getElementById("SourceGroupList").classList.add("hide");
+                const SourceList = document.getElementById("SourceList");
+                SourceList.value = '';
+                
+                const event = new Event('chosen:updated');
+                SourceList.dispatchEvent(event);
+            }
+
+        }else if(modalId == "campaignEventModal"){
+            
+            if(action == 'cancel'){
+                var DecisionList = document.getElementById("DecisionList");
+                DecisionList.value = '';
+                var event = new Event('chosen:updated');
+                DecisionList.dispatchEvent(event);
+
+                var ConditionList = document.getElementById("ConditionList");
+                ConditionList.value = '';
+                var event = new Event('chosen:updated');
+                ConditionList.dispatchEvent(event);
+
+                var ActionList = document.getElementById("ActionList");
+                ActionList.value = '';
+                var event = new Event('chosen:updated');
+                ActionList.dispatchEvent(event);
+
+            }else if(action == 'add'){
+                var DecisionList = document.getElementById("DecisionList");
+                DecisionList.value = '';
+                var event = new Event('chosen:updated');
+                DecisionList.dispatchEvent(event);
+
+                var ConditionList = document.getElementById("ConditionList");
+                ConditionList.value = '';
+                var event = new Event('chosen:updated');
+                ConditionList.dispatchEvent(event);
+
+                var ActionList = document.getElementById("ActionList");
+                ActionList.value = '';
+                var event = new Event('chosen:updated');
+                ActionList.dispatchEvent(event);
+            }
+
+            $("#campaignEventModal .loading-placeholder").removeClass("hide");
+            $("#campaignEventModal #event-modal-body-content").html("");
+        }
+
+        $('#'+modalId).modal('hide');
+    };
 
   return (
     <div>
       <div id="campaign-builder" className="builder campaign-builder live builder-active" style={{ width: '100%', height: '600px', border: '1px solid #ccc' }}>
         
         <div className="btns-builder">
-          <button type="button" className="btn btn-primary btn-apply-builder" onClick={() => Mautic.saveCampaignFromBuilder()}>Save</button>
-          <button type="button" className="btn btn-primary btn-close-campaign-builder" onClick={() => Mautic.closeCampaignBuilder()}>Close Builder</button>
+          <button type="button" className="btn btn-primary btn-apply-builder">Save</button>
+          <button type="button" className="btn btn-primary btn-close-campaign-builder">Close Builder</button>
         </div>
         <div id="builder-errors" className="alert alert-danger" role="alert" style={{ display: 'none' }}>test</div>
 
@@ -34,14 +347,14 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
                     </div>
                     <div className="col-xs-4 col-sm-2 pl-0 pr-0 pt-10 pb-10 text-right">
                       <i className="hidden-xs fa fa-random fa-lg"></i>
-                      <button className="decisionSlctBtn visible-xs pull-right btn btn-sm btn-default btn-nospin text-success" data-type="Decision" onClick={() => selectEvent(event, 'Decision')}>Select</button>
+                      <button className="decisionSlctBtn visible-xs pull-right btn btn-sm btn-default btn-nospin text-success" data-type="Decision" onClick={(e) => selectEvent(e, 'decision')}>Select</button>
                     </div>
                   </div>
                   <div className="panel-body">
                     A decision is made when a contact decides to take action or not (e.g. opened an email).
                   </div>
                   <div className="hidden-xs panel-footer text-center">
-                    <button className="decisionSlctBtn btn btn-lg btn-default btn-nospin text-success" data-type="Decision" onClick={() => selectEvent(event, 'Decision')}>Select</button>
+                    <button className="decisionSlctBtn btn btn-lg btn-default btn-nospin text-success" data-type="Decision" onClick={(e) => selectEvent(e, 'decision')}>Select</button>
                   </div>
                 </div>
               </div>
@@ -53,14 +366,14 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
                     </div>
                     <div className="col-xs-4 col-sm-2 pl-0 pr-0 pt-10 pb-10 text-right">
                       <i className="hidden-xs fa fa-bullseye fa-lg"></i>
-                      <button className="actionSlctBtn visible-xs pull-right btn btn-sm btn-default btn-nospin text-primary" data-type="Action" onClick={() => selectEvent(event, 'Action')}>Select</button>
+                      <button className="actionSlctBtn visible-xs pull-right btn btn-sm btn-default btn-nospin text-primary" data-type="Action" onClick={(e) => selectEvent(e, 'action')}>Select</button>
                     </div>
                   </div>
                   <div className="panel-body">
                     An action is something executed by Mautic (e.g. send an email).
                   </div>
                   <div className="hidden-xs panel-footer text-center">
-                    <button className="actionSlctBtn btn btn-lg btn-default btn-nospin text-primary" data-type="Action" onClick={() => selectEvent(event, 'Action')}>Select</button>
+                    <button className="actionSlctBtn btn btn-lg btn-default btn-nospin text-primary" data-type="Action" onClick={(e) => selectEvent(e, 'action')}>Select</button>
                   </div>
                 </div>
               </div>
@@ -72,14 +385,14 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
                     </div>
                     <div className="col-xs-4 col-sm-2 pl-0 pr-0 pt-10 pb-10 text-right">
                       <i className="hidden-xs fa fa-filter fa-lg"></i>
-                      <button className="conditionSlctBtn visible-xs pull-right btn btn-sm btn-default btn-nospin text-danger" data-type="Condition" onClick={() => selectEvent(event, 'Condition')}>Select</button>
+                      <button className="conditionSlctBtn visible-xs pull-right btn btn-sm btn-default btn-nospin text-danger" data-type="Condition" onClick={(e) => selectEvent(e, 'condition')}>Select</button>
                     </div>
                   </div>
                   <div className="panel-body">
                     A condition is based on known profile field values or submitted form data.
                   </div>
                   <div className="hidden-xs panel-footer text-center">
-                    <button className="conditionSlctBtn btn btn-lg btn-default btn-nospin" data-type="Condition" onClick={() => selectEvent(event, 'Condition')}>Select</button>
+                    <button className="conditionSlctBtn btn btn-lg btn-default btn-nospin" data-type="Condition" onClick={(e) => selectEvent(e, 'condition')}>Select</button>
                   </div>
                 </div>
               </div>
@@ -105,12 +418,14 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
               <h4 className="mb-xs">
                 <span>Contact Sources</span>
               </h4>
-              
-              <select id="SourceList" className="campaign-event-selector" style={{ display: 'none' }} onChange={(e) => selectCampaignSource(e)}>
-                <option value=""></option>
-                <option id="campaignLeadSource_lists" className="option_campaignLeadSource_lists" data-href="/s/campaigns/sources/new/mautic_2c5b105523f135723e5fa80b41511b682b4c42c5?sourceType=lists" data-target="#CampaignEventModal" title="Contacts that are members of the selected segments will be automatically added to this campaign." value="lists">Contact segments</option>
-                <option id="campaignLeadSource_forms" className="option_campaignLeadSource_forms" data-href="/s/campaigns/sources/new/mautic_2c5b105523f135723e5fa80b41511b682b4c42c5?sourceType=forms" data-target="#CampaignEventModal" title="Contacts created from submissions for the selected forms will be automatically added to this campaign." value="forms">Campaign forms</option>
-              </select>
+              <DropdownWithChosen
+                id="SourceListd"
+                className="campaign-event-selector"
+                data-function="selectCampaignSource"
+                options={contactSourceDropdownOptions}
+                onChangeHandler={handleSelectChange}
+                placeholder="Select a source"
+              />
             </div>
 
             <div id="ActionGroupList" className="EventGroupList eventList hide">
@@ -210,9 +525,9 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
               <h6 className="text-muted">Contacts that are members of the selected segments will be automatically added to this campaign.</h6>
             </div>
             <div className="modal-body">
-              <form>
+              
                 <div className="mb-3">
-                  <label htmlFor="contactSegments" className="form-label">Contact segments *</label>
+                  <InputLabel id="contactSegmentsLable" htmlFor="contactSegments" className="form-label" value="Contact segments *"></InputLabel>
                   <select id="contactSegments" multiple="multiple" className="form-select" style={{ width: '100%' }}>
                   {segments.map((segment) => (
                     <option
@@ -226,11 +541,11 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
                     </select>
                   <div id="contactSourceErrMsg" className="hide">A value is required.</div>
                 </div>
-              </form>
+              
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-primary" onClick={() => addSource('contactSegments')}>+ Add</button>
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => closeModal('cancel', 'campaignSourceModal')}>Cancel</button>
+              <button type="button" className="btn btn-secondary" onClick={() => closeModal('cancel', 'campaignSourceModal')}>Cancel</button>
             </div>
           </div>
         </div>
@@ -259,4 +574,5 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
 };
 
 export default CampaignBuilder;
+
 
