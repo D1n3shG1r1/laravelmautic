@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-
+//import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import DropdownWithChosen from "@/Components/DropdownWithChosen";
 import InputLabel from "@/Components/InputLabel";
 import TextInput from '@/Components/TextInput';
+import NodeEndpoints from '@/Components/NodeEndpoints';
 //import Dropdown from '@/Components/Dropdown';
 //import styles from "../../css/Modules/CampaignBuilder.module.css"; // Import styles from the CSS module
 
@@ -16,10 +18,17 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
     const actions = Params.actions;
     const conditions = Params.conditions;
 
+    //var instance;
+
     useEffect(() => {
-      // Apply chosen.js to all elements with the 'campaign-event-selector' class
       if (window.jQuery) {
         
+        /*// Initialize jsPlumb instance
+        instance = jsPlumb.getInstance({
+            //container: document.getElementById("campaign-builder"),
+            container: document.getElementById("CampaignCanvas"),
+        });*/
+
         // Initialize the Select2 plugin
         $('#contactSegments').select2({
           placeholder: "Select contact segments",
@@ -57,6 +66,681 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
       };
     }, []);
   
+    /*Create other Nodes */
+    const createNode = (propJson, x, y) => {
+      /*Create other Nodes */
+      const type = propJson.type;
+      const id = propJson.id;
+      const parentNodeType = propJson.parentNodeType;
+      const parentNodeAnchor = propJson.parentNodeAnchor;
+      const parentNodeId = propJson.parentNodeId;
+      const eventOrder = propJson.eventOrder;
+      const content = propJson.content;
+      const dataConnected = propJson.dataConnected;
+      
+      var classType = 'list-campaign-leadsource';
+      if(type == 'decision'){
+          classType = 'list-campaign-decision';
+      }else if(type == 'action'){
+          classType = 'list-campaign-action';
+      }else if(type == 'condition'){
+          classType = 'list-campaign-condition';
+      }else{
+          classType = 'list-campaign-leadsource';
+      }
+      
+      //create node div
+      const node = document.createElement("div");
+      node.id = id;
+      node.className = "workflow-node draggable list-campaign-source jtk-endpoint-anchor-leadsource CampaignEvent_lists jtk-managed jtk-endpoint-anchor-leadsourceleft jtk-endpoint-anchor-leadsourceright jtk-draggable";
+      node.setAttribute("data-type", type);
+      node.setAttribute("data-parent-type", parentNodeType);
+      node.setAttribute("data-parent-node", parentNodeId);
+      node.setAttribute("data-event-order", eventOrder);
+      
+      node.innerHTML = content;
+      node.style.position = "absolute";
+      node.style.left = `${x}px`;
+      node.style.top = `${y}px`;
+
+      if(classType != ''){
+          node.classList.add(classType);
+      }
+
+      if (type === 'source') {
+        const endpointBottomCenterHolder = document.createElement("div");
+        endpointBottomCenterHolder.id = id+'_endpointBottomCenterHolder';
+        node.appendChild(endpointBottomCenterHolder);
+
+        const endpointLeftHolder = document.createElement("div");
+        endpointLeftHolder.id = id+'_endpointLeftHolder';
+        node.appendChild(endpointLeftHolder);
+
+        const endpointRightHolder = document.createElement("div");
+        endpointRightHolder.id = id+'_endpointRightHolder';
+        node.appendChild(endpointRightHolder);        
+        
+      }else if(type === 'decision' || type === 'condition'){
+        const endpointTopCenterHolder = document.createElement("div");
+        endpointTopCenterHolder.id = id+'_endpointTopCenterHolder';
+        node.appendChild(endpointTopCenterHolder);
+
+        const endpointBottomLeftHolder = document.createElement("div");
+        endpointBottomLeftHolder.id = id+'_endpointBottomLeftHolder';
+        node.appendChild(endpointBottomLeftHolder);
+
+        const endpointBottomRightHolder = document.createElement("div");
+        endpointBottomRightHolder.id = id+'_endpointBottomRightHolder';
+        node.appendChild(endpointBottomRightHolder);        
+      }else if(type === 'action'){
+        const endpointTopCenterHolder = document.createElement("div");
+        endpointTopCenterHolder.id = id+'_endpointTopCenterHolder';
+        node.appendChild(endpointTopCenterHolder);
+
+        const endpointBottomCenterHolder = document.createElement("div");
+        endpointBottomCenterHolder.id = id+'_endpointBottomCenterHolder';
+        node.appendChild(endpointBottomCenterHolder);
+      }
+
+      //add circles/buttons/endpoints
+      document.getElementById("campaign-builder").appendChild(node);
+      if (type === 'source') {
+        const endpointLeft = <NodeEndpoints nodeType={type} endpointType="left" />;
+        const endpointRight = <NodeEndpoints nodeType={type} endpointType="right" />;
+        const endpointBottomCenter = <NodeEndpoints nodeType={type} endpointType="bottom-center" />;
+    
+        // Assuming `node` is a DOM element where you want to append these components
+        const rootLeft = ReactDOM.createRoot(document.getElementById(id+'_endpointLeftHolder'));
+        const rootRight = ReactDOM.createRoot(document.getElementById(id+'_endpointRightHolder'));
+        const rootBottomCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomCenterHolder'));
+    
+        rootLeft.render(endpointLeft);
+        rootRight.render(endpointRight);
+        rootBottomCenter.render(endpointBottomCenter);
+    
+    } else if (type === 'decision' || type === 'condition') {
+        const endpointTopCenter = <NodeEndpoints nodeType={type} endpointType="top-center" />;
+        const endpointBottomLeft = <NodeEndpoints nodeType={type} endpointType="bottom-left" />;
+        const endpointBottomRight = <NodeEndpoints nodeType={type} endpointType="bottom-right" />;
+    
+        const rootTopCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointTopCenterHolder'));
+        const rootBottomLeft = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomLeftHolder'));
+        const rootBottomRight = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomRightHolder'));
+      
+        rootTopCenter.render(endpointTopCenter);
+        rootBottomLeft.render(endpointBottomLeft);
+        rootBottomRight.render(endpointBottomRight);
+    }else if(type == 'action'){
+          
+        const endpointTopCenter = <NodeEndpoints nodeType={type} endpointType="top-center" />
+        const endpointBottomCenter = <NodeEndpoints nodeType={type} endpointType="bottom-center" />
+
+        const rootTopCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointTopCenterHolder'));
+        const rootBottomCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomCenterHolder'));
+          
+        rootTopCenter.render(endpointTopCenter);
+        rootBottomCenter.render(endpointBottomCenter);
+          
+    }
+      
+     // document.getElementById("campaign-builder").appendChild(node);
+
+      // Make the node draggable and connectable
+      // Initialize jsPlumb instance
+      const instance = jsPlumb.getInstance({
+          //container: document.getElementById("campaign-builder"),
+          container: document.getElementById("CampaignCanvas"),
+      });
+
+      instance.draggable(node);
+      
+      //endpoint connecting line
+      /*instance.addEndpoint(node, {
+          source: parentNodeId,
+          target: id,
+          anchor: "Continuous",
+          isSource: true,
+          isTarget: true,
+          endpoint: ["Dot", { radius: 6 }],
+          paintStyle: { fill: "#4caf50" },
+          connector: ["Bezier", { curviness: 50 }],
+          connectorStyle: { stroke: "#4caf50", strokeWidth: 2 },
+      });*/
+
+      // Bottom-Left of source (with 10px margin left)
+      
+      if(parentNodeType == 'source'){
+          //source
+          var anchSrcX = 0.56;
+      }if(parentNodeType == 'action'){
+          //action
+          var anchSrcX = 0.56;
+      }else{
+          //decision or condition
+          if(parentNodeAnchor == "yes"){
+              var anchSrcX = 0.23; //left anchor
+          }else if(parentNodeAnchor == "no"){
+              var anchSrcX = 0.88; //right anchor
+          }
+      }
+
+      var anchSrcY = 1;
+      var anchSrcXornt = -1;
+      var anchSrcYornt = 0;
+      var anchSrcXofst = -10;
+      var anchSrcYofst = 0;
+
+      // Bottom-Right of target (with 10px margin right)
+      var anchTrgX = 0.46;
+      var anchTrgY = 0.03;
+      var anchTrgXornt = 1;
+      var anchTrgYornt = 0;
+      var anchTrgXofst = 10;
+      var anchTrgYofst = 0;
+
+      if(type != 'source'){
+          
+
+          instance.connect(node, {
+              source: parentNodeId,
+              target: id,
+              isSource: true,
+              isTarget: true,
+              anchor: "Continuous",
+              anchors: [
+                  [anchSrcX, anchSrcY, anchSrcXornt, anchSrcYornt, anchSrcXofst, anchSrcYofst], 
+                  [anchTrgX, anchTrgY, anchTrgXornt, anchTrgYornt, anchTrgXofst, anchTrgYofst],
+              ],
+              endpoint: ["Dot", { radius: 6 }],
+              /*paintStyle: { fill: "#4caf50" },
+              connector: ["Bezier", { curviness: 50 }],*/
+              connectorStyle: { stroke: "#4caf50", strokeWidth: 2 },
+
+              Connector: ["Bezier", { curviness: 50 }], // Smooth curved lines
+              PaintStyle: { stroke: "#bbb", strokeWidth: 2 }, // Line color and thickness
+              HoverPaintStyle: { stroke: "#999", strokeWidth: 3 }, // Line hover style
+              EndpointStyle: { fill: "#bbb", radius: 5 }, // Circle at endpoints
+
+              overlays: [
+                  [
+                      "Arrow",
+                      {
+                      width: 10,
+                      length: 10,
+                      location: 0.5, // Arrowhead at the end
+                      foldback: 0.8, // Arrowhead style
+                      id: "arrow",
+                      direction: 1, // Points forward
+                      paintStyle: { fill: "#bbb" }, // Arrowhead color
+                      },
+                  ],
+              ],
+          });
+      }
+
+    };
+
+    const createNodeEndpoints = (nodeType,endpointType) => {
+      //nodeType,endpointType
+      //source left right bottom-center
+      //decision top-center bottom-left bottom-right
+      //action top-center bottom-center
+      //condition top-center bottom-left bottom-right
+      
+      if(nodeType == 'source'){
+
+          if(endpointType == 'left'){
+              const endpointLeft = document.createElement("div");
+              endpointLeft.style.position = "absolute";
+              endpointLeft.style.width = "20px";
+              endpointLeft.style.height = "20px";
+              endpointLeft.style.left = "-11px";
+              endpointLeft.style.top = "12px";
+              endpointLeft.className = "jtk-endpoint jtk-endpoint-left jtk-endpoint-anchor-leadsourceleft CampaignEvent_lists jtk-draggable jtk-droppable";
+              endpointLeft.innerHTML = `
+              <svg style="position:absolute;left: 0px;top: 0px;" width="20" height="20" pointer-events="all" position="absolute" version="1.1" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="10" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#d5d4d4" stroke="none" style=""></circle><text x="50%" y="50%" text-anchor="middle" stroke-width="2px" stroke="#ffffff" dy=".3em">+</text></svg>`;
+              
+              // Add class on mouseover
+              endpointLeft.addEventListener('mouseover', function() {
+                  endpointLeft.classList.add('jtk-hover');
+                  endpointLeft.classList.add('jtk-clickable_anchor');
+                      
+              });
+
+              // Remove class on mouseout
+              endpointLeft.addEventListener('mouseout', function() {
+                  endpointLeft.classList.remove('jtk-hover');
+                  endpointLeft.classList.remove('jtk-clickable_anchor');
+              });
+
+              // You can also use mouseenter and mouseleave if you want
+              // to avoid bubbling (mousein/mouseout can bubble)
+              endpointLeft.addEventListener('mouseenter', function() {
+                  endpointLeft.classList.add('jtk-hover');
+                  endpointLeft.classList.add('jtk-clickable_anchor');
+              });
+
+              endpointLeft.addEventListener('mouseleave', function() {
+                  endpointLeft.classList.remove('jtk-hover');
+                  endpointLeft.classList.remove('jtk-clickable_anchor');
+              });
+
+              return endpointLeft;
+          }
+          
+          if(endpointType == 'right'){
+              const endpointRight = document.createElement("div");
+              endpointRight.style.position = "absolute";
+              endpointRight.style.width = "20px";
+              endpointRight.style.height = "20px";
+              endpointRight.style.left = "190px";
+              endpointRight.style.top = "12px";
+
+              endpointRight.className = "jtk-endpoint jtk-endpoint-right jtk-endpoint-anchor-leadsourceright CampaignEvent_lists jtk-draggable jtk-droppable";
+              endpointRight.innerHTML = `
+              <svg style="position:absolute;left: 0px;top: 0px;" width="20" height="20" pointer-events="all" position="absolute" version="1.1" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="10" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#d5d4d4" stroke="none" style=""></circle><text x="50%" y="50%" text-anchor="middle" stroke-width="2px" stroke="#ffffff" dy=".3em">+</text></svg>`;
+
+              // Add class on mouseover
+              endpointRight.addEventListener('mouseover', function() {
+                  endpointRight.classList.add('jtk-hover');
+                  endpointRight.classList.add('jtk-clickable_anchor');
+                      
+              });
+
+              // Remove class on mouseout
+              endpointRight.addEventListener('mouseout', function() {
+                  endpointRight.classList.remove('jtk-hover');
+                  endpointRight.classList.remove('jtk-clickable_anchor');
+              });
+
+              // You can also use mouseenter and mouseleave if you want
+              // to avoid bubbling (mousein/mouseout can bubble)
+              endpointRight.addEventListener('mouseenter', function() {
+                  endpointRight.classList.add('jtk-hover');
+                  endpointRight.classList.add('jtk-clickable_anchor');
+              });
+
+              endpointRight.addEventListener('mouseleave', function() {
+                  endpointRight.classList.remove('jtk-hover');
+                  endpointRight.classList.remove('jtk-clickable_anchor');
+              });
+
+              return endpointRight;
+          }
+
+          if(endpointType == 'bottom-center'){
+              const endpointBottom = document.createElement("div");
+              endpointBottom.style.position = "absolute";
+              endpointBottom.style.width = "20px";
+              endpointBottom.style.height = "20px";
+              endpointBottom.style.left = "90px";
+              endpointBottom.style.top = "32px";
+
+              endpointBottom.className = "jtk-endpoint jtk-endpoint-bottom jtk-endpoint-anchor-leadsource CampaignEvent_lists jtk-draggable jtk-droppable";
+              endpointBottom.innerHTML = `
+              <svg style="position:absolute;left: 0px;top: 0px;" width="20" height="20" pointer-events="all" position="absolute" version="1.1" xmlns="http://www.w3.org/2000/svg" data-anchor="leadsource" onClick="{campaignEventPanel(event);}"><circle cx="10" cy="10" r="10" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#d5d4d4" stroke="none" style=""></circle><text x="50%" y="50%" text-anchor="middle" stroke-width="2px" stroke="#ffffff" dy=".3em">+</text></svg>`;
+
+              // Add class on mouseover
+              endpointBottom.addEventListener('mouseover', function() {
+                  endpointBottom.classList.add('jtk-hover');
+                  endpointBottom.classList.add('jtk-clickable_anchor');
+                      
+              });
+
+              // Remove class on mouseout
+              endpointBottom.addEventListener('mouseout', function() {
+                  endpointBottom.classList.remove('jtk-hover');
+                  endpointBottom.classList.remove('jtk-clickable_anchor');
+              });
+
+              // You can also use mouseenter and mouseleave if you want
+              // to avoid bubbling (mousein/mouseout can bubble)
+              endpointBottom.addEventListener('mouseenter', function() {
+                  endpointBottom.classList.add('jtk-hover');
+                  endpointBottom.classList.add('jtk-clickable_anchor');
+              });
+
+              endpointBottom.addEventListener('mouseleave', function() {
+                  endpointBottom.classList.remove('jtk-hover');
+                  endpointBottom.classList.remove('jtk-clickable_anchor');
+              });
+
+              return endpointBottom;
+          }
+
+      }else if(nodeType == 'decision'){
+          //decision top-center bottom-left bottom-right
+          if(endpointType == 'top-center'){
+              const endpointTop = document.createElement("div");
+              endpointTop.style.position = "absolute";
+              endpointTop.style.width = "20px";
+              endpointTop.style.height = "20px";
+              endpointTop.style.left = "90px";
+              endpointTop.style.top = "-11px";
+              
+              endpointTop.className = "jtk-endpoint jtk-endpoint-top jtk-endpoint-anchor-leadsource CampaignEvent_lists jtk-draggable jtk-droppable";
+              endpointTop.innerHTML = `
+              <svg style="position:absolute;left: 0px;top: 0px;" width="20" height="20" pointer-events="all" position="absolute" version="1.1" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="10" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#d5d4d4" stroke="none" style=""></circle><text x="50%" y="50%" text-anchor="middle" stroke-width="2px" stroke="#ffffff" dy=".3em">+</text></svg>`;
+
+              // Add class on mouseover
+              endpointTop.addEventListener('mouseover', function() {
+                  endpointTop.classList.add('jtk-hover');
+                  endpointTop.classList.add('jtk-clickable_anchor');
+                  
+              });
+
+              // Remove class on mouseout
+              endpointTop.addEventListener('mouseout', function() {
+                  endpointTop.classList.remove('jtk-hover');
+                  endpointTop.classList.remove('jtk-clickable_anchor');
+              });
+
+              // You can also use mouseenter and mouseleave if you want
+              // to avoid bubbling (mousein/mouseout can bubble)
+              endpointTop.addEventListener('mouseenter', function() {
+                  endpointTop.classList.add('jtk-hover');
+                  endpointTop.classList.add('jtk-clickable_anchor');
+              });
+
+              endpointTop.addEventListener('mouseleave', function() {
+                  endpointTop.classList.remove('jtk-hover');
+                  endpointTop.classList.remove('jtk-clickable_anchor');
+              });
+
+              return endpointTop;
+          }
+          
+          if(endpointType == 'bottom-left'){
+              
+              const endpointTop = document.createElement("div");
+              endpointTop.style.position = "absolute";
+              endpointTop.style.width = "20px";
+              endpointTop.style.height = "20px";
+              endpointTop.style.left = "25px";
+              endpointTop.style.top = "32px";
+              
+              endpointTop.className = "jtk-endpoint jtk-endpoint-anchor-yes jtk-endpoint-anchor-leadsourcedd CampaignEvent_listsdd jtk-draggable jtk-droppable";
+              endpointTop.innerHTML = `
+              <svg style="position:absolute;left: 0px;top: 0px;" width="20" height="20" pointer-events="all" position="absolute" version="1.1" xmlns="http://www.w3.org/2000/svg" data-anchor="yes" onClick="{campaignEventPanel(event);}"><circle cx="10" cy="10" r="10" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#d5d4d4" stroke="none" style=""></circle><text x="50%" y="50%" text-anchor="middle" stroke-width="2px" stroke="#ffffff" dy=".3em">+</text></svg>`;
+
+              // Add class on mouseover
+              endpointTop.addEventListener('mouseover', function() {
+                  endpointTop.classList.add('jtk-hover');
+                  endpointTop.classList.add('jtk-clickable_anchor');
+                  
+              });
+
+              // Remove class on mouseout
+              endpointTop.addEventListener('mouseout', function() {
+                  endpointTop.classList.remove('jtk-hover');
+                  endpointTop.classList.remove('jtk-clickable_anchor');
+              });
+
+              // You can also use mouseenter and mouseleave if you want
+              // to avoid bubbling (mousein/mouseout can bubble)
+              endpointTop.addEventListener('mouseenter', function() {
+                  endpointTop.classList.add('jtk-hover');
+                  endpointTop.classList.add('jtk-clickable_anchor');
+              });
+
+              endpointTop.addEventListener('mouseleave', function() {
+                  endpointTop.classList.remove('jtk-hover');
+                  endpointTop.classList.remove('jtk-clickable_anchor');
+              });
+
+              return endpointTop;
+          }
+
+          if(endpointType == 'bottom-right'){
+              
+              const endpointTop = document.createElement("div");
+              endpointTop.style.position = "absolute";
+              endpointTop.style.width = "20px";
+              endpointTop.style.height = "20px";
+              endpointTop.style.left = "155px";
+              endpointTop.style.top = "32px";
+              
+              endpointTop.className = "jtk-endpoint jtk-endpoint-anchor-no jtk-endpoint-anchor-leadsourcedd CampaignEvent_listsdd jtk-draggable jtk-droppable";
+              endpointTop.innerHTML = `
+              <svg style="position:absolute;left: 0px;top: 0px;" width="20" height="20" pointer-events="all" position="absolute" version="1.1" xmlns="http://www.w3.org/2000/svg" data-anchor="no" onClick="{campaignEventPanel(event);}"><circle cx="10" cy="10" r="10" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#d5d4d4" stroke="none" style=""></circle><text x="50%" y="50%" text-anchor="middle" stroke-width="2px" stroke="#ffffff" dy=".3em">+</text></svg>`;
+
+              // Add class on mouseover
+              endpointTop.addEventListener('mouseover', function() {
+                  endpointTop.classList.add('jtk-hover');
+                  endpointTop.classList.add('jtk-clickable_anchor');
+                  
+              });
+
+              // Remove class on mouseout
+              endpointTop.addEventListener('mouseout', function() {
+                  endpointTop.classList.remove('jtk-hover');
+                  endpointTop.classList.remove('jtk-clickable_anchor');
+              });
+
+              // You can also use mouseenter and mouseleave if you want
+              // to avoid bubbling (mousein/mouseout can bubble)
+              endpointTop.addEventListener('mouseenter', function() {
+                  endpointTop.classList.add('jtk-hover');
+                  endpointTop.classList.add('jtk-clickable_anchor');
+              });
+
+              endpointTop.addEventListener('mouseleave', function() {
+                  endpointTop.classList.remove('jtk-hover');
+                  endpointTop.classList.remove('jtk-clickable_anchor');
+              });
+
+              return endpointTop;
+          }
+
+      }else if(nodeType == 'action'){
+          //action top-center bottom-center
+          if(endpointType == 'top-center'){
+              const endpointTop = document.createElement("div");
+              endpointTop.style.position = "absolute";
+              endpointTop.style.width = "20px";
+              endpointTop.style.height = "20px";
+              endpointTop.style.left = "90px";
+              endpointTop.style.top = "-11px";
+              
+              endpointTop.className = "jtk-endpoint jtk-endpoint-top jtk-endpoint-anchor-top jtk-endpoint-anchor-leadsourcedd CampaignEvent_listsdd jtk-draggable jtk-droppable";
+              endpointTop.innerHTML = `
+              <svg style="position:absolute;left: 0px;top: 0px;" width="20" height="20" pointer-events="all" position="absolute" version="1.1" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="10" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#d5d4d4" stroke="none" style=""></circle><text x="50%" y="50%" text-anchor="middle" stroke-width="2px" stroke="#ffffff" dy=".3em">+</text></svg>`;
+
+              // Add class on mouseover
+              endpointTop.addEventListener('mouseover', function() {
+                  endpointTop.classList.add('jtk-hover');
+                  endpointTop.classList.add('jtk-clickable_anchor');
+                  
+              });
+
+              // Remove class on mouseout
+              endpointTop.addEventListener('mouseout', function() {
+                  endpointTop.classList.remove('jtk-hover');
+                  endpointTop.classList.remove('jtk-clickable_anchor');
+              });
+
+              // You can also use mouseenter and mouseleave if you want
+              // to avoid bubbling (mousein/mouseout can bubble)
+              endpointTop.addEventListener('mouseenter', function() {
+                  endpointTop.classList.add('jtk-hover');
+                  endpointTop.classList.add('jtk-clickable_anchor');
+              });
+
+              endpointTop.addEventListener('mouseleave', function() {
+                  endpointTop.classList.remove('jtk-hover');
+                  endpointTop.classList.remove('jtk-clickable_anchor');
+              });
+
+              return endpointTop;
+          }
+
+          if(endpointType == 'bottom-center'){
+              const endpointBottom = document.createElement("div");
+              endpointBottom.style.position = "absolute";
+              endpointBottom.style.width = "20px";
+              endpointBottom.style.height = "20px";
+              endpointBottom.style.left = "90px";
+              endpointBottom.style.top = "32px";
+
+              endpointBottom.className = "jtk-endpoint jtk-endpoint-bottom jtk-endpoint-anchor-bottom jtk-endpoint-anchor-leadsourcedd CampaignEvent_listsdd jtk-draggable jtk-droppable";
+              endpointBottom.innerHTML = `
+              <svg style="position:absolute;left: 0px;top: 0px;" width="20" height="20" pointer-events="all" position="absolute" version="1.1" xmlns="http://www.w3.org/2000/svg" data-anchor="bottom" onClick="{campaignEventPanel(event);}"><circle cx="10" cy="10" r="10" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#d5d4d4" stroke="none" style=""></circle><text x="50%" y="50%" text-anchor="middle" stroke-width="2px" stroke="#ffffff" dy=".3em">+</text></svg>`;
+
+              // Add class on mouseover
+              endpointBottom.addEventListener('mouseover', function() {
+                  endpointBottom.classList.add('jtk-hover');
+                  endpointBottom.classList.add('jtk-clickable_anchor');
+                      
+              });
+
+              // Remove class on mouseout
+              endpointBottom.addEventListener('mouseout', function() {
+                  endpointBottom.classList.remove('jtk-hover');
+                  endpointBottom.classList.remove('jtk-clickable_anchor');
+              });
+
+              // You can also use mouseenter and mouseleave if you want
+              // to avoid bubbling (mousein/mouseout can bubble)
+              endpointBottom.addEventListener('mouseenter', function() {
+                  endpointBottom.classList.add('jtk-hover');
+                  endpointBottom.classList.add('jtk-clickable_anchor');
+              });
+
+              endpointBottom.addEventListener('mouseleave', function() {
+                  endpointBottom.classList.remove('jtk-hover');
+                  endpointBottom.classList.remove('jtk-clickable_anchor');
+              });
+
+              return endpointBottom;
+          }
+
+      }else if(nodeType == 'condition'){
+          //condition top-center bottom-left bottom-right
+          if(endpointType == 'top-center'){
+              const endpointTop = document.createElement("div");
+              endpointTop.style.position = "absolute";
+              endpointTop.style.width = "20px";
+              endpointTop.style.height = "20px";
+              endpointTop.style.left = "90px";
+              endpointTop.style.top = "-11px";
+              
+              endpointTop.className = "jtk-endpoint jtk-endpoint-top jtk-endpoint-anchor-top jtk-endpoint-anchor-leadsourcedd CampaignEvent_listsdd jtk-draggable jtk-droppable";
+              endpointTop.innerHTML = `
+              <svg style="position:absolute;left: 0px;top: 0px;" width="20" height="20" pointer-events="all" position="absolute" version="1.1" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="10" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#d5d4d4" stroke="none" style=""></circle><text x="50%" y="50%" text-anchor="middle" stroke-width="2px" stroke="#ffffff" dy=".3em">+</text></svg>`;
+
+              // Add class on mouseover
+              endpointTop.addEventListener('mouseover', function() {
+                  endpointTop.classList.add('jtk-hover');
+                  endpointTop.classList.add('jtk-clickable_anchor');
+                  
+              });
+
+              // Remove class on mouseout
+              endpointTop.addEventListener('mouseout', function() {
+                  endpointTop.classList.remove('jtk-hover');
+                  endpointTop.classList.remove('jtk-clickable_anchor');
+              });
+
+              // You can also use mouseenter and mouseleave if you want
+              // to avoid bubbling (mousein/mouseout can bubble)
+              endpointTop.addEventListener('mouseenter', function() {
+                  endpointTop.classList.add('jtk-hover');
+                  endpointTop.classList.add('jtk-clickable_anchor');
+              });
+
+              endpointTop.addEventListener('mouseleave', function() {
+                  endpointTop.classList.remove('jtk-hover');
+                  endpointTop.classList.remove('jtk-clickable_anchor');
+              });
+
+              return endpointTop;
+          }
+
+          if(endpointType == 'bottom-left'){
+              
+              const endpointTop = document.createElement("div");
+              endpointTop.style.position = "absolute";
+              endpointTop.style.width = "20px";
+              endpointTop.style.height = "20px";
+              endpointTop.style.left = "25px";
+              endpointTop.style.top = "32px";
+              
+              endpointTop.className = "jtk-endpoint jtk-endpoint-anchor-yes jtk-endpoint-anchor-leadsourcedd CampaignEvent_listsdd jtk-draggable jtk-droppable";
+              endpointTop.innerHTML = `
+              <svg style="position:absolute;left: 0px;top: 0px;" width="20" height="20" pointer-events="all" position="absolute" version="1.1" xmlns="http://www.w3.org/2000/svg" data-anchor="yes" onClick="{campaignEventPanel(event);}"><circle cx="10" cy="10" r="10" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#d5d4d4" stroke="none" style=""></circle><text x="50%" y="50%" text-anchor="middle" stroke-width="2px" stroke="#ffffff" dy=".3em">+</text></svg>`;
+
+              // Add class on mouseover
+              endpointTop.addEventListener('mouseover', function() {
+                  endpointTop.classList.add('jtk-hover');
+                  endpointTop.classList.add('jtk-clickable_anchor');
+                  
+              });
+
+              // Remove class on mouseout
+              endpointTop.addEventListener('mouseout', function() {
+                  endpointTop.classList.remove('jtk-hover');
+                  endpointTop.classList.remove('jtk-clickable_anchor');
+              });
+
+              // You can also use mouseenter and mouseleave if you want
+              // to avoid bubbling (mousein/mouseout can bubble)
+              endpointTop.addEventListener('mouseenter', function() {
+                  endpointTop.classList.add('jtk-hover');
+                  endpointTop.classList.add('jtk-clickable_anchor');
+              });
+
+              endpointTop.addEventListener('mouseleave', function() {
+                  endpointTop.classList.remove('jtk-hover');
+                  endpointTop.classList.remove('jtk-clickable_anchor');
+              });
+
+              return endpointTop;
+          }
+
+          if(endpointType == 'bottom-right'){
+              
+              const endpointTop = document.createElement("div");
+              endpointTop.style.position = "absolute";
+              endpointTop.style.width = "20px";
+              endpointTop.style.height = "20px";
+              endpointTop.style.left = "155px";
+              endpointTop.style.top = "32px";
+              
+              endpointTop.className = "jtk-endpoint jtk-endpoint-anchor-no jtk-endpoint-anchor-leadsourcedd CampaignEvent_listsdd jtk-draggable jtk-droppable";
+              endpointTop.innerHTML = `
+              <svg style="position:absolute;left: 0px;top: 0px;" width="20" height="20" pointer-events="all" position="absolute" version="1.1" xmlns="http://www.w3.org/2000/svg" data-anchor="no" onClick="{campaignEventPanel(event);}"><circle cx="10" cy="10" r="10" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#d5d4d4" stroke="none" style=""></circle><text x="50%" y="50%" text-anchor="middle" stroke-width="2px" stroke="#ffffff" dy=".3em">+</text></svg>`;
+
+              // Add class on mouseover
+              endpointTop.addEventListener('mouseover', function() {
+                  endpointTop.classList.add('jtk-hover');
+                  endpointTop.classList.add('jtk-clickable_anchor');
+                  
+              });
+
+              // Remove class on mouseout
+              endpointTop.addEventListener('mouseout', function() {
+                  endpointTop.classList.remove('jtk-hover');
+                  endpointTop.classList.remove('jtk-clickable_anchor');
+              });
+
+              // You can also use mouseenter and mouseleave if you want
+              // to avoid bubbling (mousein/mouseout can bubble)
+              endpointTop.addEventListener('mouseenter', function() {
+                  endpointTop.classList.add('jtk-hover');
+                  endpointTop.classList.add('jtk-clickable_anchor');
+              });
+
+              endpointTop.addEventListener('mouseleave', function() {
+                  endpointTop.classList.remove('jtk-hover');
+                  endpointTop.classList.remove('jtk-clickable_anchor');
+              });
+
+              return endpointTop;
+          }
+      }
+      
+    };
+
     /*Create Add Source Node */
     const createAddSourceNode = () => {
       //show the options to Add-Campaign-Source
@@ -324,6 +1008,98 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
         }
 
         $('#'+modalId).modal('hide');
+        $('.modal-backdrop').remove();
+        /*var backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.remove(); // Remove the backdrop div
+        }*/
+    };
+
+    const campaignEventPanel = (node) => {
+
+      //CampaignEventPanel CampaignEventPanelGroups SourceGroupList
+
+      console.log('node:', node); // Log the node object for debugging
+
+      // Use `node.target` to start traversing the DOM
+      const svgElement = node.target.closest("svg"); // Find the closest SVG element
+      if (!svgElement) {
+          console.error("SVG element not found.");
+          return;
+      }
+
+      // Find the parent `jtk-endpoint` element
+      const endpointElement = svgElement.closest(".jtk-endpoint");
+      if (!endpointElement) {
+          console.error("Endpoint element not found.");
+          return;
+      }
+
+      // Find the parent `.workflow-node` element
+      const parentNode = endpointElement.closest(".workflow-node");
+      if (!parentNode) {
+          console.error("Workflow node element not found.");
+          return;
+      }
+
+      // Log the parent node for debugging
+      console.log('Parent node:', parentNode);
+      const parentId = parentNode.id;
+      const parentLeftStr = parentNode.style.left;
+      const parentTopStr = parentNode.style.top;
+      //const parentLeft = parseInt(parentLeftStr);
+      //const parentTop = parseInt(parentTopStr);
+      const parentLeft = parseInt(parentLeftStr) - 150;
+      const parentTop = parseInt(parentTopStr) + 60;
+      
+      // hide all eventList
+      const eventListElements = document.querySelectorAll('.eventList');
+      eventListElements.forEach(element => {
+          element.classList.add("hide");                
+      });
+
+      const CampaignEventPanelElm = document.getElementById("CampaignEventPanel");
+      CampaignEventPanelElm.classList.remove('hide');
+      //CampaignEventPanelElm.style.left = parentLeft + "" + "px";
+      CampaignEventPanelElm.style.top = parentTop + "" + "px";
+      //CampaignEventPanelElm.style.width = "500px";
+      //CampaignEventPanelElm.style.height = "280px";
+
+      const anchor = svgElement.getAttribute("data-anchor");
+
+      const CampaignEventPanelGroups = document.getElementById("CampaignEventPanelGroups");
+      CampaignEventPanelGroups.classList.remove('hide');
+
+      const decisionSlctBtn = document.querySelectorAll('.decisionSlctBtn');
+      decisionSlctBtn.forEach(element => {
+          element.setAttribute("data-parentNodeId",parentId);
+          element.setAttribute("data-anchor",anchor);
+      });
+
+      const actionSlctBtn = document.querySelectorAll('.actionSlctBtn');
+      actionSlctBtn.forEach(element => {
+          element.setAttribute("data-parentNodeId",parentId); 
+          element.setAttribute("data-anchor",anchor);
+      });
+
+      const conditionSlctBtn = document.querySelectorAll('.conditionSlctBtn');
+      conditionSlctBtn.forEach(element => {
+          element.setAttribute("data-parentNodeId",parentId);
+          element.setAttribute("data-anchor",anchor);
+      });
+      
+      //CampaignEventPanel CampaignEventPanelGroups SourceGroupList
+
+      //console.log(node.parent(".workflow-node"));
+
+      //node.id = "CampaignEventPanel";
+      //node.className = "workflow-node";
+      //node.setAttribute("data-type", type);
+      //node.innerHTML = content;
+      //node.style.position = "absolute";
+      //node.style.left = `${x}px`;
+      //node.style.top = `${y}px`;
+
     };
 
   return (
@@ -419,7 +1195,7 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
                 <span>Contact Sources</span>
               </h4>
               <DropdownWithChosen
-                id="SourceListd"
+                id="SourceList"
                 className="campaign-event-selector"
                 data-function="selectCampaignSource"
                 options={contactSourceDropdownOptions}
@@ -517,7 +1293,7 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
 
       </div>
 
-      <div className="modal fade in" id="campaignSourceModal" tabIndex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div className="modal fade in" id="campaignSourceModal" tabIndex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="staticBackdropLabel">
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
@@ -551,7 +1327,7 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
         </div>
       </div>
 
-      <div className="modal fade in" id="campaignEventModal" tabIndex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div className="modal fade in" id="campaignEventModal" tabIndex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="staticBackdropLabel">
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-body">
