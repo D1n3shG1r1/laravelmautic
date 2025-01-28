@@ -34,7 +34,7 @@ function DropdownWithChosen({ id, options, onChangeHandler, placeholder }, ref){
         <option value="">Select...</option>
         {options.map((option) => (
           <option
-            key={option.value}
+            key={option.key}
             value={option.value}
             data-function={option.function}
             data-href={option.href}
