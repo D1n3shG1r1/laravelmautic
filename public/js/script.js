@@ -19,11 +19,12 @@ function removeLoader(elm){
 }
 
 function isRealVal(obj){
-    if(obj == '' || obj == null || obj == undefined){
+    return obj !== '' && obj !== null && obj !== undefined;
+    /*if(obj == '' || obj == null || obj == undefined){
         return false;
     }else{
         return true;
-    }
+    }*/
 }
 
 function validateEmail(email){
@@ -34,7 +35,69 @@ function validateEmail(email){
     );
 }
 
+function validateMobile(number) {
+    const regex = /^[+]?[0-9]{10,15}$/;
+    return regex.test(number);
+}
+
+function validateTitle(name) {
+    // Define validation criteria
+    const minLength = 2;
+    const maxLength = 50;
+    const validCharacters = /^[A-Za-z\s]+$/; // Only letters and spaces
+  
+    var msg = "Name title is valid.";
+    var err = 0;
+    
+    // Check conditions
+    if (name.length < minLength) {
+        msg = `Name title must be at least ${minLength} characters long.`;
+        err = 1;
+    }
+    if (name.length > maxLength) {
+        msg = `Name title must not exceed ${maxLength} characters.`;
+        err = 1;
+    }
+    if (!validCharacters.test(name)) {
+        msg = "Name title can only contain letters and spaces.";
+        err = 1;
+    }
+  
+    return {"Err":err,"Msg":msg};
+}
+
+function validateName(name) {
+    // Define validation criteria
+    const minLength = 2;
+    const maxLength = 50;
+    const validCharacters = /^[A-Za-z\s]+$/; // Only letters and spaces
+  
+    var msg = "Name is valid.";
+    var err = 0;
+    
+    // Check conditions
+    if (name.length < minLength) {
+        msg = `Name must be at least ${minLength} characters long.`;
+        err = 1;
+    }
+    if (name.length > maxLength) {
+        msg = `Name must not exceed ${maxLength} characters.`;
+        err = 1;
+    }
+    if (!validCharacters.test(name)) {
+        msg = "Name can only contain letters and spaces.";
+        err = 1;
+    }
+  
+    return {"Err":err,"Msg":msg};
+}
+
 function validatePassword(password) { 
+    // Ensure the password is a string (if it's not, return an error)
+    if (typeof password !== 'string') {
+        return { "Err": 1, "Msg": "Password must be a valid string" };
+    }
+    
     // checking uppercase letters 
     let uppercaseRegex = /[A-Z]/g; 
     var result = {"Err":0,"Msg":""};
@@ -49,7 +112,7 @@ function validatePassword(password) {
     if (password.match(lowercaseRegex)) { 
         //ok
     } else { 
-        result = {"Err":2,"Msg":"Password must contain: At least one lowercase letter"};
+        result = {"Err":1,"Msg":"Password must contain: At least one lowercase letter"};
     } 
     
     // checking the number 
@@ -57,14 +120,14 @@ function validatePassword(password) {
     if (password.match(numbersRegex)) { 
         //ok
     } else { 
-        result = {"Err":3,"Msg":"Password must contain: At least one number"};
+        result = {"Err":1,"Msg":"Password must contain: At least one number"};
     } 
   
     // Checking length of the password 
     if (password.length >= 8 && password.length <= 32) { 
         //ok
     } else { 
-        result = {"Err":4,"Msg":"Password must contain: 8-32 characters long"};
+        result = {"Err":1,"Msg":"Password must contain: 8-32 characters long"};
     } 
 
     return result;
@@ -100,6 +163,14 @@ function truncateString(str, maxLength) {
         return str.substring(0, maxLength) + '...';
     }
     return str;
+}
+
+function getcsrfToken(){
+    const url = " getcsrftoken";
+    const postJson = {};
+    httpRequest(url, postJson, function(){
+
+    });
 }
 
 function httpRequest(url, postJson, cb){

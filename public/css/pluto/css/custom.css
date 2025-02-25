@@ -1,0 +1,33 @@
+/*------------------------------------------------------------------
+    File Name: custom.css
+-------------------------------------------------------------------*/
+
+/** ADD YOUR AWESOME CODES HERE **/
+
+.text-align-left{
+    text-align: left !important;
+}
+
+.text-align-center{
+    text-align: center !important;
+}
+
+.text-align-right{
+    text-align: right !important;
+}
+
+button .spinner-border {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    vertical-align: -.125em;
+    border: .15em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    -webkit-animation: .75s linear infinite spinner-border;
+    animation: .75s linear infinite spinner-border;
+}
+
+.login_section{
+    min-height: auto;
+}

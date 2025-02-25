@@ -27,6 +27,7 @@ const NodeEndpoints = ({ nodeType, endpointType }) => {
 
         // Use `node.target` to start traversing the DOM
         const svgElement = node.target.closest("svg"); // Find the closest SVG element
+        
         if (!svgElement) {
             console.error("SVG element not found.");
             return;
@@ -111,6 +112,7 @@ const NodeEndpoints = ({ nodeType, endpointType }) => {
 
         let className = "jtk-endpoint jtk-endpoint-anchor jtk-draggable jtk-droppable";
         let onClickAct = null;
+        let dataAnchor = null;
 
         if (nodeType === 'source') {
             switch (endpointType) {
@@ -126,6 +128,7 @@ const NodeEndpoints = ({ nodeType, endpointType }) => {
                     positionStyles = { ...endpointStyles, left: "90px", top: "32px" };
                     className += " jtk-endpoint-bottom";
                     onClickAct=campaignEventPanel;
+                    dataAnchor="leadsource";
                     break;
                 default:
                     return null;
@@ -139,6 +142,7 @@ const NodeEndpoints = ({ nodeType, endpointType }) => {
                     height="20"
                     pointerEvents="all"
                     onClick={onClickAct}
+                    data-anchor={dataAnchor}
                 >
                     <circle cx="10" cy="10" r="10" fill="#d5d4d4" stroke="none" />
                     <text x="50%" y="50%" textAnchor="middle" strokeWidth="2px" stroke="#ffffff" dy=".3em">+</text>
@@ -154,10 +158,12 @@ const NodeEndpoints = ({ nodeType, endpointType }) => {
                 case 'bottom-left':
                     positionStyles = { ...endpointStyles, left: "25px", top: "32px" };
                     className += " jtk-endpoint-anchor-yes";
+                    dataAnchor="yes";
                     break;
                 case 'bottom-right':
                     positionStyles = { ...endpointStyles, left: "155px", top: "32px" };
                     className += " jtk-endpoint-anchor-no";
+                    dataAnchor="no";
                     break;
                 default:
                     return null;
@@ -171,7 +177,7 @@ const NodeEndpoints = ({ nodeType, endpointType }) => {
                     pointerEvents="all"
                     version="1.1"
                     xmlns="http://www.w3.org/2000/svg"
-                    data-anchor="yes"
+                    data-anchor={dataAnchor}
                     onClick={campaignEventPanel} // Correcting onClick handler
                 >
                     <circle cx="10" cy="10" r="10" fill="#d5d4d4" stroke="none" />
@@ -197,6 +203,7 @@ const NodeEndpoints = ({ nodeType, endpointType }) => {
                 case 'bottom-center':
                     positionStyles = { ...endpointStyles, left: "90px", top: "32px" };
                     className += " jtk-endpoint-bottom";
+                    dataAnchor="bottom";
                     break;
                 default:
                     return null;
@@ -210,7 +217,7 @@ const NodeEndpoints = ({ nodeType, endpointType }) => {
                     pointerEvents="all"
                     version="1.1"
                     xmlns="http://www.w3.org/2000/svg"
-                    data-anchor="yes"
+                    data-anchor={dataAnchor}
                     onClick={campaignEventPanel} // Correcting onClick handler
                 >
                     <circle cx="10" cy="10" r="10" fill="#d5d4d4" stroke="none" />

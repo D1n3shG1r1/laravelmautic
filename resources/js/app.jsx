@@ -16,6 +16,11 @@ import './bootstrap';
 import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 
+window.url = function(path = '') {
+    const baseUrl = window.location.origin;
+    return path ? `${baseUrl}/${path}` : baseUrl;
+};
+
 createInertiaApp({
     resolve: name => import(/* @vite-ignore */`./Pages/${name}`).then(module => module.default),
     setup({ el, App, props }) {

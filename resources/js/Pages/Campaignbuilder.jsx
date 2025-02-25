@@ -2,9 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 //import ReactDOM from 'react-dom';
 import ReactDOM from 'react-dom/client';
 import DropdownWithChosen from "@/Components/DropdownWithChosen";
+//import { renderComponent } from '@/Components/Utils/renderComponent'; // Import the utility function
 import InputLabel from "@/Components/InputLabel";
 import TextInput from '@/Components/TextInput';
 import NodeEndpoints from '@/Components/NodeEndpoints';
+//import CreateNode from '@/Components/CreateNode';
+import DecisionEventHtml from '@/Components/DecisionEventHtml';
+
 //import Dropdown from '@/Components/Dropdown';
 //import styles from "../../css/Modules/CampaignBuilder.module.css"; // Import styles from the CSS module
 
@@ -307,6 +311,8 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
   
     // Select event type
     const selectEvent = (event, type) => {
+        console.log('selectEvent');
+        console.log(event);
         const anchor = event.target.dataset.anchor;
         const parentnodeid = event.target.dataset.parentnodeid;
         
@@ -380,9 +386,11 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
     const handleSelectChange = (event, value) => {
       const selectedOption = event.target.selectedOptions[0];
       const selectedFunction = selectedOption.getAttribute('data-function');
-
+      
       if (selectedFunction === "selectCampaignSource") {
         selectCampaignSource(event);
+      }else if(selectedFunction === "selectDecision"){
+        selectDecision(event);
       }
     };
 
@@ -413,7 +421,10 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
         title: action.description,
         value: action.value,
         label: action.title,
-        function: "",  // You can assign the function if needed, it's currently an empty string
+        function: "selectDecision",
+        eventType:"action",
+        parentNodeId:"",
+        anchor:"",
         className: `option_campaignEvent_${action.event}`,
         id: `campaignEvent_${action.event}`,
       };
@@ -425,7 +436,10 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
         title: decision.description,
         value: decision.value,
         label: decision.title,
-        function: "",  // You can assign the function if needed, it's currently an empty string
+        function: "selectDecision",  // You can assign the function if needed, it's currently an empty string
+        eventType:"decision",
+        parentNodeId:"",
+        anchor:"",
         className: `option_campaignEvent_${decision.event}`,
         id: `campaignEvent_${decision.event}`,
       };
@@ -437,7 +451,10 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
         title: condition.description,
         value: condition.value,
         label: condition.title,
-        function: "",  // You can assign the function if needed, it's currently an empty string
+        function: "selectDecision",  // You can assign the function if needed, it's currently an empty string
+        eventType:"condition",
+        parentNodeId:"",
+        anchor:"",
         className: `option_campaignEvent_${condition.event}`,
         id: `campaignEvent_${condition.event}`,
       };
@@ -460,6 +477,195 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
       campaignSourceModal.show();
     }
 
+    
+    const selectDecision = (event) => {
+      
+      console.log('selectDecisionevent');
+      console.log(event);
+ 
+      // Remove the 'hide' class from the loading-placeholder element
+      document.querySelector("#campaignEventModal .loading-placeholder").classList.remove("hide");
+      const campaignEventModal = new bootstrap.Modal(document.getElementById('campaignEventModal'));
+      campaignEventModal.show();
+      
+      var targetElmId = event.target.id;
+      var eventVal = event.target.value;
+      //var eventType = event.target.dataset.eventtype;
+      var eventType = event.target.selectedOptions[0].dataset.eventtype;
+      const parentNodeAnchor = event.target.dataset.anchor;
+      const parentNodeId = event.target.dataset.parentnodeid;
+      const parentNode = document.getElementById(parentNodeId);
+      const parentNodeType =  parentNode.dataset.type; 
+      var parentEventOrder =  parentNode.dataset.eventOrder; 
+      var anchor = parentNodeAnchor; //'leadsource'; //leadsource
+      var parentEventId = 0; //null or 0
+      
+      if(parentNodeType == "source"){
+          //var anchor = 'leadsource'; //leadsource
+          parentEventOrder = 0;
+      }else{
+          var parentNodeIdParts = parentNodeId.split('-');
+          parentEventId = parentNodeIdParts[1]; //numeric part
+          //var anchor = ''; //yes/no (parent node Yes/No)
+      }
+      //parentEventId
+      var eventOrder = parseInt(parentEventOrder) + 1;
+      var type = eventVal; //event value
+      var campaignId = CAMPAIGN_ID;
+      var anchorEventType = parentNodeType; //source/condition/action/decision (parent node type)
+     
+      // Generate a unique string based on the current timestamp
+      const tempEventId = `${new Date().getTime()}`; //toISOString(); // ISO format string
+
+      const inputData = {
+        "anchor":anchor,
+        "type":type,
+        "eventType":eventType,
+        "anchorEventType":anchorEventType,
+        "parentEventId":parentEventId,
+        "eventOrder":eventOrder,
+        "campaignId":campaignId,
+        "tempEventId":tempEventId,
+        "csrftoken":CSRFTOKEN
+      };
+
+      console.log('inputDatad:');
+      console.log(inputData);
+
+      const  DecisionEventHtmlObj = <DecisionEventHtml eventVal={eventVal} inputData={inputData}/>
+      const eventModalBodyContent = ReactDOM.createRoot(document.getElementById('event-modal-body-content'));
+      eventModalBodyContent.render(DecisionEventHtmlObj);
+      
+      document.querySelector("#campaignEventModal .loading-placeholder").classList.add("hide");
+
+      const ElmObj = document.getElementById(targetElmId);
+      ElmObj.value = '';
+      var updateEvent = new Event('chosen:updated');
+      ElmObj.dispatchEvent(updateEvent);
+
+      const eventListElements = document.querySelectorAll('.eventList');
+      eventListElements.forEach(element => {
+          element.classList.add("hide");
+      });
+
+      document.getElementById("CampaignEventPanelLists").classList.add("hide");
+      document.getElementById("CampaignEventPanel").classList.add("hide");
+      
+    };
+
+    const selectDecisionDinesh = (event) =>{
+            
+      //select from pick list
+      //get form html
+      //open Decision form
+      //.
+      //.
+      //.
+      //#campaignEventModal .loading-placeholder #event-modal-body-content
+      console.log('selectDecisionevent');
+      console.log(event);
+ 
+      // Remove the 'hide' class from the loading-placeholder element
+      document.querySelector("#campaignEventModal .loading-placeholder").classList.remove("hide");
+      const campaignEventModal = new bootstrap.Modal(document.getElementById('campaignEventModal'));
+      campaignEventModal.show();
+
+      var eventVal = event.target.value;
+      var eventType = event.target.dataset.eventtype;
+      const parentNodeAnchor = event.target.dataset.anchor;
+      const parentNodeId = event.target.dataset.parentnodeid;
+      const parentNode = document.getElementById(parentNodeId);
+      const parentNodeType =  parentNode.dataset.type; 
+      var parentEventOrder =  parentNode.dataset.eventOrder; 
+      var anchor = parentNodeAnchor; //'leadsource'; //leadsource
+      var parentEventId = 0; //null or 0
+      
+      if(parentNodeType == "source"){
+          //var anchor = 'leadsource'; //leadsource
+          parentEventOrder = 0;
+      }else{
+          var parentNodeIdParts = parentNodeId.split('-');
+          parentEventId = parentNodeIdParts[1]; //numeric part
+          //var anchor = ''; //yes/no (parent node Yes/No)
+      }
+      //parentEventId
+      var eventOrder = parseInt(parentEventOrder) + 1;
+      var type = eventVal; //event value
+      var campaignId = CAMPAIGN_ID;
+      var anchorEventType = parentNodeType; //source/condition/action/decision (parent node type)
+     
+      var url = 'newevent';
+      var postJson = {"_token":CSRFTOKEN, "campaignId":campaignId, "type":type,"eventType":eventType,"anchor":anchor,"anchorEventType":anchorEventType,"parentEventId":parentEventId};
+      httpRequest(url, postJson, function(resp){
+          
+          //#campaignEventModal .loading-placeholder #event-modal-body-content
+         
+          //campaignEventModal.show(); 
+          
+          if(resp.C == 100){
+              var htmlStr = resp.R.htmlStr;
+              var tempEventId = resp.R.tempEventId;
+              $("#campaignEventModal .loading-placeholder").addClass("hide");
+              $("#campaignEventModal #event-modal-body-content").html(htmlStr);
+
+              setTimeout(function(){
+                  //basic required values
+                  //$("#campaignevent_form")
+                  $("#campaignevent_form #campaignevent_anchor").val(anchor); //leadsource
+                  $("#campaignevent_form #campaignevent_type").val(type); //page.devicehit
+                  $("#campaignevent_form #campaignevent_eventType").val(eventType); //decision
+                  $("#campaignevent_form #campaignevent_anchorEventType").val(anchorEventType); //source
+
+                  $("#campaignevent_form #campaignevent_parentEventId").val(parentEventId);
+                  $("#campaignevent_form #campaignevent_eventOrder").val(eventOrder);
+                  $("#campaignevent_form #campaignevent_campaignId").val(campaignId); //campaignId
+                  $("#campaignevent_form #campaignevent_eventId").val(tempEventId);
+                  $("#campaignevent_form #campaignevent__token").val(""); //token
+                  
+                  $('#campaignevent_form #campaignevent_properties_device_type')
+                  .add('#campaignevent_form #campaignevent_properties_device_brand')
+                  .add('#campaignevent_form #campaignevent_properties_device_os')
+                  .select2({
+                      placeholder: "Choose one or more",
+                      allowClear: true,
+                      width: '100%',  // Makes it responsive
+                      // dropdownParent: $('#campaignSourceModal') // Ensures dropdown is within the modal
+                  });
+
+              }, 200);
+              
+
+          }
+      
+      });
+
+      var targetElmId = event.target.id;
+      var targetElmParentId =event.target.parentNode.id;
+      closeEventListModal(targetElmId, targetElmParentId);
+
+      //on form submit/Add button
+      return false;
+    
+  };
+
+  const closeEventListModal = (targetElmId, targetElmParentId) =>{
+              
+      //hide event dropdown list
+      var ElmGroupList = document.getElementById(targetElmParentId);
+      ElmGroupList.classList.add('hide');
+      ElmGroupList.value = '';
+      
+      var event = new Event('chosen:updated');
+      ElmGroupList.dispatchEvent(event);
+
+      //remove data attributes
+      document.getElementById(targetElmId).removeAttribute("data-parentNodeId");
+      document.getElementById(targetElmId).removeAttribute("data-anchor");
+
+      const CampaignEventPanelElm = document.getElementById("CampaignEventPanel");
+      CampaignEventPanelElm.classList.add('hide');
+      
+  };
     const addSource = (srcElmId) => {
       // add campaign-source to source-node
       //contactSegments
@@ -546,8 +752,21 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
 
                   const x = 545;
                   const y = 50;
+                  
+                  //create node
                   createNode(propJson, x, y);
-
+                  /*
+                  //const tmpNode = <CreateNode propJson={propJson} x={x} y={y} />
+                  // Create root and render the node component
+                  //const campaignBuilderObj = ReactDOM.createRoot(document.getElementById("campaign-builder"));
+                  //campaignBuilderObj.render(tmpNode); // Render the component inside the #campaign-builder div
+                  
+                  //useEffect(() => {
+                    // Dynamically render CreateNode into the #campaign-builder container
+                    var componentType = 'CreateNode'; 
+                    renderComponent(CreateNode, { propJson, x, y }, 'campaign-builder', componentType);
+                  //}, []);
+                  */
                   //close source list modal
                   const action = 'add';
                   const modalId = 'campaignSourceModal';
@@ -756,6 +975,7 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
                 options={actionListDropdownOptions}
                 onChangeHandler={handleSelectChange}
                 placeholder="Select an action"
+                data-eventtype="action"
               />
             </div>
 
@@ -773,6 +993,7 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
                 options={decisionListDropdownOptions}
                 onChangeHandler={handleSelectChange}
                 placeholder="Select the decision"
+                data-eventtype="decision"
               />
             </div>
             
@@ -790,6 +1011,7 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
                 options={conditionListDropdownOptions}
                 onChangeHandler={handleSelectChange}
                 placeholder="Select the condition"
+                data-eventtype="condition"
               />
             </div>
           </div>
@@ -855,12 +1077,7 @@ const CampaignBuilder = ({PageTitle,csrfToken,Params}) => {
 
               </div>
             </div>
-            <div className="modal-footer">
-              <div className="modal-form-buttons">
-                <button type="button" className="btn btn-default btn-save btn-copy" onClick={() => saveEvent()}> <i className="ri-add-line"></i> Add</button>
-                <button type="button" className="btn btn-default btn-cancel btn-copy" onClick={() => cancelEvent()} data-bs-dismiss="modal"><i className="ri-close-line"></i> Cancel</button>
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>

@@ -1,0 +1,21 @@
+/* SignIn SignUp Page css*/
+
+.textAlignLeft{
+    text-align: left !important;
+}
+
+.textAlignCenter{
+    text-align: center !important;
+}
+
+.textAlignRight{
+    text-align: right !important;
+}
+
+.formLabel{
+    width:130px !important;
+}
+
+.formInput{
+    width:370px !important;
+}

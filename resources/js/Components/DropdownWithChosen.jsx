@@ -3,7 +3,7 @@ import { forwardRef, useEffect, useRef } from 'react';
 import "chosen-js/chosen.css";
 import "chosen-js";
 export default forwardRef(
-function DropdownWithChosen({ id, options, onChangeHandler, placeholder }, ref){
+function DropdownWithChosen({ id, options, onChangeHandler, placeholder, isMultiple}, ref){
     
     const selectRef = ref ? ref : useRef();
   
@@ -30,14 +30,17 @@ function DropdownWithChosen({ id, options, onChangeHandler, placeholder }, ref){
     }, [onChangeHandler, placeholder]);
   
     return (
-      <select id={id} ref={selectRef} className="campaign-event-selector">
+      <select id={id} ref={selectRef} className="campaign-event-selector" multiple={isMultiple}>
         <option value="">Select...</option>
         {options.map((option) => (
           <option
             key={option.key}
             value={option.value}
-            data-function={option.function}
-            data-href={option.href}
+            data-function={option.function||""}
+            data-href={option.href||""}
+            data-eventtype={option.eventType||""}
+            data-parentnodeid={option.parentNodeId||""}
+            data-anchor={option.anchor||""}
             className={option.className}
             id={option.id}
             title={option.title}

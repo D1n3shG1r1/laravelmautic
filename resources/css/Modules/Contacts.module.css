@@ -1,0 +1,14 @@
+.textAlignRight{
+    text-align: right;
+}
+
+.newBtnIcon{
+    margin-right: 5px;
+}
+
+.photoSpan {
+    height: 223px;
+    width: 223px;
+    background-color: #fff;
+    border-radius: 5px;
+}
