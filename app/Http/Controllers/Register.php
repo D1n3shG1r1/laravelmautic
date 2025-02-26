@@ -25,9 +25,9 @@ class Register extends Controller
         );
 
         return Inertia::render('Signup', [
-            'PageTitle'  => 'Signup',
+            'pageTitle'  => 'Signup',
             'csrfToken' => $csrfToken,
-            'Params' => $data
+            'params' => $data
         ]);
     }
 
@@ -162,9 +162,9 @@ class Register extends Controller
         );
 
         return Inertia::render('Signin', [
-            'PageTitle'  => 'Signin',
+            'pageTitle'  => 'Signin',
             'csrfToken' => $csrfToken,
-            'Params' => $data
+            'params' => $data
         ]);
     }
 

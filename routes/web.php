@@ -5,10 +5,11 @@ use App\Http\Controllers\Campaign;
 use App\Http\Controllers\Register;
 use App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Contacts;
+use App\Http\Controllers\Segments;
 
-Route::get('/', function () {
+/*Route::get('/', function () {
     return view('welcome');
-});
+});*/
 
 //Route::get('/',[Campaign::class, 'index']);
 //Route::get('/campaignbuilder',[Campaign::class, 'campaignBuilder']);
@@ -23,6 +24,12 @@ Route::get('/signup',[Register::class,'signup_get']);
 Route::post('/signup',[Register::class,'signup_post']);
 
 Route::get('/dashboard',[Dashboard::class,'dashboard']);
+
 Route::get('/contacts',[Contacts::class,'contacts']);
 Route::get('/contacts/new',[Contacts::class,'new']);
 Route::post('/contact/save',[Contacts::class,'save']);
+
+Route::get('/segments',[Segments::class,'segments']);
+Route::get('/segments/new',[Segments::class,'new']);
+Route::post('/segment/save',[Segments::class,'save']);
+

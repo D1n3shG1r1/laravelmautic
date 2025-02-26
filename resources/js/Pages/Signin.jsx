@@ -9,6 +9,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import Styles from "../../css/Modules/SignInSignUp.module.css"; // Import styles from the CSS module
 
 const SignUpHtml = ({pageTitle,csrfToken,params}) => {
+    
     const [isLoading, setIsLoading] = useState(false);
 
     const formRef = useRef();

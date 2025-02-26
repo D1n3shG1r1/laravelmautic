@@ -38,8 +38,6 @@ class Contacts extends Controller
                 $contactsObj = contacts_model::where("created_by", $this->USERID)->paginate(10)->toArray();
             }
             
-            echo "contactsObj:<pre>"; print_r($contactsObj); die;
-
             $data = array();
             $data["contacts"] = $contactsObj;
 
@@ -60,8 +58,7 @@ class Contacts extends Controller
             $csrfToken = csrf_token();
         
             $data = array();
-            $data["contacts"] = array();
-
+            
             return Inertia::render('NewContact', [
                 'pageTitle'  => 'New Contact',
                 'csrfToken' => $csrfToken,
