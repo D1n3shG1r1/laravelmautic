@@ -1,0 +1,81 @@
+a:3:{
+    i:0;a:8:{
+        s:6:"object"; s:4:"lead";
+        s:4:"glue"; s:3:"and";
+        s:5:"field"; s:5:"email";
+        s:4:"type"; s:5:"email";
+        s:8:"operator"; s:4:"like";
+        s:10:"properties"; a:1:{
+            s:6:"filter";
+            s:9:"gmail.com";
+        }
+
+        s:6:"filter"; s:9:"gmail.com";
+        s:7:"display";N;
+    }
+        
+    i:1;a:8:{
+        s:6:"object"; s:4:"lead";
+        s:4:"glue"; s:2:"or";
+        s:5:"field"; s:22:"generated_email_domain";
+        s:4:"type"; s:4:"text";
+        s:8:"operator"; s:1:"=";
+        s:10:"properties"; a:1:{
+            s:6:"filter"; s:9:"gmail.com";
+        }s:6:"filter";s:9:"gmail.com";s:7:"display";N;}i:2;a:6:{s:4:"glue";s:3:"and";s:5:"field";s:11:"companyname";s:6:"object";s:7:"company";s:4:"type";s:4:"text";s:8:"operator";s:1:"=";s:10:"properties";a:1:{s:6:"filter";s:12:"scip company";}}}
+
+
+
+
+        =========================================
+
+
+
+        a:3:{
+            i:0;a:8:{
+                s:6:"object";s:4:"lead";
+                s:4:"glue";s:3:"and";
+                s:5:"field";s:5:"email";
+                s:4:"type";s:5:"email";
+                s:8:"operator";s:8:"contains";
+                s:10:"properties";a:1:{
+                    s:6:"filter";s:9:"gmail.com";
+                }
+                
+                s:6:"filter";N;s:7:"display";N;}
+                
+                i:1;a:6:{
+                    s:4:"glue";s:3:"and";
+                    s:5:"field";s:22:"generated_email_domain";
+                    s:6:"object";s:4:"lead";
+                    s:4:"type";s:4:"text";
+                    s:8:"operator";s:1:"=";
+                    s:10:"properties";a:1:{
+                        s:6:"filter";s:9:"gmail.com";
+                    }
+                }
+                
+                i:2;a:6:{
+                    s:4:"glue";s:2:"or";
+                    s:5:"field";s:4:"city";
+                    s:6:"object";s:4:"lead";
+                    s:4:"type";s:4:"text";
+                    s:8:"operator";s:1:"=";
+                    s:10:"properties";a:1:{
+                        s:6:"filter";s:10:"chandigarh";
+                    }
+                }
+            }
+
+
+            <option value={"="}>equals</option>
+                        <option value="!=">not equal</option>
+                        <option value="empty">empty</option>
+                        <option value="!empty">not empty</option>
+                        <option value="like">like</option>
+                        <option value="!like">not like</option>
+                        <option value="regexp">regexp</option>
+                        <option value="!regexp">not regexp</option>
+                        <option value="startsWith">starts with</option>
+                        <option value="endsWith">ends with</option>
+                        <option value="contains" selected="selected">contains</option>
