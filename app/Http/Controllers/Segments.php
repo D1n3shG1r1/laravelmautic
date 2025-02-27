@@ -27,7 +27,9 @@ class Segments extends Controller
         if($this->USERID > 0){
             $csrfToken = csrf_token();
         
+            $contactFilters = config("filters.contactFilters");
             $data = array();
+            $data["contactFilters"] = json_encode($contactFilters);
             
             return Inertia::render('NewSegment', [
                 'pageTitle'  => 'New Segment',
