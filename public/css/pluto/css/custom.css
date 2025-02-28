@@ -31,3 +31,7 @@ button .spinner-border {
 .login_section{
     min-height: auto;
 }
+
+.hide{
+    display: none;
+}

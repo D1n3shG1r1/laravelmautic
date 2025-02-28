@@ -49,92 +49,60 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
     };
 
     
+
     const contactsOptions = JSON.parse(params.contactFilters);
-    var filterIdx = 0;
+    const [filterIdx, setFilterIdx] = useState(0);
+    
+    const removePanel = (panelId) => {
+        console.log("panelId:"+panelId); 
+        const element = document.getElementById('panel-container-'+panelId);
+      if (element) {
+        element.remove();  // Remove the element with the specified ID
+        
+        const panels = document.getElementsByClassName('panelContainer');
+        if(panels.length > 0){
+            panels[0].childNodes[0].childNodes[0].classList.add("hide");
+        }
+      } else {
+        console.log('Element not found!');
+      }   
+    };
+
     const handleSelectChange = (event, value) => {
-
-        console.log(event);
-        console.log(value);
-        
-        const selectedOption = event.target.selectedOptions[0];
-        const opt_id = selectedOption.getAttribute('id');
-        const opt_title = selectedOption.getAttribute('title');
-        const opt_value = selectedOption.getAttribute('value');
-        const opt_label = selectedOption.getAttribute('label');
-        const opt_class = selectedOption.getAttribute('class');
-        const opt_function = selectedOption.getAttribute('function');
-        const opt_datafieldobject = selectedOption.getAttribute('datafieldobject');
-        const opt_datafieldtype = selectedOption.getAttribute('datafieldtype');
-        const opt_datafieldoperators = selectedOption.getAttribute('datafieldoperators');
-        
-        const panelParamsObj = {
-            idx:filterIdx,
-            id:opt_id,
-            title:opt_title,
-            value:opt_value,
-            label:opt_label,
-            datafieldobject:opt_datafieldobject,
-            datafieldtype:opt_datafieldtype,
-            datafieldoperators:opt_datafieldoperators
-        };
-
-        const newPanelContainer = document.createElement('div');
-        newPanelContainer.classList.add('panel-container');
-
-        const panel = <SegmentFilterPanel panelparams={panelParamsObj}></SegmentFilterPanel>
-
-        //const panelContainer = document.getElementById('contactlist_filters');
-        //panelContainer.appendChild(newPanelContainer);
-
-        // Render the new SegmentFilterPanel inside the newly created div
-        //ReactDOM.createRoot(newPanelContainer).render(panel);
-
-        const panelContainer = ReactDOM.createRoot(document.getElementById('contactlist_filters'));
-        panelContainer.render(panel);
-
-        // Render the new SegmentFilterPanel inside the existing container
-        
-        filterIdx++;
+      
+      // Avoiding duplicate code in handleSelectChange and getting only the selected option
+      const selectedOption = event.target.selectedOptions[0];
+      const panelParamsObj = {
+        idx: filterIdx,
+        id: selectedOption.getAttribute('id'),
+        title: selectedOption.getAttribute('title'),
+        value: selectedOption.getAttribute('value'),
+        label: selectedOption.getAttribute('label'),
+        datafieldobject: selectedOption.getAttribute('datafieldobject'),
+        datafieldtype: selectedOption.getAttribute('datafieldtype'),
+        datafieldoperators: selectedOption.getAttribute('datafieldoperators'),
+      };
+  
+      const newPanelContainer = document.createElement('div');
+      newPanelContainer.setAttribute('id', 'panel-container-' + filterIdx);
+      newPanelContainer.classList.add('panelContainer');
+  
+      const panels = document.getElementsByClassName('panelContainer');
+      
+      // Create and render the new panel
+      const panel = <SegmentFilterPanel panelparams={panelParamsObj} totalPanels={panels.length}
+      removePanel={() => removePanel(filterIdx)}/>;
+      const contactlistFilters = document.getElementById('contactlist_filters');
+      contactlistFilters.appendChild(newPanelContainer);
+  
+      const panelContainer = ReactDOM.createRoot(newPanelContainer);
+      panelContainer.render(panel);
+  
+      // Increment filterIdx state to track the panel index
+      setFilterIdx(prevIdx => prevIdx + 1);
     };
     
-/*
-    // State to hold all panels
-    const [panels, setPanels] = useState([]);
-    const contactsOptions = JSON.parse(params.contactFilters);
-    let filterIdx = 0;
 
-    // Handle select change
-    const handleSelectChange = (event) => {
-        console.log(event);
-
-        const selectedOption = event.target.selectedOptions[0];
-        const opt_id = selectedOption.getAttribute('id');
-        const opt_title = selectedOption.getAttribute('title');
-        const opt_value = selectedOption.getAttribute('value');
-        const opt_label = selectedOption.getAttribute('label');
-        const opt_class = selectedOption.getAttribute('class');
-        const opt_function = selectedOption.getAttribute('function');
-        const opt_datafieldobject = selectedOption.getAttribute('datafieldobject');
-        const opt_datafieldtype = selectedOption.getAttribute('datafieldtype');
-        const opt_datafieldoperators = selectedOption.getAttribute('datafieldoperators');
-        
-        const panelParamsObj = {
-            idx: filterIdx,
-            id: opt_id,
-            title: opt_title,
-            value: opt_value,
-            label: opt_label,
-            datafieldobject: opt_datafieldobject,
-            datafieldtype: opt_datafieldtype,
-            datafieldoperators: opt_datafieldoperators,
-        };
-
-        // Append the new panel to the panels state
-        setPanels((prevPanels) => [...prevPanels, panelParamsObj]);
-
-        filterIdx++;
-    };
-*/
     const save = (event) => {
         event.preventDefault();
 
@@ -299,12 +267,12 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                                                     
                                                         <div className="row mb-3">
                                                             <div className="col-md-6">
-                                                                 
-                                                                <FilterDropdownWithChosen id="filterList"
-                                                                    options={contactsOptions}
-                                                                    onChangeHandler={handleSelectChange}
-                                                                    placeholder="Choose one..."
-                                                                />
+                                                            <FilterDropdownWithChosen
+                                                            id="filterList"
+                                                            options={contactsOptions}
+                                                            onChangeHandler={handleSelectChange}
+                                                            placeholder="Choose one..."
+                                                            />
                                                             </div>
                                                         </div>
                                                                     
