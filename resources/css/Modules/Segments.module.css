@@ -54,3 +54,20 @@
 .hide{
     display: none;
 }
+
+.filterTrash {
+    padding: 5px 10px 5px 10px !important;
+    color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.filterTrash:hover {
+    padding: 5px 10px 5px 10px !important;
+    color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    background-color: #fff !important;
+}
+
+.filterTrashIcon {
+    color: #dc3545 !important;
+}

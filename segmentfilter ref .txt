@@ -79,3 +79,81 @@ a:3:{
                         <option value="startsWith">starts with</option>
                         <option value="endsWith">ends with</option>
                         <option value="contains" selected="selected">contains</option>
+
+
+=================================
+text
+    firstname
+    lastname
+    address1                        
+    address2
+    city
+    zipcode
+    generated_email_domain
+    position
+    company
+    facebook
+    foursquare
+    instagram
+    skype
+    twitter
+    linkedin
+
+url
+    website
+
+stage
+    stage
+
+tel
+    fax
+    mobile
+    phone
+
+email
+    email
+
+number
+    attribution
+    points
+
+datetime
+    attribution_date
+    last_active
+    date_modified
+
+date
+    date_added
+    date_identified
+
+country
+    country
+
+state
+    region
+
+lookup_id
+    owner_id
+
+locale
+    preferred_locale
+
+timezone
+    timezone
+
+tags
+    tags
+
+lookup
+    title
+
+
+i want to create dynamic input fields in jsx
+
+case1: 
+if value equals to (firstname, lastname, address1, address2, city, zipcode, generated_email_domain, position, company, facebook, foursquare, instagram, skype, twitter, linkedin) then create a `input type="text"` field.
+
+case2: 
+if value equals to website then create a `input type="url" or url feild`
+
+case3:

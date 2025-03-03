@@ -14,33 +14,35 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Styles from "../../css/Modules/Segments.module.css"; // Import styles from the CSS module
 
 const newcontact = ({pageTitle,csrfToken,params}) => {
-    console.log(params);
+    console.log(pageTitle,csrfToken,params);
+    var decsriptionData = '';
+    const formRef = useRef();
+
+    const descriptionMaxLength = 160;
+    const [formValues, setFormValues] = useState({
+        name: '',
+        alias: '',
+        publicname: '',
+        description: ''
+    });
     const [editorData, setEditorData] = useState('');
-    const ckMaxlength = 160;
+    const [isLoading, setIsLoading] = useState(false);
+
     const handleEditorChange = (event, editor) => {
         const data = editor.getData();
-        
-        if(data.length >= ckMaxlength){
-            setEditorData(data);
-        }else{
-            setEditorData(data.slice(0, ckMaxlength)); 
+        if (data.length >= descriptionMaxLength) {
+        setEditorData(data);
+        } else {
+        setEditorData(data.slice(0, descriptionMaxLength));
         }
-        
+        setFormValues((prevValues) => ({
+        ...prevValues,
+        description: data // Update description state directly
+        }));
     };
-    
-    const [isLoading, setIsLoading] = useState(false);
-    
-    const formRef = useRef();
-    
-    // States for form values and errors
-    const [formValues, setFormValues] = useState({
-        name:'',
-        alias:'',
-        publicname:'',
-    });
 
-    // Handle form values update
     const handleInputChange = (e) => {
+        
         const { name, value } = e.target;
         setFormValues({
         ...formValues,
@@ -48,13 +50,11 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         });
     };
 
-    
 
     const contactsOptions = JSON.parse(params.contactFilters);
     const [filterIdx, setFilterIdx] = useState(0);
     
     const removePanel = (panelId) => {
-        console.log("panelId:"+panelId); 
         const element = document.getElementById('panel-container-'+panelId);
       if (element) {
         element.remove();  // Remove the element with the specified ID
@@ -104,50 +104,72 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
     
 
     const save = (event) => {
+        
         event.preventDefault();
 
         const minLength = 2;
         const maxLength = 50;
         const validCharacters = /^[A-Za-z0-9\s]+$/; // Only letters, numbers and spaces
-    
-        const name = document.getElementById("name").value;
-        const alias = document.getElementById("fname").value;
-        const publicname = document.getElementById("publicname").value;
-        
 
-        /*const titleObj = validateTitle(title);
-        const fnameObj = validateName(fname);
-        const lnameObj = validateName(lname);
-        
-        if(!isRealVal(title)){
+        const name = document.getElementById("name").value;
+        const alias = document.getElementById("alias").value;
+        const publicname = document.getElementById("publicname").value;
+        const descriptionData = document.getElementById("description").value; // Capture CKEditor data
+
+        const nameObj = validateTitle(name);
+
+        if (!isRealVal(name)) {
             var err = 1;
-            var msg = "Name title is required.";
+            var msg = "Segment Name is required.";
             showToastMsg(err, msg);
             return false;
         }
-        
-        if(titleObj.Err === 1){
+
+        if (nameObj.Err === 1) {
             var err = 1;
-            var msg = fnameObj.Msg;
+            var msg = nameObj.Msg;
             showToastMsg(err, msg);
             return false;
         }
-        */
+
 
         setIsLoading(true);
-        
+
         var url = "segment/save";
-        var postJson = {
-            "_token":csrfToken,
-            
+
+        // Check if the form exists
+        const segmentForm = document.getElementById("segmentForm");
+        if (!segmentForm) {
+            console.log("Form not found!");
+            setIsLoading(false);
+            return;
+        }
+
+        // Create FormData object
+        const formData = new FormData(segmentForm);
+
+        // Log the formData contents for debugging
+        var formDataJson = $("#segmentForm").serialize();
+        /*formData.forEach((value, key) => {
+            console.log(key, value);
+            formDataJson[key] = value;
+        });*/
+
+        // Send data to the server (example placeholder)
+        const postJson = {
+            "_token": csrfToken,
+            "formData": formDataJson
         };
+        
+        console.log("postJson");
+        console.log(postJson);
         
         httpRequest(url, postJson, function(resp){
             var C = resp.C;
             var error = resp.M.error;
             var msg = resp.M.message;
             var R = resp.R;
-
+            /*
             if(C == 100 && error == 0){
                 //signup successfull
                 showToastMsg(error, msg);
@@ -160,7 +182,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                 }
                 showToastMsg(error, msg);
             }
-
+            */
             setIsLoading(false);
         });
         
@@ -184,12 +206,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                 <div className="row column1">
                     
                     <div className="col-md-9">
-                        <div className="white_shd full margin_bottom_30">
-                            {/*<div className="full graph_head">
-                                <div className="heading1 margin_0">
-                                <h2>Tab Bar Style 1</h2>
-                                </div>
-                            </div>*/}
+                        <form id="segmentForm" className="white_shd full margin_bottom_30" ref={formRef} onSubmit={save} method="post">
                             <div className="full inner_elements">
                                 <div className="row">
                                     <div className="col-md-12">
@@ -204,12 +221,11 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                                             <div className="tab-content" id="myTabContent">
                                             <div className="tab-pane fade show active" id="details" role="tabpanel" aria-labelledby="details-tab">
                                                 <div className="full dis_flex center_text">
-                                                <form className="profile_contant" ref={formRef} onSubmit={save}>
                                                     <div className="form-group mb-3">
                                                         <div className="row mb-3">
                                                             <div className="col-md-6">
                                                                 <InputLabel className="form-label" value="Name"/>
-                                                                <TextInput type="text" className="form-control" name="name" id="name" placeholder="Title" value={formValues.name} onChange={handleInputChange} />
+                                                                <TextInput type="text" className="form-control" name="name" id="name" placeholder="Segment Name" value={formValues.name} onChange={handleInputChange} />
                                                             </div>
                                                             
                                                             <div className="col-md-6">
@@ -228,20 +244,21 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                                                         <div className="row mb-3">
                                                             <div className="col-md-12">
                                                                 <InputLabel className="form-label" value="Description"/>
+                                                                
+                                                                <TextInput type="hidden" className="form-control" name="description" id="description" placeholder="Autogenerated" value={formValues.description} onChange={handleInputChange} />
                                                                 <CKEditor
                                                                     editor={ClassicEditor}
                                                                     data={editorData}
-                                                                    onChange={handleEditorChange} // Handle change in CKEditor
+                                                                    onChange={handleEditorChange} 
                                                                     config={{
-                                                                        // If you have a commercial license key, you can add it like this:
                                                                         licenseKey: 'GPL',
                                                                         toolbar: [
                                                                             'undo', 'redo', '|',
                                                                             'bold', 'italic', 'underline'
-                                                                            ],  // Specify only the desired toolbar items
+                                                                            ],
                                                                     }}
                                                                 />
-                                                                <div style={{ marginTop: '10px', color: 'gray' }}>{editorData.length} / {ckMaxlength} characters</div>
+                                                                <div style={{ marginTop: '10px', color: 'gray' }}>{editorData.length} / {descriptionMaxLength} characters</div>
                                                             </div>
                                                         </div>
 
@@ -255,44 +272,44 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
 
 
                                                     </div>
-                                                </form>
+                                                
                                                 </div>
                                             </div>
                                             <div className="tab-pane fade" id="filters" role="tabpanel" aria-labelledby="filters-tab">
 
                                                 <div className="full dis_flex center_text">
-                                                    <form className="profile_contant" ref={formRef} onSubmit={save}>
+                                                    <div className="form-group mb-3">
+                                                            <div className="row mb-3">
+                                                            <div className="col-md-12">
+                                                            <div className="alert alert-primary" role="alert">Contacts that match the filters will be added, and contacts that no longer match will be removed. Those manually added will remain untouched.</div>
+                                                            </div>
+                                                            </div>
 
-                                                        <div className="alert alert-primary" role="alert">Contacts that match the filters will be added, and contacts that no longer match will be removed. Those manually added will remain untouched.</div>
-                                                    
-                                                        <div className="row mb-3">
+                                                            <div className="row mb-3">
                                                             <div className="col-md-6">
-                                                            <FilterDropdownWithChosen
-                                                            id="filterList"
-                                                            options={contactsOptions}
-                                                            onChangeHandler={handleSelectChange}
-                                                            placeholder="Choose one..."
-                                                            />
+                                                                <FilterDropdownWithChosen
+                                                                id="filterList"
+                                                                options={contactsOptions}
+                                                                onChangeHandler={handleSelectChange}
+                                                                placeholder="Choose one..."
+                                                                />
                                                             </div>
-                                                        </div>
-                                                                    
-                                                        <div className="row mb-3">
-                                                            <div id="contactlist_filters" className="col-md-12">
-                                                            {/*panels.map((panelParamsObj, idx) => (
-                                                                        <SegmentFilterPanel key={idx} panelparams={panelParamsObj} />
-                                                                    ))*/}
                                                             </div>
-                                                        </div>
 
-                                                    </form>
+                                                            <div className="row mb-3">
+                                                            <div id="contactlist_filters" className="col-md-12">
+                                                            
+                                                            </div>
+                                                            </div>       
+
+                                                        </div>
                                                 </div>
-                                                
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </form>
                     </div>
                     <div className="col-md-3">
                         <div className="white_shd full margin_bottom_30"></div>

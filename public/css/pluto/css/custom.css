@@ -35,3 +35,8 @@ button .spinner-border {
 .hide{
     display: none;
 }
+
+.filterAndOrGlue{
+    margin-left: 20px;
+    margin-top: -21px;
+}
