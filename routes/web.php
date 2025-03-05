@@ -6,6 +6,7 @@ use App\Http\Controllers\Register;
 use App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Contacts;
 use App\Http\Controllers\Segments;
+use App\Http\Controllers\Test;
 
 /*Route::get('/', function () {
     return view('welcome');
@@ -33,3 +34,6 @@ Route::get('/segments',[Segments::class,'segments']);
 Route::get('/segments/new',[Segments::class,'new']);
 Route::post('/segment/save',[Segments::class,'save']);
 
+
+
+Route::get('/processsegmentcontact',[Test::class,'processsegmentcontact']);

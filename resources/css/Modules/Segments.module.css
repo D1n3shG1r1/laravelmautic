@@ -1,3 +1,18 @@
+.buttonSeprator {
+    border-left: 1px solid #898989;
+    height: 10px;
+    width: 10px;
+    margin-left: 10px;
+}
+
+.textAlignRight{
+    text-align: right;
+}
+
+.newBtnIcon{
+    margin-right: 5px;
+}
+
 .borderRadius{
     border-radius: 0px !important;
 }

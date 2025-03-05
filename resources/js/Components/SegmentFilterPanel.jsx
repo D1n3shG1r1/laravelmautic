@@ -45,8 +45,8 @@ const SegmentFilterPanel = ({ panelparams, totalPanels, removePanel}) => {
         const inputProps = {
             id: `leadlist_filters_${idx}_properties_filter`,
             name: `filters[${idx}][properties][filter]`,
-            required: true,
-            className: "form-control",
+            //required: true,
+            className: "form-control filter-input",
             autoComplete: "off",
             value: filterValue,
             onChange: (e) => setFilterValue(e.target.value),

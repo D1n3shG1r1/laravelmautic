@@ -1,0 +1,51 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Models\contacts_model;
+use App\Models\segments_model;
+use App\Models\segment_contacts_model;
+
+use Illuminate\Support\Facades\DB;
+
+class ProcessSegmentContactsJob extends Job
+{
+    protected $segmentId;
+
+    public function __construct($segmentId)
+    {
+        $this->segmentId = $segmentId;
+    }
+
+    public function handle()
+    {
+        // Fetch the segment
+        $segment = segments_model::find($this->segmentId);
+
+        if (!$segment) {
+            return;
+        }
+
+        $filters = $segment->filters;
+
+        if (!$filters) {
+            return;
+        }
+
+        // Get contacts based on the filters
+        $contacts = contacts_model::where($filters)->get();
+
+        // Begin a transaction to ensure data consistency
+        DB::transaction(function () use ($segment, $contacts) {
+            foreach ($contacts as $contact) {
+                // Using firstOrCreate to prevent duplicates
+                segment_contacts_model::firstOrCreate(
+                    [
+                        'contact_id' => $contact->id, 
+                        'segment_id' => $segment->id
+                    ]
+                );
+            }
+        });
+    }
+}

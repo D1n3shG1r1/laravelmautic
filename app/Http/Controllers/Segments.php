@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 
 use App\Models\contacts_model;
 use App\Models\segments_model;
+use App\Models\segment_contacts_model;
 use App\Models\role_model;
 
 class Segments extends Controller
@@ -21,7 +22,51 @@ class Segments extends Controller
     }
 
     function segments(Request $request){
-        dd(csrf_token());
+        
+        if($this->USERID > 0){
+            $csrfToken = csrf_token();
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
+
+            if ($isAdmin > 0) {
+                $segmentsObj = segments_model::where("created_by_company", $userCompany)->paginate(10)->toArray();
+            } else {
+                $segmentsObj = segments_model::where("created_by", $this->USERID)->paginate(10)->toArray();
+            }
+            
+            if(!empty($segmentsObj["data"])){
+
+                $segmentIds = array();
+
+                foreach($segmentsObj["data"] as &$rw){
+                    $segmentIds[] = $rw;
+                    $rw["date_added"] = date("F d, Y");
+                }
+
+                foreach($segmentsObj["data"] as &$rww){
+                    // Count contacts for each segment
+                    $count = segment_contacts_model::where("segment_id", $rww["id"])->count();
+        
+                    $rww["contacts"] = $count;
+                }
+            }
+
+            //echo "segmentsObj:<pre>"; print_r($segmentsObj); die;
+            
+            $data = array();
+            $data["segments"] = $segmentsObj;
+
+            return Inertia::render('Segments', [
+                'pageTitle'  => 'Segments',
+                'csrfToken' => $csrfToken,
+                'params' => $data
+            ]);
+
+        }else{
+            //redirect to signin
+            return Redirect::to(url('signin'));
+        }
+
     }
 
     function new(Request $request){
@@ -31,6 +76,7 @@ class Segments extends Controller
             $contactFilters = config("filters.contactFilters");
             $data = array();
             $data["contactFilters"] = json_encode($contactFilters);
+            $data["segmentsUrl"] = url('segments');
             
             return Inertia::render('NewSegment', [
                 'pageTitle'  => 'New Segment',
@@ -59,45 +105,71 @@ class Segments extends Controller
             $unserializeFormData = [];
             parse_str($formData,$unserializeFormData);
 
-            $name = $unserializeFormData["name"];
-            $alias = $unserializeFormData["alias"];
-            $publicname = $unserializeFormData["publicname"];
+            $name = strtolower($unserializeFormData["name"]);
+            $alias = strtolower($unserializeFormData["alias"]);
+            $publicname = strtolower($unserializeFormData["publicname"]);
             $description = $unserializeFormData["description"];
-            
-            if (array_key_exists("filters",$unserializeFormData)){
-                $filters = $unserializeFormData["filters"];    
+            $filters = $unserializeFormData["filters"];
 
-                $filters = json_encode($filters);
-
-            }else{
-                $filters = "";
-            }
-
-            $segmentObj = new segments_model();
-            //$segmentObj->id
-            $segmentObj->is_published = 1;
-            $segmentObj->date_added = $today;
-            
-            $segmentObj->created_by = $this->USERID;
-            $segmentObj->created_by_user = $fullName; 
-            $segmentObj->created_by_company = $userCompany;
-
-            $segmentObj->name = $name;
-            $segmentObj->description = $description;
-            $segmentObj->alias = $alias;
-            $segmentObj->public_name = $publicname;
-            $segmentObj->filters = $filters;
-            $segmentObj->is_global = 0;
-            $segmentObj->is_preference_center = 0;
-            $segmentObj->save();
-            $segmentObj->id;
-
-            //make a cron for check segments filters and add contacts to that segment
-            $response = [
-                'C' => 100,
-                'M' => $this->ERRORS[105],
-                'R' => [],
+            // Define the validation rules
+            $rules = [
+                'name' => 'required|string|min:2|max:50',
+                'filters' => 'nullable|array',  // Ensure filters is an array if it's not null
+                //'filters.*' => 'nullable|json', // If you need to validate each filter as JSON, use this
             ];
+
+            // Create the validator instance
+            $validator = Validator::make($unserializeFormData, $rules);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                // Return a JSON response with errors
+                $response = [
+                    'C' => 102,
+                    'M' => $this->ERRORS[102],
+                    'R' => $validator->errors(),
+                ];
+
+                return response()->json($response);
+            }
+            else{
+                // next logic
+                if (array_key_exists("filters",$unserializeFormData)){
+                    $filters = $unserializeFormData["filters"];    
+    
+                    $filters = json_encode($filters);
+    
+                }else{
+                    $filters = "";
+                }
+    
+                $segmentObj = new segments_model();
+                //$segmentObj->id
+                $segmentObj->is_published = 1;
+                $segmentObj->date_added = $today;
+                
+                $segmentObj->created_by = $this->USERID;
+                $segmentObj->created_by_user = $fullName; 
+                $segmentObj->created_by_company = $userCompany;
+    
+                $segmentObj->name = $name;
+                $segmentObj->description = $description;
+                $segmentObj->alias = $alias;
+                $segmentObj->public_name = $publicname;
+                $segmentObj->filters = $filters;
+                $segmentObj->is_global = 0;
+                $segmentObj->is_preference_center = 0;
+                $segmentObj->save();
+                $segmentObj->id;
+    
+                //make a cron for check segments filters and add contacts to that segment
+                $response = [
+                    'C' => 100,
+                    'M' => $this->ERRORS[106],
+                    'R' => [],
+                ];
+
+            }
 
         }else{
             //session expired

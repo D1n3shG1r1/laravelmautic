@@ -12,7 +12,7 @@ import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 import Styles from "../../css/Modules/Segments.module.css"; // Import styles from the CSS module
-
+var filtersCount = 0;
 const newcontact = ({pageTitle,csrfToken,params}) => {
     console.log(pageTitle,csrfToken,params);
     var decsriptionData = '';
@@ -27,20 +27,41 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
     });
     const [editorData, setEditorData] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-
+    /*
     const handleEditorChange = (event, editor) => {
         const data = editor.getData();
-        if (data.length >= descriptionMaxLength) {
-        setEditorData(data);
+        if (data.length <= descriptionMaxLength) {
+            var ckStr = data;
         } else {
-        setEditorData(data.slice(0, descriptionMaxLength));
+            var ckStr = data.slice(0, descriptionMaxLength);
         }
+
+        setEditorData(ckStr);
+
         setFormValues((prevValues) => ({
         ...prevValues,
-        description: data // Update description state directly
+        description: ckStr // Update description state directly
         }));
     };
-
+    */
+    const handleEditorChange = (event, editor) => {
+        const data = editor.getData();
+        if (data.length > descriptionMaxLength) {
+            // Truncate the string if it exceeds the max length
+            const truncatedData = data.slice(0, descriptionMaxLength);
+            setEditorData(truncatedData);
+            setFormValues((prevValues) => ({
+                ...prevValues,
+                description: truncatedData // Update description state directly
+            }));
+        } else {
+            setEditorData(data);
+            setFormValues((prevValues) => ({
+                ...prevValues,
+                description: data // Update description state
+            }));
+        }
+    };
     const handleInputChange = (e) => {
         
         const { name, value } = e.target;
@@ -50,7 +71,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         });
     };
 
-
+    
     const contactsOptions = JSON.parse(params.contactFilters);
     const [filterIdx, setFilterIdx] = useState(0);
     
@@ -63,6 +84,8 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         if(panels.length > 0){
             panels[0].childNodes[0].childNodes[0].classList.add("hide");
         }
+
+        filtersCount = filtersCount - 1;
       } else {
         console.log('Element not found!');
       }   
@@ -100,6 +123,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
   
       // Increment filterIdx state to track the panel index
       setFilterIdx(prevIdx => prevIdx + 1);
+      filtersCount = filtersCount + 1;
     };
     
 
@@ -114,7 +138,17 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         const name = document.getElementById("name").value;
         const alias = document.getElementById("alias").value;
         const publicname = document.getElementById("publicname").value;
-        const descriptionData = document.getElementById("description").value; // Capture CKEditor data
+        const descriptionData = document.getElementById("description").value;
+
+        var filterInputs = document.getElementsByClassName("filter-input");
+        var isBlank = false;
+        
+        for (var i = 0; i < filterInputs.length; i++) {
+            if (filterInputs[i].value.trim() === "") {
+                isBlank = true;
+                break;  // Exit the loop if a blank input is found
+            }
+        }
 
         const nameObj = validateTitle(name);
 
@@ -132,6 +166,19 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
             return false;
         }
 
+        if(filtersCount <= 0){
+            var err = 1;
+            var msg = "Please add filters to include the contacts in the segment.";
+            showToastMsg(err, msg);
+            return false;
+        }
+
+        if(isBlank){
+            var err = 1;
+            var msg = "Filters are required.";
+            showToastMsg(err, msg);
+            return false;
+        }
 
         setIsLoading(true);
 
@@ -145,35 +192,25 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
             return;
         }
 
-        // Create FormData object
-        const formData = new FormData(segmentForm);
-
         // Log the formData contents for debugging
         var formDataJson = $("#segmentForm").serialize();
-        /*formData.forEach((value, key) => {
-            console.log(key, value);
-            formDataJson[key] = value;
-        });*/
-
+        
         // Send data to the server (example placeholder)
         const postJson = {
             "_token": csrfToken,
             "formData": formDataJson
         };
         
-        console.log("postJson");
-        console.log(postJson);
-        
         httpRequest(url, postJson, function(resp){
             var C = resp.C;
             var error = resp.M.error;
             var msg = resp.M.message;
             var R = resp.R;
-            /*
+            
             if(C == 100 && error == 0){
                 //signup successfull
                 showToastMsg(error, msg);
-                window.location.href = params.signinUrl;
+                window.location.href = params.segmentsUrl;
 
             }else{
                 if(C == 102){
@@ -182,7 +219,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                 }
                 showToastMsg(error, msg);
             }
-            */
+            
             setIsLoading(false);
         });
         
@@ -221,25 +258,25 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                                             <div className="tab-content" id="myTabContent">
                                             <div className="tab-pane fade show active" id="details" role="tabpanel" aria-labelledby="details-tab">
                                                 <div className="full dis_flex center_text">
-                                                    <div className="form-group mb-3">
+                                                    <div className="col-md-12 form-group mb-3">
                                                         <div className="row mb-3">
-                                                            <div className="col-md-6">
+                                                            <div className="col-md-12">
                                                                 <InputLabel className="form-label" value="Name"/>
                                                                 <TextInput type="text" className="form-control" name="name" id="name" placeholder="Segment Name" value={formValues.name} onChange={handleInputChange} />
                                                             </div>
-                                                            
+                                                            {/*
                                                             <div className="col-md-6">
                                                                 <InputLabel className="form-label" value="Alias"/>
                                                                 <TextInput type="text" className="form-control" name="alias" id="alias" placeholder="Autogenerated" value={formValues.alias} onChange={handleInputChange} />
-                                                            </div>
+                                                            </div>*/}
                                                         </div>
-
-                                                        <div className="row mb-3">
+                                                        
+                                                        {/*<div className="row mb-3">
                                                             <div className="col-md-6">
                                                                 <InputLabel className="form-label" value="Public name"/>
                                                                 <TextInput type="text" className="form-control" name="publicname" id="publicname" placeholder="Autogenerated" value={formValues.publicname} onChange={handleInputChange} />
                                                             </div>
-                                                        </div>
+                                                        </div>*/}
                                                         
                                                         <div className="row mb-3">
                                                             <div className="col-md-12">
