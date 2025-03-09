@@ -12,6 +12,8 @@ return [
     "104" => ["error" => 1,"message" =>"The email or password you entered is invalid."],
     "105" => ["error" => 0,"message" =>"The contact has been successfully created."],
     "106" => ["error" => 0,"message" =>"The segment has been successfully created."],
+    "107" => ["error" => 0,"message" =>"The segment was successfully deleted."],
+    "108" => ["error" => 0,"message" =>"The segment has been successfully updated."],
     "1004" => ["error" => 1,"message" =>"Your session has expired. Please log in again to continue."],
 
 ];

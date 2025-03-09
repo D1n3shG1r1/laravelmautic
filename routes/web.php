@@ -33,7 +33,9 @@ Route::post('/contact/save',[Contacts::class,'save']);
 Route::get('/segments',[Segments::class,'segments']);
 Route::get('/segments/new',[Segments::class,'new']);
 Route::post('/segment/save',[Segments::class,'save']);
-
+Route::get('/segment/edit/{id}',[Segments::class,'segment']);
+Route::post('/segment/update',[Segments::class,'update']);
+Route::post('/segment/delete',[Segments::class,'delete']);
 
 
 Route::get('/processsegmentcontact',[Test::class,'processsegmentcontact']);

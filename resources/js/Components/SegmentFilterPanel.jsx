@@ -3,23 +3,30 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import Styles from "../../css/Modules/Segments.module.css"; // Import styles from the CSS module
 
 const SegmentFilterPanel = ({ panelparams, totalPanels, removePanel}) => {
-    const { idx, id, title, value, label, datafieldobject, datafieldtype, datafieldoperators } = panelparams;
+    const { idx, id, title, value, label, datafieldobject, datafieldtype, datafieldoperators, operator, glue, propertiesFilter } = panelparams;
     const opt_datafieldoperators = JSON.parse(datafieldoperators);
     totalPanels++;
-    /*var totalPanels = 1;
-    const removePanel = () =>{
-        //function will pass as a parameter
-    };*/
+
     const isFirstPanel = idx === 0;
     const isSinglePanel = totalPanels === 1;
 
-    const [filterValue, setFilterValue] = useState('');
+    const [filterValue, setFilterValue] = useState(propertiesFilter);
 
-    const initialGlueValue = isFirstPanel || isSinglePanel ? 'and' : 'or';
+    
+    var initialGlueValue = isFirstPanel || isSinglePanel ? 'and' : 'or';
+    if(glue != ""){
+        initialGlueValue = glue;
+    }
+    
     const [glueValue, setGlueValue] = useState(initialGlueValue);
 
-    const [operatorValue, setOperatorValue] = useState(Object.keys(opt_datafieldoperators)[0]); // Set default operator value
-
+    
+    if(operator != ""){
+        var [operatorValue, setOperatorValue] = useState(operator);
+    }else{
+        var [operatorValue, setOperatorValue] = useState(Object.keys(opt_datafieldoperators)[0]); // Set default operator value
+    }
+    
     const handleFilterChange = (e) => {
         setGlueValue(e.target.value);
         const elmId = e.target.getAttribute("id");

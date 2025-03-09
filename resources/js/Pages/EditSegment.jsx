@@ -14,20 +14,34 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Styles from "../../css/Modules/Segments.module.css"; // Import styles from the CSS module
 var filtersCount = 0;
 const newcontact = ({pageTitle,csrfToken,params}) => {
-    console.log(pageTitle,csrfToken,params);
+    
+    const segement = params.segement;
+    const prevFilters = segement.filters;
+    
     var decsriptionData = '';
     const formRef = useRef();
-
     const descriptionMaxLength = 160;
-    const [formValues, setFormValues] = useState({
-        name: '',
-        alias: '',
-        publicname: '',
-        description: ''
-    });
     const [editorData, setEditorData] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    const [formValues, setFormValues] = useState({
+        name: segement.name,
+        alias: segement.alias,
+        publicname: segement.public_name,
+        description: segement.description,
+    });
     
+    // Set initial editor data when the component mounts or when the segement.description changes
+    useEffect(() => {
+        if (segement.description) {
+            setEditorData(segement.description);
+            setFormValues((prevValues) => ({
+                ...prevValues,
+                description: segement.description,
+            }));
+        }
+    }, [segement.description]);
+
     const handleEditorChange = (event, editor) => {
         const data = editor.getData();
         if (data.length > descriptionMaxLength) {
@@ -46,8 +60,8 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
             }));
         }
     };
+
     const handleInputChange = (e) => {
-        
         const { name, value } = e.target;
         setFormValues({
         ...formValues,
@@ -58,6 +72,72 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
     
     const contactsOptions = JSON.parse(params.contactFilters);
     const [filterIdx, setFilterIdx] = useState(0);
+
+    useEffect(() => {
+        //create previous filters panels
+        const lengthPrevFilters = Object.keys(prevFilters).length;
+        if(lengthPrevFilters > 0){
+            
+            const filterDropDwn = document.getElementById("filterList");
+            
+            if(filterDropDwn) {
+                
+                const drpDwnOptions = filterDropDwn.options;
+            
+                Object.keys(prevFilters).forEach(k => {
+                    
+                    const v = prevFilters[k];
+                    const field = v.field;
+                    const glue = v.glue;
+                    const object = v.object;
+                    const operator = v.operator;
+                    const properties = v.properties;
+                    const type = v.type;
+
+                    for (let i = 0; i < drpDwnOptions.length; i++) {
+
+                        if (field == drpDwnOptions[i].value) {
+                            const panelParamsObj = {
+                                idx: filterIdx,
+                                id: drpDwnOptions[i].getAttribute('id'),
+                                title: drpDwnOptions[i].getAttribute('title'),
+                                value: drpDwnOptions[i].getAttribute('value'),
+                                label: drpDwnOptions[i].getAttribute('label'),
+                                datafieldobject: drpDwnOptions[i].getAttribute('datafieldobject'),
+                                datafieldtype: drpDwnOptions[i].getAttribute('datafieldtype'),
+                                datafieldoperators: drpDwnOptions[i].getAttribute('datafieldoperators'),
+                                operator: operator,
+                                glue: glue,
+                                propertiesFilter: properties.filter,
+                            };
+
+                            const newPanelContainer = document.createElement('div');
+                            newPanelContainer.setAttribute('id', 'panel-container-' + filterIdx);
+                            newPanelContainer.classList.add('panelContainer');
+                        
+                            const panels = document.getElementsByClassName('panelContainer');
+                            
+                            // Create and render the new panel
+                            const panel = <SegmentFilterPanel panelparams={panelParamsObj} totalPanels={panels.length}
+                            removePanel={() => removePanel(filterIdx)}/>;
+                            const contactlistFilters = document.getElementById('contactlist_filters');
+                            contactlistFilters.appendChild(newPanelContainer);
+                        
+                            const panelContainer = ReactDOM.createRoot(newPanelContainer);
+                            panelContainer.render(panel);
+                        
+                            // Increment filterIdx state to track the panel index
+                            setFilterIdx(prevIdx => prevIdx + 1);
+                            filtersCount = filtersCount + 1;
+
+                        }
+                    }
+
+                });
+            }
+            
+        }
+    }, []);
     
     const removePanel = (panelId) => {
         const element = document.getElementById('panel-container-'+panelId);
@@ -88,6 +168,9 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         datafieldobject: selectedOption.getAttribute('datafieldobject'),
         datafieldtype: selectedOption.getAttribute('datafieldtype'),
         datafieldoperators: selectedOption.getAttribute('datafieldoperators'),
+        operator:"",
+        glue:"",
+        propertiesFilter:"",
       };
   
       const newPanelContainer = document.createElement('div');
@@ -166,7 +249,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
 
         setIsLoading(true);
 
-        var url = "segment/save";
+        var url = "segment/update";
 
         // Check if the form exists
         const segmentForm = document.getElementById("segmentForm");
@@ -246,6 +329,9 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                                                         <div className="row mb-3">
                                                             <div className="col-md-12">
                                                                 <InputLabel className="form-label" value="Name"/>
+                                                                
+                                                                <TextInput type="hidden" className="form-control" name="segmentId" id="segmentId" placeholder="Segment ID" defaultValue={segement.id} />
+
                                                                 <TextInput type="text" className="form-control" name="name" id="name" placeholder="Segment Name" value={formValues.name} onChange={handleInputChange} />
                                                             </div>
                                                             {/*

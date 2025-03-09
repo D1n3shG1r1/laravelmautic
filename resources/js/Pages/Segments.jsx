@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Layout from '@/Layouts/Layout';  // Import the layout component
 import NavLink from '@/Components/NavLink';
 import LinkButton from '@/Components/LinkButton';
+import ConfirmBox from '@/Components/ConfirmBox';
 
 import { Link } from '@inertiajs/react'; // Ensure you're using Inertia's Link
 
@@ -49,13 +50,54 @@ const Segments = ({ pageTitle, csrfToken, params }) => {
     }
 
     const editSegment = (id) =>{
-
+        window.location.href = window.url('segment/edit/'+id);
     };
 
-    const deleteSegment = (id) =>{
-
+    
+    const [showConfirmBox, setShowConfirmBox] = useState(false);
+    const [currentId, setCurrentId] = useState(null); // State to hold the current ID
+    const [currentName, setCurrentName] = useState(null); // State to hold the current ID
+  
+    const deleteSegment = (segment) =>{
+        setCurrentId(segment.id); // Set the ID when the confirm box is shown
+        setCurrentName(segment.name);
+        setShowConfirmBox(true); // Show the custom confirmation box
     };
+    
+    const handleYes = () => {
+      
+        const url = "segment/delete";
+        const postJson = {
+            "_token": csrfToken,
+            "id": currentId
+        };
+        
+        httpRequest(url, postJson, function(resp){
+            var C = resp.C;
+            var error = resp.M.error;
+            var msg = resp.M.message;
+            var R = resp.R;
+            
+            if(C == 100 && error == 0){
+                //signup successfull
+                showToastMsg(error, msg);
+                window.location.href = params.segmentsUrl;
 
+            }else{
+               showToastMsg(error, msg);
+            }
+        
+            setShowConfirmBox(false); // Hide the custom confirmation box
+            
+        });
+
+      
+    };
+  
+    const handleNo = () => {
+      setShowConfirmBox(false); // Hide the custom confirmation box
+    };
+  
     return (
         <Layout pageTitle={pageTitle}>
             <div className="midde_cont">
@@ -122,12 +164,16 @@ const Segments = ({ pageTitle, csrfToken, params }) => {
                                                                 {segment.id}
                                                             </td>
                                                             <td>
-                                                                
-                                                                <LinkButton type="button" className={`btn p-0`} onClick={editSegment(segment.id)} title="Edit"><i className={`${Styles.filterTrashIcon} fa fa-edit`}></i></LinkButton>
-                                                                
+                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => editSegment(segment.id)} title="Edit">
+                                                                    <i className={`${Styles.filterTrashIcon} fa fa-edit`}></i>
+                                                                </LinkButton>
+
                                                                 <span className={`${Styles.buttonSeprator}`}></span>
 
-                                                                <LinkButton type="button" className={`btn p-0`} onClick={deleteSegment(segment.id)} title="Delete"><i className={`${Styles.filterTrashIcon} fa fa-trash-o`}></i></LinkButton>
+                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => deleteSegment(segment)} title="Delete">
+                                                                    <i className={`${Styles.filterTrashIcon} fa fa-trash-o`}></i>
+                                                                </LinkButton>
+
                                                             </td>
                                                         </tr>
                                                     ))
@@ -174,6 +220,13 @@ const Segments = ({ pageTitle, csrfToken, params }) => {
                     </div>
                 </div>
             </div>
+            {showConfirmBox && (
+            <ConfirmBox
+                message={`Delete the segment, ${currentName} (${currentId})?`}
+                onConfirm={handleYes}
+                onCancel={handleNo}
+            />
+            )}
         </Layout>
     );
 };

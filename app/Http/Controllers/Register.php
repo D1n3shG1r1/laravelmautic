@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
 
@@ -13,22 +14,35 @@ use App\Models\company_model;
 class Register extends Controller
 {
     var $ERRORS = [];
+    var $USERID = 0;
     function __construct(){
         parent::__construct();    
         $this->ERRORS = config("errormessage");
+        $this->USERID = $this->getSession('userId');
     }
 
     function Signup_get(Request $request){
-        $csrfToken = csrf_token();
-        $data = array(
-            'signinUrl' => url('signin'),
-        );
+        if($this->USERID > 0){
+            
+            $csrfToken = csrf_token();
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
+            
+            return Redirect::to(url('dashboard'));
 
-        return Inertia::render('Signup', [
-            'pageTitle'  => 'Signup',
-            'csrfToken' => $csrfToken,
-            'params' => $data
-        ]);
+        }else{
+            $csrfToken = csrf_token();
+            $data = array(
+                'signinUrl' => url('signin'),
+            );
+
+            return Inertia::render('Signup', [
+                'pageTitle'  => 'Signup',
+                'csrfToken' => $csrfToken,
+                'params' => $data
+            ]);
+        }
+
     }
 
     function Signup_post(Request $request){
@@ -156,16 +170,26 @@ class Register extends Controller
     }
 
     function Signin_get(Request $request){
-        $csrfToken = csrf_token();
-        $data = array(
-            'dashboardUrl' => url('dashboard'),
-        );
+        if($this->USERID > 0){
 
-        return Inertia::render('Signin', [
-            'pageTitle'  => 'Signin',
-            'csrfToken' => $csrfToken,
-            'params' => $data
-        ]);
+            $csrfToken = csrf_token();
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
+            
+            return Redirect::to(url('dashboard'));
+
+        }else{
+            $csrfToken = csrf_token();
+            $data = array(
+                'dashboardUrl' => url('dashboard'),
+            );
+
+            return Inertia::render('Signin', [
+                'pageTitle'  => 'Signin',
+                'csrfToken' => $csrfToken,
+                'params' => $data
+            ]);
+        }
     }
 
     function Signin_post(Request $request){
