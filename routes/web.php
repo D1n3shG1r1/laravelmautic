@@ -6,6 +6,7 @@ use App\Http\Controllers\Register;
 use App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Contacts;
 use App\Http\Controllers\Segments;
+use App\Http\Controllers\Emailsbuilder;
 use App\Http\Controllers\Test;
 
 /*Route::get('/', function () {
@@ -38,4 +39,8 @@ Route::post('/segment/update',[Segments::class,'update']);
 Route::post('/segment/delete',[Segments::class,'delete']);
 
 
+Route::get('/emails',[Emailsbuilder::class,'emails']);
+Route::get('/emails/new',[Emailsbuilder::class,'new']);
+
+//cron commands
 Route::get('/processsegmentcontact',[Test::class,'processsegmentcontact']);

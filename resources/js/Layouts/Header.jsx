@@ -59,7 +59,17 @@ const Header = () => {
                                 <li><a href="/companies"><i className="fa fa-file-o orange_color"></i> <span>Companies</span></a></li>
                                 <li><a href="/segments"><i className="fa fa-file-text-o orange_color"></i> <span>Segments</span></a></li>
                                 <li><a href="/campaigns"><i className="fa fa-group orange_color"></i> <span>Campaigns</span></a></li>
-                                <li><a href="/tags"><i className="fa fa-briefcase blue1_color"></i> <span>Tags</span></a></li>
+                                <li>
+                                    
+                                    <a href="#channel" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><i class="fa fa-rss orange_color"></i> <span>Channels</span></a>
+                                    
+                                    <ul class="collapse list-unstyled" id="channel">
+                                        <li>
+                                            <a href="/emails"> <span>Emails</span></a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li><a href="/tags"><i className="fa fa-briefcase orange_color"></i> <span>Tags</span></a></li>
                             </ul>
                         </div>
                     </nav>

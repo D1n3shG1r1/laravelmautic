@@ -203,8 +203,8 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         const validCharacters = /^[A-Za-z0-9\s]+$/; // Only letters, numbers and spaces
 
         const name = document.getElementById("name").value;
-        const alias = document.getElementById("alias").value;
-        const publicname = document.getElementById("publicname").value;
+        /*const alias = document.getElementById("alias").value;
+        const publicname = document.getElementById("publicname").value;*/
         const descriptionData = document.getElementById("description").value;
 
         var filterInputs = document.getElementsByClassName("filter-input");

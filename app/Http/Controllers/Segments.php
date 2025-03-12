@@ -129,7 +129,7 @@ class Segments extends Controller
                 'csrfToken' => $csrfToken,
                 'params' => $data
             ]);
-
+            
         }else{
             //redirect to signin
             return Redirect::to(url('signin'));
@@ -152,8 +152,10 @@ class Segments extends Controller
             parse_str($formData,$unserializeFormData);
 
             $name = strtolower($unserializeFormData["name"]);
-            $alias = strtolower($unserializeFormData["alias"]);
-            $publicname = strtolower($unserializeFormData["publicname"]);
+            $alias = $name;
+            $publicname = $name;
+            //$alias = strtolower($unserializeFormData["alias"]);
+            //$publicname = strtolower($unserializeFormData["publicname"]);
             $description = $unserializeFormData["description"];
             $filters = $unserializeFormData["filters"];
 
@@ -243,8 +245,10 @@ class Segments extends Controller
 
             $id = strtolower($unserializeFormData["segmentId"]);
             $name = strtolower($unserializeFormData["name"]);
-            $alias = strtolower($unserializeFormData["alias"]);
-            $publicname = strtolower($unserializeFormData["publicname"]);
+            $alias = $name;
+            $publicname = $name;
+            //$alias = strtolower($unserializeFormData["alias"]);
+            //$publicname = strtolower($unserializeFormData["publicname"]);
             $description = $unserializeFormData["description"];
             $filters = $unserializeFormData["filters"];
 
@@ -282,6 +286,8 @@ class Segments extends Controller
                 
                 $updateData = array(
                     "name" => $name,
+                    "alias" => $alias,  
+                    "public_name" => $publicname,
                     "description" => $description,
                     "filters" => $filters,
                     "date_modified" => $today,
@@ -321,7 +327,7 @@ class Segments extends Controller
 
             segments_model::where("created_by_company", $userCompany)->where("id", $id)->delete();
             segment_contacts_model::where("segment_id", $id)->delete();
-
+            
             $response = [
                 'C' => 100,
                 'M' => $this->ERRORS[107],
@@ -331,6 +337,7 @@ class Segments extends Controller
 
         }else{
             //session expired
+            
             $response = [
                 'C' => 1004,
                 'M' => $this->ERRORS[1004],

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import Styles from "../../css/Modules/Layout.module.css"; // Import styles from the CSS module
 const Layout = ({pageTitle, children }) => {
@@ -14,6 +14,13 @@ const Layout = ({pageTitle, children }) => {
     const companiesUrl = window.url('companies');
     const segmentsUrl = window.url('segments');
     const campaignsUrl = window.url('campaigns');
+    const emailsUrl = window.url('emails');
+
+    const [isCollapsed, setIsCollapsed] = useState(true);
+    const handleToggle = () => {
+        setIsCollapsed(!isCollapsed);  // Toggle collapse state
+    };
+    
     return (
         <>
         <Helmet>
@@ -52,6 +59,23 @@ const Layout = ({pageTitle, children }) => {
                         <li><a href={companiesUrl}><i className="fa fa-building-o orange_color"></i> <span>Companies</span></a></li>
                         <li><a href={segmentsUrl}><i className="fa fa-pie-chart orange_color"></i> <span>Segments</span></a></li>
                         <li><a href={campaignsUrl}><i className="fa fa-bullhorn orange_color"></i> <span>Campaigns</span></a></li>
+                        <li>
+                            <a
+                                onClick={handleToggle}  // Toggle collapse on click
+                                className="dropdown-toggle"
+                                aria-expanded={!isCollapsed}  // Set aria-expanded based on state
+                            >
+                                <i className="fa fa-rss orange_color"></i> <span>Channels</span>
+                            </a>
+                            <ul className={`collapse list-unstyled ${isCollapsed ? '' : 'show'}`} id="channels">
+                                <li>
+                                <a href={emailsUrl}>
+                                    <i className="fa fa-angle-right"></i>
+                                    <span>Emails</span>
+                                </a>
+                                </li>
+                            </ul>
+                            </li>
                         
                     </ul>
                 </div>
