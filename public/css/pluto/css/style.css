@@ -79,7 +79,7 @@
 
 html,
 body {
-    color: #898989;
+    color: #262d33;/*#898989;*/
     font-size: 14px;
     font-family: 'Poppins', sans-serif;
     line-height: normal;
@@ -625,7 +625,7 @@ a:focus {
     position: fixed;
     width: 100%;
     padding-left: 280px;
-    z-index: 2;
+    z-index: 5; /*2;*/
     background: #15283c;
     top: 0;
     transition: ease all 0.3s;

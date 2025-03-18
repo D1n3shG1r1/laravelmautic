@@ -1,0 +1,110 @@
+.panelBody {
+    flex-grow: 1;
+}
+
+.panelBody {
+    padding: 15px;
+}
+
+.dsListGroup {
+    counter-reset: item;
+    list-style-type: none;
+    padding-inline-start: 35px;
+}
+
+.dsListGroupLi {
+    counter-increment: item;
+    position: relative;
+    padding: 10px 0;
+}
+
+.panelFooter {
+    overflow: hidden;
+    padding: 10px 15px;
+    background-color: #f5f5f5;
+    border-top: 1px solid #ebedf0;
+    border-bottom-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+.textCenter {
+    text-align: center;
+}
+
+.textSuccess {
+    color: #00B49C!important;
+    border-color: #00B49C!important;
+    border-radius: 2px;
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+    border: 1px solid #ebedf0;
+    -webkit-box-shadow: 0 1px 1px #f3f3f3;
+    box-shadow: 0 1px 1px #f3f3f3;
+
+    margin-bottom: 18px;
+    background-color: #fff;
+    border: 1px solid #fff0;
+    border-radius: 3px;
+    -webkit-box-shadow: 0 1px 1px rgb(0 0 0 / .05);
+    box-shadow: 0 1px 1px rgb(0 0 0 / .05);
+}
+
+.panelSuccess, .panelPrimary {
+    border-color: rgb(0 0 0 / .03);
+}
+
+.panelHeading {
+    padding: 10px 15px;
+    border-bottom: 1px solid #fff0;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    margin-left: unset;
+    margin-right: unset;
+}
+
+.panelSuccessHeading {
+    color: #fff;
+    background-color: #00B49C;
+    border-color: rgb(0 0 0 / .03);
+}
+
+.panelPrimaryHeading {
+    color: #fff;
+    background-color: #4E5D9D;
+    border-color: rgb(0 0 0 / .03);
+}
+
+.panelTitle {
+    padding: 0px 0;
+    display: table-cell;
+    vertical-align: middle;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 14px;
+    color: inherit;
+    text-transform: capitalize;
+}
+
+.textPrimary {
+    color: #4E5D9D!important;
+    border-color: #4E5D9D!important;
+    border-radius: 2px;
+}
+
+.pullRight {
+    float: right;
+}
+
+.textRight {
+    text-align: right;
+}
+
+.visibleXS, .visibleSM, .visibleMD, .visibleLG {
+    display: none!important;
+}

@@ -14,7 +14,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Styles from "../../css/Modules/Segments.module.css"; // Import styles from the CSS module
 var filtersCount = 0;
 const newcontact = ({pageTitle,csrfToken,params}) => {
-    console.log(pageTitle,csrfToken,params);
+    //console.log(pageTitle,csrfToken,params);
     var decsriptionData = '';
     const formRef = useRef();
 

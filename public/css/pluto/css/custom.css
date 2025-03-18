@@ -40,3 +40,7 @@ button .spinner-border {
     margin-left: 20px;
     margin-top: -21px;
 }
+
+.gjs-block-category.gjs-open .gjs-blocks-c .gjs-block.gjs-one-bg.gjs-four-color-h .gjs-block__media svg path{
+    fill: #e5e7eb;
+}

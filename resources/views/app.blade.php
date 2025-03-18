@@ -24,6 +24,7 @@ $lastName = $AUTHDATA["lastName"];
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
         -->
         <!--- pluto template --->
+        <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">-->
         <!-- bootstrap css -->
         <link rel="stylesheet" href="/css/pluto/css/bootstrap.min.css" />
         <!-- site css -->
@@ -41,6 +42,8 @@ $lastName = $AUTHDATA["lastName"];
         <link rel="stylesheet" href="/css/pluto/css/custom.css" />
         <!--- pluto template --->
         
+        <!--<link rel="stylesheet" href="/css/bootstrap-icons.css" />-->
+
         <!-- for campaign builder Temporary commented-->
         <link rel="stylesheet" href="/dcss/libraries.css"/>
         <link rel="stylesheet" href="/dcss/app.css"/>
@@ -53,9 +56,6 @@ $lastName = $AUTHDATA["lastName"];
 
         
         <!--<link rel="stylesheet" href="{{url('css/grapes.min.css')}}"/>-->
-
-
-
 
         <!-- Scripts -->
          <script>

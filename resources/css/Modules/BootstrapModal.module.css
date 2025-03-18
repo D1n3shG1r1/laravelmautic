@@ -1,0 +1,64 @@
+
+
+.modalDialogWidth{
+    width: 600px;
+    max-width: 600px;
+    font-size: 12px;
+}
+
+.modalHeader {
+    padding: 15px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.modalTitle {
+    margin: 0;
+    line-height: 1.3856;
+    font-weight:400;
+    color:inherit;
+    float: left;
+}
+
+.btnClose{
+    float: right;
+    padding: 0;
+    background: none;
+    font-size: 15px;
+}
+
+.modalBody {
+    position: relative;
+    padding: 15px;
+}
+
+.modalBody {
+    position: relative;
+    -webkit-box-flex: 1;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    padding: 1rem;
+}
+
+.modalFooter {
+    padding: 15px;
+    text-align: right;
+    border-top: 1px solid #e5e5e5;
+}
+
+.modalFooter {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: end;
+    -ms-flex-pack: end;
+    justify-content: flex-end;
+    padding: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.marginRight {
+    margin-right: .25rem;
+}
