@@ -4,7 +4,7 @@ import 'grapesjs/dist/css/grapes.min.css';
 import grapesjsPresetWebpage from 'grapesjs-preset-webpage';
 //import 'grapesjs-preset-webpage';
 
-const GrapesJSBuilder = ({ containerId, apiUrl, isVisible, onClose, onApply, template }) => {
+const GrapesJSBuilder = ({ containerId, apiUrl }) => {
   const editorRef = useRef(null);
   const currentColor = '#e5e7eb';
   var gridItems = '<table class="grid-item-card"><tr><td class="grid-item-card-cell"><img class="grid-item-image" src="https://via.placeholder.com/250x150/78c5d6/fff/" alt="Image"/><table class="grid-item-card-body"><tr><td class="grid-item-card-content"><h1 class="card-title">Title here</h1><p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt</p></td></tr></table></td></tr></table>';
@@ -12,8 +12,6 @@ const GrapesJSBuilder = ({ containerId, apiUrl, isVisible, onClose, onApply, tem
   var listItems = '<table class="list-item"><tr><td class="list-item-cell"><table class="list-item-content"><tr class="list-item-row"><td class="list-cell-left"><img class="list-item-image" src="https://via.placeholder.com/150/78c5d6/fff" alt="Image"/></td><td class="list-cell-right"><h1 class="card-title">Title here</h1><p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt</p></td></tr></table></td></tr></table>';
   
   useEffect(() => {
-    if (!isVisible || !template) return; // Do nothing if not visible
-    
     const styleTag = document.createElement("style");
     styleTag.innerHTML = `
       body {
@@ -44,10 +42,21 @@ const GrapesJSBuilder = ({ containerId, apiUrl, isVisible, onClose, onApply, tem
           { id: 'mobile', name: 'Mobile', width: '375px' }
         ],
       },
-      plugins: [grapesjsPresetWebpage],
+      /*plugins: ['gjs-preset-webpage'],
+      pluginsOpts: {
+        'gjs-preset-webpage': {}
+      },*/
+      plugins: [grapesjsPresetWebpage], // Use imported plugin
       pluginsOpts: {
         grapesjsPresetWebpage: {}
       },
+      /*canvas: {
+        styles: [
+          'body { background-color: #fff; }',
+          '[data-gjs-type="wrapper"] { width: 100%; max-width: 100%; min-height: 100vh; }',
+          '.gjs-dashed { border: 1px dashed #ccc; }'
+        ]
+      },*/
       blockManager: {
         //appendTo: '#blocks',
         blocks: [
@@ -182,36 +191,127 @@ const GrapesJSBuilder = ({ containerId, apiUrl, isVisible, onClose, onApply, tem
           }
         ],
       },
-      
+      //commands and panels
+      /*panels: {
+        defaults: [
+          {
+            id: 'devices-c',
+            buttons: [{
+                id: 'device-desktop',
+                command: 'set-device-desktop',
+                active: !0,
+                label: '<svg style="display: block; max-width: 22px" viewBox="0 0 24 24"><path fill="currentColor" d="M21 16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3 18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z" /></svg>'
+            }, {
+                id: 'device-tablet',
+                command: 'set-device-tablet',
+                label: '<svg style="display: block; max-width: 22px" viewBox="0 0 24 24"><path fill="currentColor" d="M19,18H5V6H19M21,4H3C1.89,4 1,4.89 1,6V18A2,2 0 0,0 3,20H21A2,2 0 0,0 23,18V6C23,4.89 22.1,4 21,4Z" /></svg>'
+            }, {
+                id: 'device-mobile',
+                command: 'set-device-mobile',
+                label: '<svg style="display: block; max-width: 22px" viewBox="0 0 24 24"><path fill="currentColor" d="M17,19H7V5H17M17,1H7C5.89,1 5,1.89 5,3V21A2,2 0 0,0 7,23H17A2,2 0 0,0 19,21V3C19,1.89 18.1,1 17,1Z" /></svg>'
+            },]},
+          
+            {
+              id: 'options',
+              buttons: [{
+                  id: 'sw-visibility',
+                  command: 'sw-visibility',
+                  context: 'sw-visibility',
+                  label: '<svg style="display: block; max-width: 22px" viewBox="0 0 24 24"><path fill="currentColor" d="M15,5H17V3H15M15,21H17V19H15M11,5H13V3H11M19,5H21V3H19M19,9H21V7H19M19,21H21V19H19M19,13H21V11H19M19,17H21V15H19M3,5H5V3H3M3,9H5V7H3M3,13H5V11H3M3,17H5V15H3M3,21H5V19H3M11,21H13V19H11M7,21H9V19H7M7,5H9V3H7V5Z" /></svg>'
+              }, {
+                  id: 'preview',
+                  context: 'preview',
+                  command: 'preview',
+                  label: '<svg style="display: block; max-width: 22px" viewBox="0 0 24 24"><path fill="currentColor" d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"></path></svg>'
+              }, {
+                  id: 'fullscreen',
+                  command: 'fullscreen',
+                  context: 'fullscreen',
+                  label: '<svg style="display: block; max-width: 22px" viewBox="0 0 24 24"><path fill="currentColor" d="M5,5H10V7H7V10H5V5M14,5H19V10H17V7H14V5M17,14H19V19H14V17H17V14M10,17V19H5V14H7V17H10Z" /></svg>'
+              }, {
+                  id: 'export-template',
+                  command: 'export-template',
+                  label: '<svg style="display: block; max-width: 22px" viewBox="0 0 24 24"><path fill="currentColor" d="M12.89,3L14.85,3.4L11.11,21L9.15,20.6L12.89,3M19.59,12L16,8.41V5.58L22.42,12L16,18.41V15.58L19.59,12M1.58,12L8,5.58V8.41L4.41,12L8,15.58V18.41L1.58,12Z" /></svg>'
+              }
+            ]
+          }
+        ]
+      }*/
     });
 
+    // Define commands for switching devices
+/*
+    function updateActiveDeviceButton(deviceId) {
+      console.log("Switching to:", deviceId);
+  
+      // Delay execution to ensure elements exist
+      setTimeout(() => {
+          const activeBtn = document.querySelector(`[data-device="${deviceId}"]`);
+          if (activeBtn) {
+              console.log("Active button found:", activeBtn);
+              document.querySelectorAll('.gjs-pn-btn').forEach((btn) => {
+                  btn.classList.remove('gjs-pn-active', 'gjs-four-color');
+              });
+              activeBtn.classList.add('gjs-pn-active', 'gjs-four-color');
+          } else {
+              console.error("Button not found for device:", deviceId);
+          }
+      }, 1000); // Delay to ensure elements exist
+    }
+    
+    // Hook into GrapesJS event
+    editor.on('run:set-device-desktop', () => updateActiveDeviceButton('desktop'));
+    editor.on('run:set-device-tablet', () => updateActiveDeviceButton('tablet'));
+    editor.on('run:set-device-mobile', () => updateActiveDeviceButton('mobile'));
+    
+    // Fix device names & ensure buttons update correctly
+    editor.Commands.add('set-device-desktop', {
+        run: function (editor) {
+            editor.setDevice('desktop');
+            //updateActiveDeviceButton('desktop');
+        }
+    });
+    
+    editor.Commands.add('set-device-tablet', {
+        run: function (editor) {
+            editor.setDevice('tablet');
+            //updateActiveDeviceButton('tablet');
+        }
+    });
+    
+    editor.Commands.add('set-device-mobile', {
+        run: function (editor) {
+            editor.setDevice('mobile');
+            //updateActiveDeviceButton('mobile');
+        }
+    });
+    */
+  }, [containerId]); // Dependency array ensures effect runs only when `containerId` changes
 
-    // Load selected template
-    editor.setComponents(template.html);
-    //editor.setStyle(template.css);
-
-
-    // **Add Close Button to the Top Toolbar**
-    editor.Panels.addButton('options', [{
-        id: 'apply-builder',
-        className: 'fa fa-check', // FontAwesome close icon
-        command: () => onApply(), // Call parent function to close
-        attributes: { title: 'Apply Changes' },
-      },
-      {
-        id: 'close-builder',
-        className: 'fa fa-times', // FontAwesome close icon
-        command: () => onClose(), // Call parent function to close
-        attributes: { title: 'Close Builder' },
+  /*setTimeout(() => {
+    const blockCategories = editor.BlockManager.getCategories();
+    blockCategories.each(category => {
+      if (category.get('id') === 'Basic') {
+        category.set('open', false);
+        category.set('visible', false);
       }
-    ]);
+    });
+  }, 500);*/
 
-    return () => {
-      editorRef.current?.destroy();
-      editorRef.current = null;
-    };
-  }, [isVisible]);
-  //}, [containerId]); // Dependency array ensures effect runs only when `containerId` changes
+  /*setTimeout(() => {
+    if (!editor || !editor.BlockManager) {
+      console.error("Editor or BlockManager is not initialized yet.");
+      return;
+    }
+  
+    const blockCategories = editor.BlockManager.getCategories();
+    blockCategories.each(category => {
+      if (category.get('id') === 'Basic') {
+        category.set('open', false);
+        category.set('visible', false);
+      }
+    });
+  }, 500);*/
 
   setTimeout(() => {
     const iframe = document.querySelector('iframe');
@@ -220,7 +320,7 @@ const GrapesJSBuilder = ({ containerId, apiUrl, isVisible, onClose, onApply, tem
     }
   }, 2000);
   
-  return <div id={containerId} style={{ width: '100%', height: '100vh' }}/>
+  return <div id={containerId} />
 
 };
 

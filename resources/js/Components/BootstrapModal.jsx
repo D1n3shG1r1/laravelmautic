@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import Styles from "../../css/Modules/BootstrapModal.module.css";
 
-const BootstrapModal = ({ id, title, children, onConfirm, confirmText = "Understood", modalRef, showFooter = true }) => {
+const BootstrapModal = ({ id, title, children, onConfirm, onCancel, confirmText = "Understood", modalRef, showFooter = true }) => {
   return (
     <>
       {/* Modal */}
@@ -21,7 +21,7 @@ const BootstrapModal = ({ id, title, children, onConfirm, confirmText = "Underst
               <h4 className={`${Styles.modalTitle} fs-5`} id={`${id}Label`}>
                 {title}
               </h4>
-              <button type="button" className={`btn ${Styles.btnClose}`} data-bs-dismiss="modal" aria-label="Close">
+              <button type="button" className={`btn ${Styles.btnClose}`} data-bs-dismiss="modal" aria-label="Close" onClick={onCancel}>
                 <span aria-hidden="true">×</span>
               </button>
             </div>

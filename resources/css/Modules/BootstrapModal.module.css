@@ -1,8 +1,8 @@
 
 
 .modalDialogWidth{
-    width: 600px;
-    max-width: 600px;
+    width: 600px !important;
+    max-width: 600px !important;
     font-size: 12px;
 }
 

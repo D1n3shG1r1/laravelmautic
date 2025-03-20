@@ -47,7 +47,7 @@ $lastName = $AUTHDATA["lastName"];
         <!-- for campaign builder Temporary commented-->
         <link rel="stylesheet" href="/dcss/libraries.css"/>
         <link rel="stylesheet" href="/dcss/app.css"/>
-        <link rel="stylesheet" href="/dcss/custom.css"/>
+        <link rel="stylesheet" href="/css/custom.css"/>
 
         <link href="https://dcdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css" rel="stylesheet" />
         <!-- Include Select2 CSS -->

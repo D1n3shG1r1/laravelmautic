@@ -44,3 +44,17 @@ button .spinner-border {
 .gjs-block-category.gjs-open .gjs-blocks-c .gjs-block.gjs-one-bg.gjs-four-color-h .gjs-block__media svg path{
     fill: #e5e7eb;
 }
+
+.btn-default:hover {
+    color: #3c4650;
+    background-color: #e6e6e6;
+    border-color: #bebebe;
+}
+
+.btn.disabled, .btn[disabled], fieldset[disabled] .btn {
+    cursor: not-allowed;
+    filter: alpha(opacity=65);
+    opacity: .65;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
