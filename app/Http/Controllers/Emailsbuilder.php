@@ -70,23 +70,49 @@ class Emailsbuilder extends Controller
     }
 
     function new(Request $request){
-        if($this->USERID > 0){
+
+        if ($this->USERID > 0) {
             $csrfToken = csrf_token();
-        
-            $data = array();
-            $data["emailsUrl"] = url('emails');
+
+            $themesData = [];
+            $themesNames = ["blank", "brienz", "confirm_me"];
             
+            foreach ($themesNames as $themeName) {
+                $templatePath = public_path('themes/'.$themeName . '/' . $themeName . '.html');
+                
+                if (file_exists($templatePath)) {
+                    
+                    $html = fileRead($templatePath);
+                    
+                    $thumbnailPath = url('themes/'.$themeName . '/thumbnail.png');
+                
+                    // Add theme data to the array
+                    $themesData[] = [
+                        'name' => str_replace('_', ' ', $themeName),
+                        'id' => $themeName,
+                        'html' => $html,
+                        'css' => '',
+                        'thumbnail' => $thumbnailPath,
+                    ];
+                }
+            }
+            
+            $data = [];
+            $data["emailsUrl"] = url('emails');
+            $data["themes"] = $themesData;
+
             return Inertia::render('NewEmail', [
-                'pageTitle'  => 'New Email',
+                'pageTitle' => 'New Email',
                 'csrfToken' => $csrfToken,
-                'params' => $data
+                'params' => $data,
             ]);
 
-        }else{
-            //redirect to signin
+        } else {
+            // Redirect to the sign-in page if the user is not authenticated
             return Redirect::to(url('signin'));
         }
     }
+
 
     function edit(Request $request){
 

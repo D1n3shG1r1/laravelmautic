@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import grapesjs from 'grapesjs';
 import 'grapesjs/dist/css/grapes.min.css';
 import grapesjsPresetWebpage from 'grapesjs-preset-webpage';
-//import 'grapesjs-preset-webpage';
 
 const GrapesJSBuilder = ({ containerId, apiUrl, isVisible, onClose, onApply, template }) => {
   const editorRef = useRef(null);
@@ -195,7 +194,7 @@ const GrapesJSBuilder = ({ containerId, apiUrl, isVisible, onClose, onApply, tem
     editor.Panels.addButton('options', [{
         id: 'apply-builder',
         className: 'fa fa-check', // FontAwesome close icon
-        command: () => onApply(), // Call parent function to close
+        command: () => handleSaveChanges(),
         attributes: { title: 'Apply Changes' },
       },
       {
@@ -205,6 +204,165 @@ const GrapesJSBuilder = ({ containerId, apiUrl, isVisible, onClose, onApply, tem
         attributes: { title: 'Close Builder' },
       }
     ]);
+
+
+  /* Apply Changes 
+  // Function to apply inline styles to the HTML content
+  const applyInlineStyles = (htmlContent, cssContent) => {
+    const cssRules = parseCss(cssContent);
+    let updatedHtmlContent = htmlContent;
+
+    Object.keys(cssRules).forEach((selector) => {
+      const rule = cssRules[selector];
+      const elements = document.querySelectorAll(selector);
+      elements.forEach((el) => {
+        el.setAttribute('style', rule);
+      });
+    });
+
+    return updatedHtmlContent;
+  };
+
+  // Function to apply internal CSS (inside <style> tag)
+  const applyInternalCss = (htmlContent, cssContent) => {
+    const styleTag = `<style>${cssContent}</style>`;
+    return htmlContent.replace('<head>', `<head>${styleTag}`);
+  };
+
+  // Helper function to parse CSS into a usable format
+  const parseCss = (cssContent) => {
+    const cssRules = {};
+    const regex = /([^{]+)\s*{\s*([^}]+)\s*}/g;
+    let match;
+    while ((match = regex.exec(cssContent)) !== null) {
+      const selector = match[1].trim();
+      const styles = match[2].trim();
+      cssRules[selector] = styles;
+    }
+    return cssRules;
+  };
+
+  // Handle saving content
+  const handleSaveChanges = async () => {
+    if (!editor) {
+      alert('Editor not initialized');
+      return;
+    }
+
+    // Get the HTML and CSS content from the GrapesJS editor
+    const htmlContent = editor.getHtml();
+    const cssContent = editor.getCss();
+
+    // Choose whether to apply inline styles or internal styles
+    const saveMethod = 'inline'; // or 'internal' for internal CSS
+    let finalHtmlContent;
+
+    if (saveMethod === 'inline') {
+      finalHtmlContent = applyInlineStyles(htmlContent, cssContent);
+    } else {
+      finalHtmlContent = applyInternalCss(htmlContent, cssContent);
+    }
+
+    // Call the parent's callback to pass the updated content
+    onApply(finalHtmlContent, cssContent);
+  };
+  */
+
+
+  // Function to apply inline styles to the HTML content
+const applyInlineStyles = (htmlContent, cssContent) => {
+  const cssRules = parseCss(cssContent);
+  let updatedHtmlContent = htmlContent;
+
+  // Apply inline styles to elements
+  Object.keys(cssRules).forEach((selector) => {
+    const rule = cssRules[selector];
+    const elements = document.querySelectorAll(selector); // This line is okay for non-media queries
+    elements.forEach((el) => {
+      el.setAttribute('style', rule);
+    });
+  });
+
+  return updatedHtmlContent;
+};
+
+// Function to apply internal CSS (inside <style> tag)
+const applyInternalCss = (htmlContent, cssContent) => {
+  // We'll only add the styles to the <style> tag for the media queries and regular styles.
+  const styleTag = `<style>${cssContent}</style>`;
+  return htmlContent.replace('<head>', `<head>${styleTag}`);
+};
+
+// Helper function to parse CSS into a usable format
+const parseCss = (cssContent) => {
+  const cssRules = {};
+  const regex = /([^{\s]+)\s*{([^}]+)}/g;
+  let match;
+
+  // Parse non-media query styles first
+  while ((match = regex.exec(cssContent)) !== null) {
+    const selector = match[1].trim();
+    const styles = match[2].trim();
+    cssRules[selector] = styles;
+  }
+
+  return cssRules;
+};
+
+// Function to extract media queries from CSS content
+const extractMediaQueries = (cssContent) => {
+  const mediaQueries = [];
+  const regex = /@media[^{]+{([^}]+)}/g;
+  let match;
+
+  while ((match = regex.exec(cssContent)) !== null) {
+    mediaQueries.push(match[0]); // Entire media query with content
+  }
+
+  return mediaQueries;
+};
+
+// Modified function to apply both inline styles and media queries in <style> tag
+const applyCssWithMediaQueries = (htmlContent, cssContent) => {
+  // Apply inline styles
+  const cssRules = parseCss(cssContent);
+  let updatedHtmlContent = applyInlineStyles(htmlContent, cssContent);
+
+  // Apply media queries in the <style> tag
+  const mediaQueries = extractMediaQueries(cssContent);
+  if (mediaQueries.length > 0) {
+    const styleTag = `<style>${mediaQueries.join(' ')}</style>`;
+    updatedHtmlContent = updatedHtmlContent.replace('<head>', `<head>${styleTag}`);
+  }
+
+  return updatedHtmlContent;
+};
+
+// Handle saving content
+const handleSaveChanges = async () => {
+  if (!editor) {
+    alert('Editor not initialized');
+    return;
+  }
+
+  // Get the HTML and CSS content from the GrapesJS editor
+  const htmlContent = editor.getHtml();
+  const cssContent = editor.getCss();
+
+  // Choose whether to apply inline styles or internal styles
+  const saveMethod = 'inline'; // or 'internal' for internal CSS
+  let finalHtmlContent;
+
+  if (saveMethod === 'inline') {
+    finalHtmlContent = applyInlineStyles(htmlContent, cssContent);
+  } else {
+    finalHtmlContent = applyCssWithMediaQueries(htmlContent, cssContent);
+  }
+
+  // Call the parent's callback to pass the updated content
+  onApply(finalHtmlContent, cssContent);
+};
+
 
     return () => {
       editorRef.current?.destroy();
