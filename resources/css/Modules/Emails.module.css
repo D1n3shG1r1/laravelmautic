@@ -163,3 +163,8 @@
     height: 100%;
     z-index: 1030;
 }
+
+.required:after {
+    content: " *";
+    color: #F86B4F;
+}

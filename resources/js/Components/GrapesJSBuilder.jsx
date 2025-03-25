@@ -35,6 +35,19 @@ const GrapesJSBuilder = ({ containerId, apiUrl, isVisible, onClose, onApply, tem
       fromElement: true,
       height: '100vh',
       width: '100%',
+
+      /*assetManager: {
+        upload: false, // Disable file upload
+        uploadText: 'Only image URLs are allowed',
+        embedAsBase64: false,
+        assets: [
+          { src: 'https://img.freepik.com/free-photo/morskie-oko-tatry_1204-510.jpg', name: 'Placeholder 1' },
+          { src: 'https://img.freepik.com/free-photo/ship-bottle_1204-315.jpg', name: 'Placeholder 2' },
+          { src: 'https://img.freepik.com/free-photo/fuji-mountains-green-tea-plantation-shizuoka-japan_335224-111.jpg', name: 'Placeholder 3' }
+        ], // Keep empty initially
+      },*/
+
+
       storageManager: false,
       deviceManager: {
         devices: [
@@ -206,85 +219,7 @@ const GrapesJSBuilder = ({ containerId, apiUrl, isVisible, onClose, onApply, tem
     ]);
 
 
-  /* Apply Changes 
-  // Function to apply inline styles to the HTML content
-  const applyInlineStyles = (htmlContent, cssContent) => {
-    const cssRules = parseCss(cssContent);
-    let updatedHtmlContent = htmlContent;
-
-    Object.keys(cssRules).forEach((selector) => {
-      const rule = cssRules[selector];
-      const elements = document.querySelectorAll(selector);
-      elements.forEach((el) => {
-        el.setAttribute('style', rule);
-      });
-    });
-
-    return updatedHtmlContent;
-  };
-
-  // Function to apply internal CSS (inside <style> tag)
-  const applyInternalCss = (htmlContent, cssContent) => {
-    const styleTag = `<style>${cssContent}</style>`;
-    return htmlContent.replace('<head>', `<head>${styleTag}`);
-  };
-
-  // Helper function to parse CSS into a usable format
-  const parseCss = (cssContent) => {
-    const cssRules = {};
-    const regex = /([^{]+)\s*{\s*([^}]+)\s*}/g;
-    let match;
-    while ((match = regex.exec(cssContent)) !== null) {
-      const selector = match[1].trim();
-      const styles = match[2].trim();
-      cssRules[selector] = styles;
-    }
-    return cssRules;
-  };
-
-  // Handle saving content
-  const handleSaveChanges = async () => {
-    if (!editor) {
-      alert('Editor not initialized');
-      return;
-    }
-
-    // Get the HTML and CSS content from the GrapesJS editor
-    const htmlContent = editor.getHtml();
-    const cssContent = editor.getCss();
-
-    // Choose whether to apply inline styles or internal styles
-    const saveMethod = 'inline'; // or 'internal' for internal CSS
-    let finalHtmlContent;
-
-    if (saveMethod === 'inline') {
-      finalHtmlContent = applyInlineStyles(htmlContent, cssContent);
-    } else {
-      finalHtmlContent = applyInternalCss(htmlContent, cssContent);
-    }
-
-    // Call the parent's callback to pass the updated content
-    onApply(finalHtmlContent, cssContent);
-  };
-  */
-
-
-  // Function to apply inline styles to the HTML content
-const applyInlineStyles = (htmlContent, cssContent) => {
-  const cssRules = parseCss(cssContent);
-  let updatedHtmlContent = htmlContent;
-
-  // Apply inline styles to elements
-  Object.keys(cssRules).forEach((selector) => {
-    const rule = cssRules[selector];
-    const elements = document.querySelectorAll(selector); // This line is okay for non-media queries
-    elements.forEach((el) => {
-      el.setAttribute('style', rule);
-    });
-  });
-
-  return updatedHtmlContent;
-};
+// Apply Changes 
 
 // Function to apply internal CSS (inside <style> tag)
 const applyInternalCss = (htmlContent, cssContent) => {
@@ -294,19 +229,84 @@ const applyInternalCss = (htmlContent, cssContent) => {
 };
 
 // Helper function to parse CSS into a usable format
-const parseCss = (cssContent) => {
-  const cssRules = {};
-  const regex = /([^{\s]+)\s*{([^}]+)}/g;
-  let match;
+const parseCss = (cssText) => {
+  const rules = cssText.split('}').filter(rule => rule.trim() !== "");
+  const styles = { mediaQueries: {}, regular: {} };
 
-  // Parse non-media query styles first
-  while ((match = regex.exec(cssContent)) !== null) {
-    const selector = match[1].trim();
-    const styles = match[2].trim();
-    cssRules[selector] = styles;
+  let currentMediaQuery = null;
+
+  rules.forEach(rule => {
+    // Check if the rule is a media query
+    if (rule.includes('@media')) {
+      currentMediaQuery = rule.split('{')[0].trim();
+      styles.mediaQueries[currentMediaQuery] = styles.mediaQueries[currentMediaQuery] || [];
+      const properties = rule.split('{')[1].trim();
+      styles.mediaQueries[currentMediaQuery].push(properties);
+    } else {
+      // Regular CSS rule
+      const [selector, properties] = rule.split('{').map(str => str.trim());
+      const propertyPairs = properties.split(';').map(property => property.trim()).filter(Boolean);
+
+      const propertiesObject = propertyPairs.reduce((acc, property) => {
+        const [key, value] = property.split(':').map(str => str.trim());
+        acc[key] = value;
+        return acc;
+      }, {});
+
+      styles.regular[selector] = propertiesObject;
+    }
+  });
+
+  return styles;
+};
+
+const applyInlineStyles = (htmlContent, cssContent) => {
+  // Parse the CSS rules
+  const cssRules = parseCss(cssContent);
+
+  // Convert HTML string into a DOM object
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlContent, 'text/html');
+
+  // Apply inline styles for regular CSS rules
+  Object.keys(cssRules.regular).forEach((selector) => {
+    const rule = cssRules.regular[selector];
+    const elements = doc.querySelectorAll(selector);
+
+    elements.forEach((el) => {
+      const inlineStyles = Object.keys(rule)
+        .map(key => `${key}: ${rule[key]}`)
+        .join('; ');
+
+      // If the element already has a style attribute, append the new styles
+      var currentStyles = el.getAttribute('style') || '';
+      if(currentStyles != ''){
+        currentStyles = currentStyles + ';';
+      }
+      const newStyles = `${currentStyles} ${inlineStyles}`.trim();
+
+      el.setAttribute('style', newStyles);
+    });
+  });
+
+  // Add styles for media queries inside a <style> tag
+  const styleTag = doc.createElement('style');
+  let mediaQueryStyles = '';
+
+  Object.keys(cssRules.mediaQueries).forEach((mediaQuery) => {
+    const mediaStyles = cssRules.mediaQueries[mediaQuery].join(' ');
+    mediaQueryStyles += `@media ${mediaQuery} { ${mediaStyles} } `;
+  });
+
+  // If there are media queries, add them to the style tag
+  if (mediaQueryStyles) {
+    styleTag.textContent = mediaQueryStyles;
+    doc.head.appendChild(styleTag);
   }
 
-  return cssRules;
+  // Serialize the DOM back to a string
+  const updatedHtmlContent = doc.body.innerHTML;
+  return updatedHtmlContent;
 };
 
 // Function to extract media queries from CSS content
@@ -360,7 +360,7 @@ const handleSaveChanges = async () => {
   }
 
   // Call the parent's callback to pass the updated content
-  onApply(finalHtmlContent, cssContent);
+  onApply({finalHtmlContent, cssContent});
 };
 
 

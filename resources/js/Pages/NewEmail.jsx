@@ -11,31 +11,14 @@ import Styles from "../../css/Modules/Emails.module.css";
 
 const EmailComponent = ({pageTitle, csrfToken, params}) => {
   const themes = params.themes;
-
-  const blankThumbnail = window.url('themes/blank/thumbnail.png');
-  const brienzThumbnail = window.url('themes/brienz/thumbnail.png');
   
   const modalRef = useRef(null);
   const modalInstanceRef = useRef(null); // Store the modal instance
 
   const [isBuilderVisible, setIsBuilderVisible] = useState(false);
-  //const applyBuilder = () => {};
-
-  // Handle the changes received from the child component
-  const [htmlContent, setHtmlContent] = useState('');
-  const [cssContent, setCssContent] = useState('');
-  const applyBuilder = (updatedHtmlContent, updatedCssContent) => {
-    
-    console.log('updatedHtmlContent, updatedCssContent');
-    console.log(updatedHtmlContent);
-    console.log(updatedCssContent);
-
-    
-    setHtmlContent(updatedHtmlContent);
-    setCssContent(updatedCssContent);
-  };
-
-
+  
+  
+  // Select Email type modal
   useEffect(() => {
     import("bootstrap/dist/js/bootstrap.bundle.min.js").then(() => {
       if (modalRef.current) {
@@ -43,6 +26,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
         modalInstanceRef.current.show();
       }
     });
+
   }, []);
 
   const [isListEmail, setIsListEmail] = useState(false);
@@ -60,23 +44,45 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
   const handleTemplateSelect = (theme, key) => {
       setSelectedThemeKey(key); // Set the selected theme key on click
       setSelectedTemplate(theme);
+      setSelectedTemplateName(theme.name);
   };
 
+  const [selectedTemplateName, setSelectedTemplateName] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   useEffect(() => {
       if (themes.length > 0) {
           setSelectedTemplate(themes[0]);
+          setSelectedTemplateName(themes[0].name);
+          //if template is not customized
+          setHtmlContent(themes[0].html);
+          setCssContent(themes[0].css);
       }
   }, [themes]);
+  
+  // Handle the changes received from the child component
+  const [htmlContent, setHtmlContent] = useState('');
+  const [cssContent, setCssContent] = useState('');
+  const onApply = (data) => {
+    //if template is customized and get post-back from builder
+    setHtmlContent(data.finalHtmlContent);
+    setCssContent(data.cssContent);
+  };
 
 
   const formRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
   const [formValues, setFormValues] = useState({
-    name: '',
-    alias: '',
-    publicname: '',
-    description: ''
+    subject:'',
+    internalname:'',
+    active:'',
+    activateat:'',
+    deactivateat:'',
+    fromname:'',
+    fromaddress:'',
+    replytoaddress:'',
+    bccaddress:'',
+    plaintext :'',
+    attachments:'',
   });
   
   const handleInputChange = (e) => {
@@ -95,7 +101,110 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
     console.log("Toggle value:", value);
   };
 
-  const save = () => {
+  const save = (event) => {
+    //save email
+    event.preventDefault();
+    
+    const minLength = 2;
+    const maxLength = 50;
+    const validCharacters = /^[A-Za-z0-9\s]+$/; // Only letters, numbers and spaces
+
+    /*
+    isListEmail //email type
+    setSelectedTemplateName //theme name
+    htmlContent //customized html
+    cssContent  //customized css
+    */
+
+    const subject = document.getElementById("subject").value;
+    const internalname = document.getElementById("internalname").value;
+    const activateat = document.getElementById("activateat").value;
+    const deactivateat = document.getElementById("deactivateat").value;
+    const fromname = document.getElementById("fromname").value;
+    const fromaddress = document.getElementById("fromaddress").value;
+    const replytoaddress = document.getElementById("replytoaddress").value;
+    const bccaddress = document.getElementById("bccaddress").value;
+    const attachments = document.getElementById("attachments").value;
+    const plaintext = document.getElementById("plaintext").value;
+    
+    const subjectObj = validateName(subject);
+    const internalnameObj = validateName(internalname);
+
+    /*
+    // Define validation criteria
+    const minLength = 2;
+    const maxLength = 50;
+    const validCharacters = /^[A-Za-z\s]+$/; // Only letters and spaces
+  
+    var msg = "Name is valid.";
+    var err = 0;
+    
+    // Check conditions
+    if (name.length < minLength) {
+        msg = `Name must be at least ${minLength} characters long.`;
+        err = 1;
+    }
+    if (name.length > maxLength) {
+        msg = `Name must not exceed ${maxLength} characters.`;
+        err = 1;
+    }
+    if (!validCharacters.test(name)) {
+        msg = "Name can only contain letters and spaces.";
+        err = 1;
+    }*/
+    
+    if(!isRealVal(subject)){
+        var err = 1;
+        var msg = "Subject is required.";
+        showToastMsg(err, msg);
+        return false;
+    }
+    
+    if(subject.length < 2){
+      var err = 1;
+      var msg = "Subject must be atleast 2 characters long.";
+      showToastMsg(err, msg);
+      return false;
+    }
+
+    /*if(subjectObj.Err === 1){
+        var err = 1;
+        var msg = subjectObj.Msg;
+        showToastMsg(err, msg);
+        return false;
+    }*/
+
+    if(!isRealVal(internalname)){
+        var err = 1;
+        var msg = "Internal name is required.";
+        showToastMsg(err, msg);
+        return false;
+    }
+    
+    if(internalnameObj.Err === 1){
+        var err = 1;
+        var msg = internalnameObj.Msg;
+        showToastMsg(err, msg);
+        return false;
+    }
+
+    /*
+    if(!isRealVal(email)){
+      var err = 1;
+      var msg = "Email is required.";
+      showToastMsg(err, msg);
+      return false;
+    }
+    
+    if(!validateEmail(email)){
+        var err = 1;
+        var msg = "Enter valid email.";
+        showToastMsg(err, msg);
+        return false;
+    }
+    */
+
+    setIsLoading(true);
 
   };
 
@@ -106,6 +215,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
   return (
     <Layout pageTitle={pageTitle}>
       <div className="midde_cont">
+        <form ref={formRef} onSubmit={save} method="post">
         <div className="container-fluid">
           <div className="row column_title">
             <div className="col-md-12">
@@ -116,7 +226,12 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                 <div className={`${Styles.textRight} col-md-6`}>
                   <div className="btn-group" role="group" aria-label="Basic example">
                     <PrimaryButton id="builderBtn" type="button" className="btn btn-primary" onClick={() => setIsBuilderVisible(true)}><i className="bi bi-window-sidebar"></i> Builder</PrimaryButton>
-                    <PrimaryButton type="button" className="btn btn-primary"><i className="bi bi-floppy2-fill"></i> Save</PrimaryButton>
+                    
+                    <PrimaryButton type="submit" isLoading={isLoading} className="btn btn-primary"><i className="bi bi-floppy2-fill"></i> Save</PrimaryButton>
+                    
+                    {/*<PrimaryButton type="button" className="btn btn-primary"><i className="bi bi-floppy2-fill"></i> Save</PrimaryButton>*/}
+
+
                     <PrimaryButton type="button" className="btn btn-primary" onClick={() => cancel()}><i className="bi bi-x"></i> Cancel</PrimaryButton>
                   </div>
                 </div>
@@ -127,224 +242,222 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
           <div className="row column1">
                               
             <div className="col-md-9">
-                <form id="segmentForm" className="white_shd full margin_bottom_30" ref={formRef} onSubmit={save} method="post">
-                    <div className="full inner_elements">
-                        <div className="row">
-                            <div className="col-md-12">
-                                <ul className="nav nav-tabs" id="myTab" role="tablist">
-                                    <li className="nav-item" role="presentation">
-                                        <button className={`${Styles.borderRadius} nav-link active`} id="theme-tab" data-bs-toggle="tab" data-bs-target="#theme" type="button" role="tab" aria-controls="theme" aria-selected="true">Theme</button>
-                                    </li>
-                                    <li className="nav-item" role="presentation">
-                                        <button className={`${Styles.borderRadius} nav-link`}  id="advanced-tab" data-bs-toggle="tab" data-bs-target="#advanced" type="button" role="tab" aria-controls="advanced" aria-selected="false">Advanced</button>
-                                    </li>
-                                    </ul>
-                                    <div className="tab-content" id="myTabContent">
-                                    
-                                    <div className="tab-pane fade show active" id="theme" role="tabpanel" aria-labelledby="theme-tab">
-                                      <div className="full dis_flex center_text">
-                                        <div className="col-md-12 form-group mb-3">
-                                            <div className="row mb-3">
-                                              
-                                            {themes.map((theme, key) => {
-                                                const isSelected = key === selectedThemeKey;
-                                            return (
-                                                <div key={key} className={`col-md-3 ${Styles.themeList}`}>
-                                                    <div className={`${Styles.panel} ${Styles.themeListPanel} panel-default theme-selected`}>
-                                                        <div className={`${Styles.panelBody} ${Styles.textCenter}`}>
-                                                            <h3 className={`${Styles.themeHeading}`}>{theme.name}</h3>
-                                                            <a href="#" data-toggle="modal" data-target="#theme-blank">
-                                                                <div style={{
-                                                                    backgroundImage: `url(${theme.thumbnail})`,
-                                                                    backgroundRepeat: "no-repeat",
-                                                                    backgroundSize: "contain",
-                                                                    backgroundPosition: "center",
-                                                                    width: "100%",
-                                                                    height: "250px"
-                                                                }}></div>
-                                                            </a>
-
-                                                            {/* Conditionally apply 'hide' to <a> and <button> based on selected theme */}
-                                                            <a 
-                                                                href="#" 
-                                                                type="button" 
-                                                                data-theme="blank" 
-                                                                className={`${Styles.selectAnchorBtn} ${Styles.selectThemeLink} btn ${Styles.btnDefault} ${isSelected ? 'hide' : ''}`} 
-                                                                onClick={() => handleTemplateSelect(theme, key)}
-                                                            >
-                                                                Select
-                                                            </a>
-
-                                                            <button 
-                                                                type="button" 
-                                                                className={`select-theme-selected btn ${Styles.btnDefault} ${isSelected ? '' : 'hide'}`} 
-                                                                disabled
-                                                            >
-                                                                Selected
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-
-
-                                              {/* Blank Theme*/}
-                                              {/*<div className={`col-md-3 ${Styles.themeList}`}>
+                <div className="full inner_elements white_shd full margin_bottom_30">
+                    <div className="row">
+                        <div className="col-md-12">
+                            <ul className="nav nav-tabs" id="myTab" role="tablist">
+                                <li className="nav-item" role="presentation">
+                                    <button className={`${Styles.borderRadius} nav-link active`} id="theme-tab" data-bs-toggle="tab" data-bs-target="#theme" type="button" role="tab" aria-controls="theme" aria-selected="true">Theme</button>
+                                </li>
+                                <li className="nav-item" role="presentation">
+                                    <button className={`${Styles.borderRadius} nav-link`}  id="advanced-tab" data-bs-toggle="tab" data-bs-target="#advanced" type="button" role="tab" aria-controls="advanced" aria-selected="false">Advanced</button>
+                                </li>
+                                </ul>
+                                <div className="tab-content" id="myTabContent">
+                                
+                                <div className="tab-pane fade show active" id="theme" role="tabpanel" aria-labelledby="theme-tab">
+                                  <div className="full dis_flex center_text">
+                                    <div className="col-md-12 form-group mb-3">
+                                        <div className="row mb-3">
+                                          
+                                        {themes.map((theme, key) => {
+                                            const isSelected = key === selectedThemeKey;
+                                        return (
+                                            <div key={key} className={`col-md-3 ${Styles.themeList}`}>
                                                 <div className={`${Styles.panel} ${Styles.themeListPanel} panel-default theme-selected`}>
-                                                <div className={`${Styles.panelBody} ${Styles.textCenter}`}>
-                                                <h3 className={`${Styles.themeHeading}`}>Blank</h3>
-                                                <a href="#" data-toggle="modal" data-target="#theme-blank">
-                                                    <div style={{backgroundImage: `url(${blankThumbnail})`,backgroundRepeat:"no-repeat",backgroundSize:"contain", backgroundPosition:"center", width: "100%", height: "250px"}}></div>
-                                                </a>
-                                                <a href="#" type="button" data-theme="blank" className={`${Styles.selectAnchorBtn} ${Styles.selectThemeLink} btn ${Styles.btnDefault} hide`} onClick={() => handleTemplateSelect(templates[0])}>Select</a>
-                                                <button type="button" className={`select-theme-selected btn ${Styles.btnDefault}`} disabled="disabled">
-                                                    Selected
-                                                </button>
-                                                </div>
-                                                </div>
-                                                                    
-                                                <div className="modal fade" id="theme-blank" role="dialog" aria-labelledby="blank">
-                                                  <div className="modal-dialog" role="document">
-                                                        <div className="modal-content">
-                                                          <div className="modal-header">
-                                                              <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
-                                                              <h4 className="modal-title" id="blank">Blank</h4>
-                                                          </div>
-                                                          <div className="modal-body">
-                                                            <div style={{backgroundImage: `url(${blankThumbnail})`,backgroundRepeat:"no-repeat",backgroundSize:"contain", backgroundPosition:"center", width: "100%", height: "600px"}}></div>
-                                                          </div>
-                                                        </div>
+                                                    <div className={`${Styles.panelBody} ${Styles.textCenter}`}>
+                                                        <h3 className={`${Styles.themeHeading}`}>{theme.name}</h3>
+                                                        <a href="#" data-toggle="modal" data-target="#theme-blank">
+                                                            <div style={{
+                                                                backgroundImage: `url(${theme.thumbnail})`,
+                                                                backgroundRepeat: "no-repeat",
+                                                                backgroundSize: "contain",
+                                                                backgroundPosition: "center",
+                                                                width: "100%",
+                                                                height: "250px"
+                                                            }}></div>
+                                                        </a>
+
+                                                        {/* Conditionally apply 'hide' to <a> and <button> based on selected theme */}
+                                                        <a 
+                                                            href="#" 
+                                                            type="button" 
+                                                            data-theme="blank" 
+                                                            className={`${Styles.selectAnchorBtn} ${Styles.selectThemeLink} btn ${Styles.btnDefault} ${isSelected ? 'hide' : ''}`} 
+                                                            onClick={() => handleTemplateSelect(theme, key)}
+                                                        >
+                                                            Select
+                                                        </a>
+
+                                                        <button 
+                                                            type="button" 
+                                                            className={`select-theme-selected btn ${Styles.btnDefault} ${isSelected ? '' : 'hide'}`} 
+                                                            disabled
+                                                        >
+                                                            Selected
+                                                        </button>
                                                     </div>
                                                 </div>
-                                              </div>*/}
-                                              {/* Brienz Theme*/}          
-                                              {/*<div className={`col-md-3 ${Styles.themeList}`}>
-                                                <div className={`${Styles.panel} ${Styles.themeListPanel} panel-default`}>
-                                                  <div className={`${Styles.panelBody} ${Styles.textCenter}`}>
-                                                    <h3 className={`${Styles.themeHeading}`}>Brienz</h3>
-                                                    <a href="#" data-toggle="modal" data-target="#theme-brienz">
-                                                    <div 
-                                                      style={{
-                                                        backgroundImage: `url(${brienzThumbnail})`, 
-                                                        backgroundRepeat: "no-repeat",
-                                                        backgroundSize: "contain", 
-                                                        backgroundPosition: "center",
-                                                        width: "100%", 
-                                                        height: "250px"
-                                                      }}
-                                                    ></div>
-                                                  </a>
+                                            </div>
+                                        );
+                                    })}
 
-                                                    
-                                                    <a href="#" type="button" data-theme="brienz" className={`${Styles.selectAnchorBtn} ${Styles.selectThemeLink} btn ${Styles.btnDefault}`} onClick={() => handleTemplateSelect(templates[1])}>Select</a>
 
-                                                    <button type="button" className={`select-theme-selected btn ${Styles.btnDefault} hide`} disabled="disabled">Selected</button>
-                                                    </div>
-                                                </div>
-                                                                    
-                                                <div className="modal fade" id="theme-brienz" role="dialog" aria-labelledby="brienz">
-                                                  <div className="modal-dialog" role="document">
+                                          {/* Blank Theme*/}
+                                          {/*<div className={`col-md-3 ${Styles.themeList}`}>
+                                            <div className={`${Styles.panel} ${Styles.themeListPanel} panel-default theme-selected`}>
+                                            <div className={`${Styles.panelBody} ${Styles.textCenter}`}>
+                                            <h3 className={`${Styles.themeHeading}`}>Blank</h3>
+                                            <a href="#" data-toggle="modal" data-target="#theme-blank">
+                                                <div style={{backgroundImage: `url(${blankThumbnail})`,backgroundRepeat:"no-repeat",backgroundSize:"contain", backgroundPosition:"center", width: "100%", height: "250px"}}></div>
+                                            </a>
+                                            <a href="#" type="button" data-theme="blank" className={`${Styles.selectAnchorBtn} ${Styles.selectThemeLink} btn ${Styles.btnDefault} hide`} onClick={() => handleTemplateSelect(templates[0])}>Select</a>
+                                            <button type="button" className={`select-theme-selected btn ${Styles.btnDefault}`} disabled="disabled">
+                                                Selected
+                                            </button>
+                                            </div>
+                                            </div>
+                                                                
+                                            <div className="modal fade" id="theme-blank" role="dialog" aria-labelledby="blank">
+                                              <div className="modal-dialog" role="document">
                                                     <div className="modal-content">
                                                       <div className="modal-header">
-                                                        <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
-                                                        <h4 className="modal-title" id="brienz">Brienz</h4>
+                                                          <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                          <h4 className="modal-title" id="blank">Blank</h4>
                                                       </div>
                                                       <div className="modal-body">
-                                                          <div style={{backgroundImage: `url(${brienzThumbnail})`, backgroundRepeat:"no-repeat",backgroundSize:"contain", backgroundPosition:"center", width: "100%", height: "600px"}}></div>
+                                                        <div style={{backgroundImage: `url(${blankThumbnail})`,backgroundRepeat:"no-repeat",backgroundSize:"contain", backgroundPosition:"center", width: "100%", height: "600px"}}></div>
                                                       </div>
                                                     </div>
-                                                    </div>
                                                 </div>
-                                              </div>*/}
+                                            </div>
+                                          </div>*/}
+                                          {/* Brienz Theme*/}          
+                                          {/*<div className={`col-md-3 ${Styles.themeList}`}>
+                                            <div className={`${Styles.panel} ${Styles.themeListPanel} panel-default`}>
+                                              <div className={`${Styles.panelBody} ${Styles.textCenter}`}>
+                                                <h3 className={`${Styles.themeHeading}`}>Brienz</h3>
+                                                <a href="#" data-toggle="modal" data-target="#theme-brienz">
+                                                <div 
+                                                  style={{
+                                                    backgroundImage: `url(${brienzThumbnail})`, 
+                                                    backgroundRepeat: "no-repeat",
+                                                    backgroundSize: "contain", 
+                                                    backgroundPosition: "center",
+                                                    width: "100%", 
+                                                    height: "250px"
+                                                  }}
+                                                ></div>
+                                              </a>
+
+                                                
+                                                <a href="#" type="button" data-theme="brienz" className={`${Styles.selectAnchorBtn} ${Styles.selectThemeLink} btn ${Styles.btnDefault}`} onClick={() => handleTemplateSelect(templates[1])}>Select</a>
+
+                                                <button type="button" className={`select-theme-selected btn ${Styles.btnDefault} hide`} disabled="disabled">Selected</button>
+                                                </div>
+                                            </div>
+                                                                
+                                            <div className="modal fade" id="theme-brienz" role="dialog" aria-labelledby="brienz">
+                                              <div className="modal-dialog" role="document">
+                                                <div className="modal-content">
+                                                  <div className="modal-header">
+                                                    <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                    <h4 className="modal-title" id="brienz">Brienz</h4>
+                                                  </div>
+                                                  <div className="modal-body">
+                                                      <div style={{backgroundImage: `url(${brienzThumbnail})`, backgroundRepeat:"no-repeat",backgroundSize:"contain", backgroundPosition:"center", width: "100%", height: "600px"}}></div>
+                                                  </div>
+                                                </div>
+                                                </div>
+                                            </div>
+                                          </div>*/}
 
 
+                                        </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="tab-pane fade" id="advanced" role="tabpanel" aria-labelledby="advanced-tab">
+                                  <div className="full dis_flex center_text">
+                                    <div className="col-md-6 form-group mb-3">
+                                        <div className="row mb-3">
+                                            <div className="col-md-12">
+                                              <InputLabel className="form-label" value="From Name"/>
+                                              <TextInput type="text" className="form-control" name="fromname" id="fromname" placeholder="From Name" value={formValues.fromname} onChange={handleInputChange} />
+                                            </div>
+                                        </div>
+
+                                        <div className="row mb-3">
+                                            <div className="col-md-12">
+                                              <InputLabel className="form-label" value="From Address"/>
+                                              <TextInput type="text" className="form-control" name="fromaddress" id="fromaddress" placeholder="From Address" value={formValues.fromaddress} onChange={handleInputChange} />
+                                            </div>
+                                        </div>
+
+                                        <div className="row mb-3">
+                                            <div className="col-md-12">
+                                                <InputLabel className="form-label" value="Reply to Address"/>
+                                                <TextInput type="text" className="form-control" name="replytoaddress" id="replytoaddress" placeholder="Reply To Address" value={formValues.replytoaddress} onChange={handleInputChange} />
+                                            </div>
+                                        </div>
+
+                                        <div className="row mb-3">
+                                            <div className="col-md-12">
+                                                <InputLabel className="form-label" value="BCC Address"/>
+                                                <TextInput type="text" className="form-control" name="bccaddress" id="bccaddress" placeholder="BCC Address" value={formValues.bccaddress} onChange={handleInputChange} />
+                                            </div>
+                                        </div>
+
+                                        <div className="row mb-3">
+                                            <div className="col-md-12">
+                                                <InputLabel className="form-label" value="Attachments"/>
+                                                <TextInput type="text" className="form-control" name="attachments" id="attachments" placeholder="Attachments" value={formValues.attachments} onChange={handleInputChange} />
+                                            </div>
+                                        </div>
+                                          
+                                        <div className="row mb-3">
+                                            <div className="col-md-12">
+                                                <InputLabel className="form-label" value="Plain Text Version"/>
+                                                <textarea className="form-control" name="plaintext" id="plaintext" placeholder="Type your email content" value={formValues.plaintext} onChange={handleInputChange} ></textarea>
                                             </div>
                                         </div>
                                       </div>
+
+                                    <div className="col-md-6 form-group mb-3">
+                                      {/*Custom Headers*/}
                                     </div>
-                                    
-                                    <div className="tab-pane fade" id="advanced" role="tabpanel" aria-labelledby="advanced-tab">
-                                      <div className="full dis_flex center_text">
-                                        <div className="col-md-6 form-group mb-3">
-                                            <div className="row mb-3">
-                                                <div className="col-md-12">
-                                                  <InputLabel className="form-label" value="From Name"/>
-                                                  <TextInput type="text" className="form-control" name="fromname" id="fromname" placeholder="From Name" value={formValues.name} onChange={handleInputChange} />
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="row mb-3">
-                                                <div className="col-md-12">
-                                                  <InputLabel className="form-label" value="From Address"/>
-                                                  <TextInput type="text" className="form-control" name="fromaddress" id="fromaddress" placeholder="From Address" value={formValues.name} onChange={handleInputChange} />
-                                                </div>
-                                            </div>
-
-                                            <div className="row mb-3">
-                                                <div className="col-md-12">
-                                                    <InputLabel className="form-label" value="Reply to Address"/>
-                                                    <TextInput type="text" className="form-control" name="replytoaddress" id="replytoaddress" placeholder="Reply To Address" value={formValues.name} onChange={handleInputChange} />
-                                                </div>
-                                            </div>
-
-                                            <div className="row mb-3">
-                                                <div className="col-md-12">
-                                                    <InputLabel className="form-label" value="BCC Address"/>
-                                                    <TextInput type="text" className="form-control" name="bccaddress" id="bccaddress" placeholder="BCC Address" value={formValues.name} onChange={handleInputChange} />
-                                                </div>
-                                            </div>
-
-                                            <div className="row mb-3">
-                                                <div className="col-md-12">
-                                                    <InputLabel className="form-label" value="Attachments"/>
-                                                    <TextInput type="text" className="form-control" name="attachments" id="attachments" placeholder="Attachments" value={formValues.name} onChange={handleInputChange} />
-                                                </div>
-                                            </div>
-
-                                            <div className="row mb-3">
-                                                <div className="col-md-12">
-                                                    <InputLabel className="form-label" value="Plain Text Version"/>
-                                                    <textarea className="form-control" name="plaintext" id="plaintext" placeholder="Type your email content" value={formValues.name} onChange={handleInputChange} ></textarea>
-                                                </div>
-                                            </div>
-                                          </div>
-
-                                        <div className="col-md-6 form-group mb-3">
-                                          {/*Custom Headers*/}
-                                        </div>
 
 
-                                      </div>
-                                    </div>
+                                  </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </form>
+                </div>
+            
             </div>
 
             <div className="col-md-3 white_shd">
-                
-                <form id="segmentForm" className="full margin_bottom_30" ref={formRef} onSubmit={save} method="post">
-                <div className={`${Styles.pdt_5} full inner_elements formgroup mb-3`}>
+              <div className={`${Styles.pdt_5} full inner_elements formgroup mb-3 white_shd full margin_bottom_30`}>
                   <div className="row mb-3">
                     <div className="col-md-12">
-                      <InputLabel className="form-label" value="Subject"/>
-                      <TextInput type="text" className="form-control" name="subject" id="subject" placeholder="Subject" value={formValues.name} onChange={handleInputChange} />
+                      <InputLabel className={`form-label ${Styles.required}`} value="Subject"/>
+                      <TextInput type="text" className="form-control" name="subject" id="subject" placeholder="Subject" value={formValues.subject} onChange={handleInputChange} />
                     </div>
                   </div>
                   
                   <div className="row mb-3">
                       <div className="col-md-12">
-                        <InputLabel className="form-label" value="Internal Name"/>
-                        <TextInput type="text" className="form-control" name="internalname" id="internalname" placeholder="Internal Name" value={formValues.name} onChange={handleInputChange} />
+                        <InputLabel className={`form-label ${Styles.required}`} value="Internal Name"/>
+                        <TextInput type="text" className="form-control" name="internalname" id="internalname" placeholder="Internal Name" value={formValues.internalname} onChange={handleInputChange} />
                       </div>
                   </div>
+                  {/* use this later
                   {isListEmail === 'list' && (
                     <div className="row mb-3">
                       <div className="col-md-12">
-                        <InputLabel className="form-label" value="Contact Segment" />
+                        <InputLabel className={`form-label ${Styles.required}`} value="Contact Segment" />
                         <TextInput 
                           type="text" 
                           className="form-control" 
@@ -357,6 +470,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                       </div>
                     </div>
                   )}
+                  */}
                   
 
                   <div className="row mb-3">
@@ -368,25 +482,25 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
 
                   <div className="row mb-3">
                       <div className="col-md-12">
-                        <InputLabel className="form-label" value="Activate at (date/time)"/>
-                        <TextInput type="text" className="form-control" name="activateat" id="activateat" placeholder="Activate at (date/time)" value={formValues.name} onChange={handleInputChange} />
+                        <InputLabel className={`form-label ${Styles.required}`} value="Activate at (date/time)"/>
+                        <TextInput type="text" className="form-control" name="activateat" id="activateat" placeholder="Activate at (date/time)" value={formValues.activateat} onChange={handleInputChange} />
                       </div>
                   </div>
 
                   <div className="row mb-3">
                       <div className="col-md-12">
-                        <InputLabel className="form-label" value="Deactivate at (date/time)"/>
-                        <TextInput type="text" className="form-control" name="deactivateat" id="deactivateat" placeholder="Deactivate at (date/time)" value={formValues.name} onChange={handleInputChange} />
+                        <InputLabel className={`form-label ${Styles.required}`} value="Deactivate at (date/time)"/>
+                        <TextInput type="text" className="form-control" name="deactivateat" id="deactivateat" placeholder="Deactivate at (date/time)" value={formValues.deactivateat} onChange={handleInputChange} />
                       </div>
                   </div>
                 </div>
-                </form>
                 
             </div>
 
           </div>
 
         </div>
+        </form>
 
         {/* GrapesJS Builder */}
         {isBuilderVisible && (
@@ -396,7 +510,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
             apiUrl="your-api-url"
             isVisible={isBuilderVisible} 
             onClose={() => setIsBuilderVisible(false)} // Handle close from child
-            onApply={() => applyBuilder}
+            onApply={onApply}
 
             //onContentChange={handleContentChanges}
 
