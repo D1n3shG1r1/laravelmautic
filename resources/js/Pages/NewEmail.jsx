@@ -12,6 +12,12 @@ import Styles from "../../css/Modules/Emails.module.css";
 const EmailComponent = ({pageTitle, csrfToken, params}) => {
   const themes = params.themes;
   
+  useEffect(() => {
+    // Initialize Bootstrap tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltipTriggerList.forEach((tooltip) => new bootstrap.Tooltip(tooltip));
+  }, []);
+
   const modalRef = useRef(null);
   const modalInstanceRef = useRef(null); // Store the modal instance
 
@@ -116,43 +122,22 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
     cssContent  //customized css
     */
 
-    const subject = document.getElementById("subject").value;
-    const internalname = document.getElementById("internalname").value;
+    const emailType = isListEmail; //template(For campaigns) list-(For direct mail segments)
+
+    const subject = document.getElementById("subject").value.trim();
+    const internalname = document.getElementById("internalname").value.trim();
     const activateat = document.getElementById("activateat").value;
     const deactivateat = document.getElementById("deactivateat").value;
-    const fromname = document.getElementById("fromname").value;
-    const fromaddress = document.getElementById("fromaddress").value;
-    const replytoaddress = document.getElementById("replytoaddress").value;
-    const bccaddress = document.getElementById("bccaddress").value;
+    const fromname = document.getElementById("fromname").value.trim();
+    const fromaddress = document.getElementById("fromaddress").value.trim();
+    const replytoaddress = document.getElementById("replytoaddress").value.trim();
+    const bccaddress = document.getElementById("bccaddress").value.trim();
     const attachments = document.getElementById("attachments").value;
-    const plaintext = document.getElementById("plaintext").value;
+    const plaintext = document.getElementById("plaintext").value.trim();
     
-    const subjectObj = validateName(subject);
-    const internalnameObj = validateName(internalname);
 
-    /*
-    // Define validation criteria
-    const minLength = 2;
-    const maxLength = 50;
-    const validCharacters = /^[A-Za-z\s]+$/; // Only letters and spaces
-  
-    var msg = "Name is valid.";
-    var err = 0;
-    
-    // Check conditions
-    if (name.length < minLength) {
-        msg = `Name must be at least ${minLength} characters long.`;
-        err = 1;
-    }
-    if (name.length > maxLength) {
-        msg = `Name must not exceed ${maxLength} characters.`;
-        err = 1;
-    }
-    if (!validCharacters.test(name)) {
-        msg = "Name can only contain letters and spaces.";
-        err = 1;
-    }*/
-    
+
+    //validate subject and internal-name
     if(!isRealVal(subject)){
         var err = 1;
         var msg = "Subject is required.";
@@ -160,51 +145,137 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
         return false;
     }
     
-    if(subject.length < 2){
+    if(subject.length < minLength){
       var err = 1;
-      var msg = "Subject must be atleast 2 characters long.";
+      var msg = "Subject must be atleast "+minLength+" characters long.";
       showToastMsg(err, msg);
       return false;
     }
 
-    /*if(subjectObj.Err === 1){
-        var err = 1;
-        var msg = subjectObj.Msg;
-        showToastMsg(err, msg);
-        return false;
-    }*/
+    if(subject.length > maxLength){
+      var err = 1;
+      var msg = "Subject must not exceed "+maxLength+" characters long.";
+      showToastMsg(err, msg);
+      return false;
+    }
+
+    if(!validCharacters.test(subject)) {
+      var err = 1;
+      var msg = "Subject can only contain letters and spaces.";
+      showToastMsg(err, msg);
+      return false;
+    }
 
     if(!isRealVal(internalname)){
-        var err = 1;
-        var msg = "Internal name is required.";
-        showToastMsg(err, msg);
-        return false;
-    }
-    
-    if(internalnameObj.Err === 1){
-        var err = 1;
-        var msg = internalnameObj.Msg;
-        showToastMsg(err, msg);
-        return false;
-    }
-
-    /*
-    if(!isRealVal(email)){
       var err = 1;
-      var msg = "Email is required.";
+      var msg = "Internal name is required.";
       showToastMsg(err, msg);
       return false;
     }
     
-    if(!validateEmail(email)){
-        var err = 1;
-        var msg = "Enter valid email.";
-        showToastMsg(err, msg);
-        return false;
+    if(internalname.length < minLength){
+      var err = 1;
+      var msg = "Internal name must be atleast "+minLength+" characters long.";
+      showToastMsg(err, msg);
+      return false;
     }
-    */
+
+    if(internalname.length > maxLength){
+      var err = 1;
+      var msg = "Internal name must not exceed "+maxLength+" characters long.";
+      showToastMsg(err, msg);
+      return false;
+    }
+
+    if(!validCharacters.test(internalname)) {
+      var err = 1;
+      var msg = "Internal name can only contain letters and spaces.";
+      showToastMsg(err, msg);
+      return false;
+    }
+
+
+    //validate email address
+    
+    if(isRealVal(fromaddress) && !validateEmail(fromaddress)){
+      var err = 1;
+      var msg = "Enter valid `From email address`.";
+      showToastMsg(err, msg);
+      return false;
+    }
+
+    if(isRealVal(replytoaddress) && !validateEmail(replytoaddress)){
+      var err = 1;
+      var msg = "Enter valid `Replyto email address`.";
+      showToastMsg(err, msg);
+      return false;
+    }
+
+    if(isRealVal(bccaddress) && !validateEmail(bccaddress)){
+      var err = 1;
+      var msg = "Enter valid `bcc email address`.";
+      showToastMsg(err, msg);
+      return false;
+    }
 
     setIsLoading(true);
+
+    var url = "email/save";
+    var postJson = {
+      "_token":csrfToken,
+      "emailType":isListEmail,
+      "templateName":selectedTemplateName,
+      "html":htmlContent,
+      "css":cssContent,
+      "subject":subject,
+      "internalname":internalname,
+      "activateat":activateat,
+      "deactivateat":deactivateat,
+      "fromname":fromname,
+      "fromaddress":fromaddress,
+      "replytoaddress":replytoaddress,
+      "bccaddress":bccaddress,
+      "attachments":attachments,
+      "plaintext":plaintext,
+    };
+    
+    console.log('isListEmail');
+    console.log(isListEmail);
+
+    console.log('selectedTemplateName');
+    console.log(selectedTemplateName);
+
+    console.log('htmlContent');
+    console.log(htmlContent);
+
+    console.log('cssContent');
+    console.log(cssContent);
+
+    console.log('postJson');
+    console.log(postJson);
+
+
+    httpRequest(url, postJson, function(resp){
+        var C = resp.C;
+        var error = resp.M.error;
+        var msg = resp.M.message;
+        var R = resp.R;
+
+        /*if(C == 100 && error == 0){
+            showToastMsg(error, msg);
+            window.location.href = params.emailsUrl;
+
+        }else{
+            if(C == 102){
+                //backend validations
+                msg = JSON.stringify(R); 
+            }
+            showToastMsg(error, msg);
+        }*/
+
+        setIsLoading(false);
+    });
+
 
   };
 
@@ -258,6 +329,14 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                                 <div className="tab-pane fade show active" id="theme" role="tabpanel" aria-labelledby="theme-tab">
                                   <div className="full dis_flex center_text">
                                     <div className="col-md-12 form-group mb-3">
+                                        <InputLabel className="form-label">
+                                            Theme&nbsp;<i className="bi bi-question-circle"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            title="Choose the theme that will give the email it's look and feel. Then use the Builder to fill in the contents. WARNING: Changing the theme after building the email may cause content to not display if the two themes do not use the same slots."
+                                            style={{ cursor: "pointer" }}></i>
+                                        </InputLabel>
+                                        
                                         <div className="row mb-3">
                                           
                                         {themes.map((theme, key) => {
@@ -383,42 +462,90 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                                     <div className="col-md-6 form-group mb-3">
                                         <div className="row mb-3">
                                             <div className="col-md-12">
-                                              <InputLabel className="form-label" value="From Name"/>
+                                              <InputLabel className="form-label">
+                                                From Name&nbsp;<i
+                                                className="bi bi-question-circle"
+                                                data-bs-toggle="tooltip"
+                                                data-bs-placement="top"
+                                                title="Set the from name for this email. This will default to the system configuration if left blank."
+                                                style={{ cursor: "pointer" }}
+                                              ></i>
+                                              </InputLabel>
                                               <TextInput type="text" className="form-control" name="fromname" id="fromname" placeholder="From Name" value={formValues.fromname} onChange={handleInputChange} />
                                             </div>
                                         </div>
 
                                         <div className="row mb-3">
                                             <div className="col-md-12">
-                                              <InputLabel className="form-label" value="From Address"/>
+                                              <InputLabel className="form-label">
+                                                From Address&nbsp;<i
+                                                className="bi bi-question-circle"
+                                                data-bs-toggle="tooltip"
+                                                data-bs-placement="top"
+                                                title="Set the from address for this email. This will default to the system configuration if left blank."
+                                                style={{ cursor: "pointer" }}
+                                                ></i>
+                                              </InputLabel>
                                               <TextInput type="text" className="form-control" name="fromaddress" id="fromaddress" placeholder="From Address" value={formValues.fromaddress} onChange={handleInputChange} />
                                             </div>
                                         </div>
 
                                         <div className="row mb-3">
                                             <div className="col-md-12">
-                                                <InputLabel className="form-label" value="Reply to Address"/>
+                                                <InputLabel className="form-label">
+                                                  Reply to Address&nbsp;<i
+                                                  className="bi bi-question-circle"
+                                                  data-bs-toggle="tooltip"
+                                                  data-bs-placement="top"
+                                                  title="Leave blank to use the from address."
+                                                  style={{ cursor: "pointer" }}
+                                                  ></i>
+                                                </InputLabel>
                                                 <TextInput type="text" className="form-control" name="replytoaddress" id="replytoaddress" placeholder="Reply To Address" value={formValues.replytoaddress} onChange={handleInputChange} />
                                             </div>
                                         </div>
 
                                         <div className="row mb-3">
                                             <div className="col-md-12">
-                                                <InputLabel className="form-label" value="BCC Address"/>
+                                                <InputLabel className="form-label">
+                                                  BCC address&nbsp;<i
+                                                  className="bi bi-question-circle"
+                                                  data-bs-toggle="tooltip"
+                                                  data-bs-placement="top"
+                                                  title="Set a BCC address to receive a copy of every email sent."
+                                                  style={{ cursor: "pointer" }}
+                                                  ></i>
+                                                </InputLabel>
                                                 <TextInput type="text" className="form-control" name="bccaddress" id="bccaddress" placeholder="BCC Address" value={formValues.bccaddress} onChange={handleInputChange} />
                                             </div>
                                         </div>
 
                                         <div className="row mb-3">
                                             <div className="col-md-12">
-                                                <InputLabel className="form-label" value="Attachments"/>
+                                                <InputLabel className="form-label">
+                                                  Attachments&nbsp;<i
+                                                  className="bi bi-question-circle"
+                                                  data-bs-toggle="tooltip"
+                                                  data-bs-placement="top"
+                                                  title="Attachments are sent as file copy and can’t be tracked. To track downloads, use their link in the email content."
+                                                  style={{ cursor: "pointer" }}
+                                                  ></i>
+                                                </InputLabel>
                                                 <TextInput type="text" className="form-control" name="attachments" id="attachments" placeholder="Attachments" value={formValues.attachments} onChange={handleInputChange} />
                                             </div>
                                         </div>
                                           
                                         <div className="row mb-3">
                                             <div className="col-md-12">
-                                                <InputLabel className="form-label" value="Plain Text Version"/>
+                                                <InputLabel className="form-label">
+                                                  Plain Text Version&nbsp;<i
+                                                  className="bi bi-question-circle"
+                                                  data-bs-toggle="tooltip"
+                                                  data-bs-placement="top"
+                                                  title="Use the Email Builder to customize your email's HTML. If you want a plain text version associated with the email, enter the text below."
+                                                  style={{ cursor: "pointer" }}
+                                                  ></i>
+                                                </InputLabel>
                                                 <textarea className="form-control" name="plaintext" id="plaintext" placeholder="Type your email content" value={formValues.plaintext} onChange={handleInputChange} ></textarea>
                                             </div>
                                         </div>

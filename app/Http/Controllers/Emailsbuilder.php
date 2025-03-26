@@ -120,13 +120,134 @@ class Emailsbuilder extends Controller
 
     function save(Request $request){
 
+        if($this->USERID > 0){
+            
+            $userCompany = $this->getSession('companyId');
+            $firstName = $this->getSession('firstName');
+            $lastName = $this->getSession('lastName');
+            $fullName = $firstName." ".$lastName; 
+            $today = date("Y-m-d");
+
+            $emailType = $request->input('emailType');
+            $templateName = $request->input('templateName');
+            $html = $request->input('html');
+            $css = $request->input('css');
+            $subject = $request->input('subject');
+            $internalname = $request->input('internalname');
+            $activateat = $request->input('activateat');
+            $deactivateat = $request->input('deactivateat');
+            $fromname = $request->input('fromname');
+            $fromaddress = $request->input('fromaddress');
+            $replytoaddress = $request->input('replytoaddress');
+            $bccaddress = $request->input('bccaddress');
+            $attachments = $request->input('attachments');
+            $plaintext = $request->input('plaintext');
+            
+            $html = str_replace('\"','"',$html);
+            $html = str_replace('\n','',$html);
+
+            $emailObj = new emailsbuilder_model();
+            $emailObj->is_published = 1;
+            $emailObj->date_added = $today;
+            $emailObj->created_by = $this->USERID;
+            $emailObj->created_by_user = $fullName;
+            $emailObj->created_by_company = $userCompany;
+            $emailObj->name = $internalname;
+            $emailObj->description = $internalname."-".$subject;
+            $emailObj->subject = $subject;
+            $emailObj->from_address = $fromaddress;
+            $emailObj->from_name = $fromname;
+            $emailObj->reply_to_address = $replytoaddress;
+            $emailObj->bcc_address = $bccaddress;
+            $emailObj->use_owner_as_mailer = 0;
+            $emailObj->template = $templateName;
+            $emailObj->plain_text = $plaintext;
+            $emailObj->custom_html = $html;
+            $emailObj->email_type = $emailType;
+            $emailObj->publish_up = $activateat;
+            $emailObj->publish_down = $deactivateat;
+            $emailObj->read_count = 0;
+            $emailObj->sent_count = 0;
+            $emailObj->variant_sent_count = 0;
+            $emailObj->variant_read_count = 0;
+            $emailObj->revision = 0;
+            $emailObj->lang = 'en';
+            $emailObj->headers = '{}';
+            $emailObj->save();
+            $emailId = $emailObj->id;
+
+            $response = [
+                'C' => 100,
+                'M' => $this->ERRORS[109],
+                'R' => [],
+            ];
+            
+            /*
+            id
+            category_id
+            translation_parent_id
+            variant_parent_id
+            unsubscribeform_id
+            preference_center_id
+            is_published
+            date_added
+            created_by
+            created_by_user
+            date_modified
+            modified_by
+            modified_by_user
+            checked_out
+            checked_out_by
+            checked_out_by_user
+            name
+            description
+            subject
+            from_address
+            from_name
+            reply_to_address
+            bcc_address
+            use_owner_as_mailer
+            template
+            content
+            utm_tags
+            plain_text
+            custom_html
+            email_type
+            publish_up
+            publish_down
+            read_count
+            sent_count
+            variant_sent_count
+            variant_read_count
+            revision
+            lang
+            variant_settings
+            variant_start_date
+            dynamic_content
+            headers
+            public_preview
+            */
+            
+
+
+        }else{
+            
+            //session expired
+            $response = [
+                'C' => 1004,
+                'M' => $this->ERRORS[1004],
+                'R' => [],
+            ];
+        }
+        return response()->json($response); die;
+
     }
 
     function update(Request $request){
-
+        //111
     }
 
     function delete(Request $request){
-
+        //110
     }
 }

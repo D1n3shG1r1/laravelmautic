@@ -14,6 +14,11 @@ return [
     "106" => ["error" => 0,"message" =>"The segment has been successfully created."],
     "107" => ["error" => 0,"message" =>"The segment was successfully deleted."],
     "108" => ["error" => 0,"message" =>"The segment has been successfully updated."],
+    "109" => ["error" => 0,"message" =>"The email has been successfully created."],
+    "110" => ["error" => 0,"message" =>"The email has been successfully deleted."],
+    "111" => ["error" => 0,"message" =>"The email has been successfully updated."],
+
+
     "1004" => ["error" => 1,"message" =>"Your session has expired. Please log in again to continue."],
 
 ];

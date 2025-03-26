@@ -41,6 +41,8 @@ Route::post('/segment/delete',[Segments::class,'delete']);
 
 Route::get('/emails',[Emailsbuilder::class,'emails']);
 Route::get('/emails/new',[Emailsbuilder::class,'new']);
+Route::post('/email/save',[Emailsbuilder::class,'save']);
+
 
 //cron commands
 Route::get('/processsegmentcontact',[Test::class,'processsegmentcontact']);
