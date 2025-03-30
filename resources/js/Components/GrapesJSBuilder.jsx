@@ -35,19 +35,61 @@ const GrapesJSBuilder = ({ containerId, apiUrl, isVisible, onClose, onApply, tem
       fromElement: true,
       height: '100vh',
       width: '100%',
+      assetManager: {
+        storageType:'',
+        storeOnChange:true,
+        storeAfterUpload:true,
+        upload:true,
+        assets:[],
+        uploadFile:function(e){
+          
+          var files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
 
-      /*assetManager: {
-        upload: false, // Disable file upload
-        uploadText: 'Only image URLs are allowed',
-        embedAsBase64: false,
-        assets: [
-          { src: 'https://img.freepik.com/free-photo/morskie-oko-tatry_1204-510.jpg', name: 'Placeholder 1' },
-          { src: 'https://img.freepik.com/free-photo/ship-bottle_1204-315.jpg', name: 'Placeholder 2' },
-          { src: 'https://img.freepik.com/free-photo/fuji-mountains-green-tea-plantation-shizuoka-japan_335224-111.jpg', name: 'Placeholder 3' }
-        ], // Keep empty initially
-      },*/
+          console.log('files');
+          console.log(files);
 
+          if (files.length === 1) {
+            const file =  files[0];
 
+            // Allowed MIME types
+            const allowedTypes = ['image/jpeg', 'image/png'];
+
+            // Check if the file type is valid
+            if (allowedTypes.includes(file.type)) {
+              console.log('Selected file:', file);
+              const reader = new FileReader();
+              reader.onload = function(e) {
+
+                var url = "media/save";
+                var postJson = {
+                  "base64": e.target.result
+                };
+
+                httpRequest(url, postJson, function(resp){
+                  if(resp.C == 100){
+                    const image = resp.R.imagepath;
+                    editor.AssetManager.add(image);
+                  }
+                });
+
+              };
+              reader.readAsDataURL(file);
+            }else{
+              var err = 1;
+              var msg = "Invalid file type. Only JPG, JPEG, and PNG are allowed.";
+              showToastMsg(err, msg);
+              return false;
+            }
+            
+          }else{
+            var err = 1;
+            var msg = "Please select only one file.";
+            showToastMsg(err, msg);
+            return false;
+          }
+
+        }
+      },
       storageManager: false,
       deviceManager: {
         devices: [
@@ -218,7 +260,6 @@ const GrapesJSBuilder = ({ containerId, apiUrl, isVisible, onClose, onApply, tem
       }
     ]);
 
-
 // Apply Changes 
 
 // Function to apply internal CSS (inside <style> tag)
@@ -361,6 +402,7 @@ const handleSaveChanges = async () => {
 
   // Call the parent's callback to pass the updated content
   onApply({finalHtmlContent, cssContent});
+  onClose();
 };
 
 

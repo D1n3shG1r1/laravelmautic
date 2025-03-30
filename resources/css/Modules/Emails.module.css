@@ -168,3 +168,41 @@
     content: " *";
     color: #F86B4F;
 }
+
+
+.buttonSeprator {
+    border-left: 1px solid #898989;
+    height: 10px;
+    width: 10px;
+    margin-left: 10px;
+}
+
+.textAlignRight{
+    text-align: right;
+}
+
+.newBtnIcon{
+    margin-right: 5px;
+}
+
+.borderRadius{
+    border-radius: 0px !important;
+}
+
+
+.filterTrash {
+    padding: 5px 10px 5px 10px !important;
+    color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.filterTrash:hover {
+    padding: 5px 10px 5px 10px !important;
+    color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    background-color: #fff !important;
+}
+
+.filterTrashIcon {
+    color: #dc3545 !important;
+}

@@ -32,14 +32,15 @@ const buttonStyles = {
   margin: '5px',
 };
 
-const ConfirmBox = ({ message, onConfirm, onCancel }) => {
+const ConfirmBox = ({ message, confirmText = 'Delete',
+  cancelText = 'Cancel',onConfirm, onCancel }) => {
   return (
     <div style={overlayStyles}>
       <div style={dialogStyles}>
         <p>{message}</p>
         <div style={buttonBox}>
-          <button type="button" style={buttonStyles} className="btn cur-p btn-outline-primary" onClick={onCancel}>Cancel</button>
-          <button type="button" style={buttonStyles} className="btn cur-p btn-primary" onClick={onConfirm}>Delete</button>
+          <button type="button" style={buttonStyles} className="btn cur-p btn-outline-primary" onClick={onCancel}>{cancelText}</button>
+          <button type="button" style={buttonStyles} className="btn cur-p btn-primary" onClick={onConfirm}>{confirmText}</button>
         </div>
       </div>
     </div>

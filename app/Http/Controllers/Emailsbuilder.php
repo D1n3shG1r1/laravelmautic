@@ -35,28 +35,13 @@ class Emailsbuilder extends Controller
                 $emailsObj = emailsbuilder_model::where("created_by", $this->USERID)->paginate(10)->toArray();
             }
             
-            if(!empty($emailsObj["data"])){
-
-                $segmentIds = array();
-
-                foreach($emailsObj["data"] as &$rw){
-                    $segmentIds[] = $rw;
-                    $rw["date_added"] = date("F d, Y");
-                }
-
-                foreach($emailsObj["data"] as &$rww){
-                    // Count contacts for each segment
-                    $count = emailsbuilder_model::where("segment_id", $rww["id"])->count();
-        
-                    $rww["contacts"] = $count;
-                }
-            }
-
-            //echo "segmentsObj:<pre>"; print_r($segmentsObj); die;
-            
             $data = array();
             $data["emails"] = $emailsObj;
             $data["emailsUrl"] = url('emails');
+
+
+            //echo "data:<pre>"; print_r($data); die;
+
             return Inertia::render('Emails', [
                 'pageTitle'  => 'Emails',
                 'csrfToken' => $csrfToken,
@@ -113,11 +98,6 @@ class Emailsbuilder extends Controller
         }
     }
 
-
-    function edit(Request $request){
-
-    }
-
     function save(Request $request){
 
         if($this->USERID > 0){
@@ -134,6 +114,7 @@ class Emailsbuilder extends Controller
             $css = $request->input('css');
             $subject = $request->input('subject');
             $internalname = $request->input('internalname');
+            $isPublish = $request->input('isPublish');
             $activateat = $request->input('activateat');
             $deactivateat = $request->input('deactivateat');
             $fromname = $request->input('fromname');
@@ -147,7 +128,7 @@ class Emailsbuilder extends Controller
             $html = str_replace('\n','',$html);
 
             $emailObj = new emailsbuilder_model();
-            $emailObj->is_published = 1;
+            $emailObj->is_published = $isPublish;
             $emailObj->date_added = $today;
             $emailObj->created_by = $this->USERID;
             $emailObj->created_by_user = $fullName;
@@ -241,6 +222,70 @@ class Emailsbuilder extends Controller
         }
         return response()->json($response); die;
 
+    }
+
+    function email($id){
+        if ($this->USERID > 0) {
+            $csrfToken = csrf_token();
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
+
+            if ($isAdmin > 0) {
+                $emailObj = emailsbuilder_model::select("is_published", "name", "description", "subject", "from_address", "from_name", "reply_to_address", "bcc_address", "use_owner_as_mailer", "template", "plain_text", "custom_html", "email_type", "publish_up", "publish_down")->where("created_by_company", $userCompany)->where("id", $id)->first();
+            } else {
+                $emailObj = emailsbuilder_model::select("is_published", "name", "description", "subject", "from_address", "from_name", "reply_to_address", "bcc_address", "use_owner_as_mailer", "template", "plain_text", "custom_html", "email_type", "publish_up", "publish_down")->where("created_by", $this->USERID)->where("id", $id)->first();
+            }
+
+            if($emailObj){
+                
+                $emailObj["publish_up"] = date("Y-m-d", strtotime($emailObj["publish_up"]));
+                $emailObj["publish_down"] = date("Y-m-d", strtotime($emailObj["publish_down"]));
+
+                $themesData = [];
+                $themesNames = ["blank", "brienz", "confirm_me"];
+                
+                foreach ($themesNames as $themeName) {
+                    $templatePath = public_path('themes/'.$themeName . '/' . $themeName . '.html');
+                    
+                    if (file_exists($templatePath)) {
+                        
+                        $html = fileRead($templatePath);
+                        
+                        $thumbnailPath = url('themes/'.$themeName . '/thumbnail.png');
+                    
+                        // Add theme data to the array
+                        $themesData[] = [
+                            'name' => str_replace('_', ' ', $themeName),
+                            'id' => $themeName,
+                            'html' => $html,
+                            'css' => '',
+                            'thumbnail' => $thumbnailPath,
+                        ];
+                    }
+                }
+
+                $data = [];
+                $data["emailsUrl"] = url('email/update');
+                $data["themes"] = $themesData;
+                $data["emailData"] = $emailObj;
+                
+                //echo "<pre>"; print_r($data); die;
+                
+                return Inertia::render('EditEmail', [
+                    'pageTitle' => 'Edit Email',
+                    'csrfToken' => $csrfToken,
+                    'params' => $data,
+                ]);
+
+            }else{
+                // Return a 404 response
+                abort(404, 'Page not found');
+            }
+            
+        } else {
+            // Redirect to the sign-in page if the user is not authenticated
+            return Redirect::to(url('signin'));
+        }
     }
 
     function update(Request $request){

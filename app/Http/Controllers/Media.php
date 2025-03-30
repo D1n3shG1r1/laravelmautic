@@ -16,22 +16,57 @@ class Media extends Controller
     }
 
     function save(Request $request){
-        $userId = $this->USERID;
-        $userCompany = $this->getSession('companyId');
-        $isAdmin = $this->getSession('isAdmin');
         
-        // Validate the uploaded file
-        /*$request->validate([
-            'asset' => 'required|file|mimes:jpeg,png,jpg|max:2048',
-        ]);*/
+        if($this->USERID > 0){
+        
+            $userId = $this->USERID;
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
 
-        // Create a user-specific directory (e.g., user-assets/{user_id})
-        $directory = 'user-assets/' . $userCompany . '/' . $userId;
+            $base64Image = $request->input("base64");
 
-        // Store the file in the user's directory
-        $path = $request->file('asset')->store($directory, 'public');
+            $fileId = db_randnumber();
 
-        //Storage::url($path)
+            // Strip off the base64 prefix
+            $imageData = explode(';base64,', $base64Image);
+            $imageDataPart1 = $imageData[0];
+            $imageDataPart1Arr = explode('/', $imageDataPart1);
+            $fileExt = $imageDataPart1Arr[1];
+            $imageData = $imageData[1];
+            $imageName = $fileId.'.'.$fileExt; 
+            // Decode the base64 string into an image
+            $decodedImage = base64_decode($imageData);
+            
+            // Define the dynamic path for storing the image
+            $directory = 'company-assets/' . $userCompany . '/images/emails/';
 
+            // Ensure the directory structure exists on the public disk
+            Storage::disk('public')->makeDirectory($directory);
+
+            // Store the image in the public folder, making it publicly accessible
+            Storage::disk('public')->put($directory . $imageName, $decodedImage);
+            
+            $path = $directory . $imageName;
+            $storagePath = Storage::url($path);
+            $imgUrl = url($storagePath);
+            //echo 'imgUrl:' . $imgUrl;
+
+            $response = [
+                'C' => 100,
+                'M' => '',
+                'R' => ['imagepath' => $imgUrl],
+            ];
+        
+        }else{
+                
+            //session expired
+            $response = [
+                'C' => 1004,
+                'M' => $this->ERRORS[1004],
+                'R' => [],
+            ];
+        }
+        
+        return response()->json($response); die;
     }
 }

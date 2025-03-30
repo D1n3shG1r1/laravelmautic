@@ -6,68 +6,77 @@ import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import InputLabel from "@/Components/InputLabel";
 import ToggleButton from "@/Components/ToggleButton";
+import ConfirmBox from '@/Components/ConfirmBox';
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Styles from "../../css/Modules/Emails.module.css";
 
 const EmailComponent = ({pageTitle, csrfToken, params}) => {
   const themes = params.themes;
+  const emailData = params.emailData;
   
+  /*emailData
+  is_published name description subject from_address from_name reply_to_address bcc_address use_owner_as_mailer template plain_text custom_html email_type publish_up publish_down*/
+
   useEffect(() => {
-    // Initialize Bootstrap tooltips
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-    tooltipTriggerList.forEach((tooltip) => new bootstrap.Tooltip(tooltip));
+    const tooltips = [...tooltipTriggerList].map((tooltip) => new bootstrap.Tooltip(tooltip));
+  
+    return () => {
+      tooltips.forEach((tooltip) => tooltip.dispose());
+    };
   }, []);
 
   const modalRef = useRef(null);
   const modalInstanceRef = useRef(null); // Store the modal instance
 
   const [isBuilderVisible, setIsBuilderVisible] = useState(false);
-  
-  
-  // Select Email type modal
-  useEffect(() => {
-    import("bootstrap/dist/js/bootstrap.bundle.min.js").then(() => {
-      if (modalRef.current) {
-        modalInstanceRef.current = new bootstrap.Modal(modalRef.current);
-        modalInstanceRef.current.show();
-      }
-    });
-
-  }, []);
-
   const [isListEmail, setIsListEmail] = useState(false);
-  const selectEmailType = (type) => {
-    
-    setIsListEmail(type);
-    // Close the modal programmatically
-    if (modalInstanceRef.current) {
-      modalInstanceRef.current.hide();
-    }
-  };
+  
+  useEffect(() => {
+    setIsListEmail(emailData.email_type);
+  }, [emailData.email_type]); // add the dependency here
+  
 
+  //confirm box
+  const [tmpThemeKey, setTmpThemeKey] = useState(false);
+  const [tmpTheme, setTmpTheme] = useState(false);
+  const [showConfirmBox, setShowConfirmBox] = useState(false);
+  
   // State to keep track of the selected theme's key
   const [selectedThemeKey, setSelectedThemeKey] = useState(0);
   const handleTemplateSelect = (theme, key) => {
-      setSelectedThemeKey(key); // Set the selected theme key on click
-      setSelectedTemplate(theme);
-      setSelectedTemplateName(theme.name);
+    if(theme.name === emailData.template){
+      theme.html = emailData.custom_html;
+    }
+    setTmpThemeKey(key);
+    setTmpTheme (theme);
+    setShowConfirmBox(true); // Show the custom confirmation box    
   };
+
 
   const [selectedTemplateName, setSelectedTemplateName] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
-  useEffect(() => {
-      if (themes.length > 0) {
-          setSelectedTemplate(themes[0]);
-          setSelectedTemplateName(themes[0].name);
-          //if template is not customized
-          setHtmlContent(themes[0].html);
-          setCssContent(themes[0].css);
-      }
-  }, [themes]);
-  
-  // Handle the changes received from the child component
   const [htmlContent, setHtmlContent] = useState('');
   const [cssContent, setCssContent] = useState('');
+  useEffect(() => {
+    if (themes.length > 0) {
+      const selectedThemeIndex = themes.findIndex((theme) => theme.name === emailData.template);
+      const selectedTheme = themes.find((theme) => theme.name === emailData.template);
+      if (selectedTheme) {
+        selectedTheme.html = emailData.custom_html;
+        setSelectedThemeKey(selectedThemeIndex);
+        
+        setSelectedTemplate(selectedTheme);
+        setSelectedTemplateName(selectedTheme.name);
+        // If template is not customized
+        setHtmlContent(emailData.custom_html);
+        setCssContent('');
+      }
+    }
+  }, [themes, emailData.template]); // add emailData.template as a dependency
+  
+  
+  // Handle the changes received from the child component
   const onApply = (data) => {
     //if template is customized and get post-back from builder
     setHtmlContent(data.finalHtmlContent);
@@ -78,17 +87,19 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
   const formRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
   const [formValues, setFormValues] = useState({
-    subject:'',
-    internalname:'',
-    active:'',
-    activateat:'',
-    deactivateat:'',
-    fromname:'',
-    fromaddress:'',
-    replytoaddress:'',
-    bccaddress:'',
-    plaintext :'',
-    attachments:'',
+    /*emailData
+    is_published name description subject from_address from_name reply_to_address bcc_address use_owner_as_mailer template plain_text custom_html email_type publish_up publish_down*/
+    subject: emailData.subject || "",
+    internalname: emailData.name || "",
+    active: emailData.is_published || false,
+    activateat: emailData.publish_up || "",
+    deactivateat: emailData.publish_down || "",
+    fromname: emailData.from_name || "",
+    fromaddress: emailData.from_address || "",
+    replytoaddress: emailData.reply_to_address || "",
+    bccaddress: emailData.bcc_address || "",
+    plaintext: emailData.plain_text || "",
+    attachments: "",
   });
   
   const handleInputChange = (e) => {
@@ -100,10 +111,25 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
     });
   };
 
-  const [toggleValue, setToggleValue] = useState(false);
+  
+  const [toggleState, setToggleState] = useState(emailData.is_published);
+  const [toggleValue, setToggleValue] = useState(emailData.is_published);
 
   const handleToggle = (value) => {
     setToggleValue(value);
+  };
+
+  const handleYes = () => {
+    setSelectedThemeKey(tmpThemeKey);
+    setSelectedTemplate(tmpTheme);
+    setSelectedTemplateName(tmpTheme.name);
+    setShowConfirmBox(false); 
+  };
+
+  const handleNo = () => {
+    setTmpThemeKey(false);
+    setTmpTheme (false);
+    setShowConfirmBox(false);
   };
 
   const save = (event) => {
@@ -594,7 +620,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                   <div className="row mb-3">
                       <div className="col-md-12">
                         <InputLabel className="form-label" value="Available for use"/>
-                        <ToggleButton onToggle={handleToggle} />
+                        <ToggleButton onToggle={handleToggle} state={toggleState} />
                       </div>
                   </div>
 
@@ -701,6 +727,16 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
           </div>
         </BootstrapModal>
       </div>
+
+      {showConfirmBox && (
+        <ConfirmBox
+            message={`You will lose the current content if you switch the theme.`}
+            confirmText = 'OK'
+            cancelText = 'Cancel'
+            onConfirm={handleYes}
+            onCancel={handleNo}
+        />
+      )}
     </Layout>
   );
 };
