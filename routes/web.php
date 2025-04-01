@@ -7,6 +7,8 @@ use App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Contacts;
 use App\Http\Controllers\Segments;
 use App\Http\Controllers\Emailsbuilder;
+use App\Http\Controllers\Settings;
+
 use App\Http\Controllers\Media;
 
 use App\Http\Controllers\Test;
@@ -48,12 +50,10 @@ Route::get('/email/edit/{id}',[Emailsbuilder::class,'email']);
 Route::post('/email/update',[Emailsbuilder::class,'update']);
 Route::post('/email/delete',[Emailsbuilder::class,'delete']);
 
-
+Route::get('/settings',[Settings::class,'settings']);
 
 
 Route::post('/media/save',[Media::class,'save']);
-
-
 
 //cron commands
 Route::get('/processsegmentcontact',[Test::class,'processsegmentcontact']);

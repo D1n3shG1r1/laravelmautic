@@ -236,7 +236,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
 
     setIsLoading(true);
 
-    var url = "email/save";
+    var url = "email/update";
     var postJson = {
       "_token":csrfToken,
       "emailType":isListEmail,
