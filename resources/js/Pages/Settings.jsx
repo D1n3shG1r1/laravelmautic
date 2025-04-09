@@ -10,37 +10,185 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import Styles from "../../css/Modules/Settings.module.css";
 
 const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
+    
+    const smtp = params.smtp;
+    const mailerDsn = params.mailerDsn;
+
+    useEffect(() => {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltips = [...tooltipTriggerList].map((tooltip) => new bootstrap.Tooltip(tooltip));
+        
+        return () => {
+            tooltips.forEach((tooltip) => tooltip.dispose());
+        };
+    }, []);
+    
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState("email"); // Default active tab
 
     const handleTabChange = (tabName) => {
         setActiveTab(tabName);
     };
-
-    const formRef = useRef();
-    const [formValues, setFormValues] = useState({
-        /*emailData
-        is_published name description subject from_address from_name reply_to_address bcc_address use_owner_as_mailer template plain_text custom_html email_type publish_up publish_down*/
-        /*subject: emailData.subject || "",
-        internalname: emailData.name || "",
-        active: emailData.is_published || false,
-        activateat: emailData.publish_up || "",
-        deactivateat: emailData.publish_down || "",
-        fromname: emailData.from_name || "",
-        fromaddress: emailData.from_address || "",
-        replytoaddress: emailData.reply_to_address || "",
-        bccaddress: emailData.bcc_address || "",
-        plaintext: emailData.plain_text || "",
-        attachments: "",*/
+    
+    const [formValuesDNS, setDNSFormValues] = useState({
+        fromname: smtp.fromname || "",
+        replytoaddress: smtp.replytoaddress || "",
+        fromemailaddress: smtp.fromemailaddress || "",
+        emailreturnpath: smtp.emailreturnpath || "",
+        dsnscheme: smtp.dsnscheme || "",
+        dsnhost: smtp.dsnhost || "",
+        dsnport: smtp.dsnport || "",
+        dsnpath: smtp.dsnpath || "",
+        dsnuser: smtp.dsnuser || "",
+        dsnpassword: smtp.dsnpassword || "",
     });
     
+    const formRefDNS = useRef();
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormValues({
-        ...formValues,
-        [name]: value
-        });
+        setDNSFormValues((prevValues) => ({
+            ...prevValues,
+            [name]: value,
+        }));
     };
+    
+    const save = (event) => {
+
+        event.preventDefault();
+
+        const fromname = document.getElementById("fromname").value.trim();
+        const fromemailaddress = document.getElementById("fromemailaddress").value.trim();
+        const replytoaddress = document.getElementById("replytoaddress").value.trim();
+        const emailreturnpath = document.getElementById("emailreturnpath").value.trim();
+        const dsnscheme = document.getElementById("dsnscheme").value.trim();
+        const dsnhost = document.getElementById("dsnhost").value.trim();
+        const dsnport = document.getElementById("dsnport").value.trim();
+        const dsnpath = document.getElementById("dsnpath").value.trim();
+        const dsnuser = document.getElementById("dsnuser").value.trim();
+        const dsnpassword = document.getElementById("dsnpassword").value.trim();
+        
+
+        if(!isRealVal(fromname)){
+            var err = 1;
+            var msg = "Set the from nameSet the from name for email sent by system.";
+            showToastMsg(err, msg);
+            return false;
+        }
+
+
+        if(!isRealVal(fromemailaddress)){
+            var err = 1;
+            var msg = "Set the from email for email sent by system.";
+            showToastMsg(err, msg);
+            return false;
+        }
+        
+        if(!isRealVal(dsnscheme)){
+            var err = 1;
+            var msg = "Set the email dsn scheme.";
+            showToastMsg(err, msg);
+            return false;
+        }
+
+        if(!isRealVal(dsnhost)){
+            var err = 1;
+            var msg = "Set the email dsn host.";
+            showToastMsg(err, msg);
+            return false;
+        }
+        
+        if(!isRealVal(dsnport)){
+            var err = 1;
+            var msg = "Set the email dsn port.";
+            showToastMsg(err, msg);
+            return false;
+        }
+        
+        /*if(!isRealVal(dsnpath)){
+            var err = 1;
+            var msg = "Set the email dsn path.";
+            showToastMsg(err, msg);
+            return false;
+        }*/
+
+        if(!isRealVal(dsnuser)){
+            var err = 1;
+            var msg = "Set the email dsn user.";
+            showToastMsg(err, msg);
+            return false;
+        }
+
+        if(!isRealVal(dsnpassword)){
+            var err = 1;
+            var msg = "Set the email dsn dsnpassword.";
+            showToastMsg(err, msg);
+            return false;
+        }
+        
+        setIsLoading(true);
+
+        var url = "emaildsn/update";
+        var postJson = {
+            "_token":csrfToken,
+            "fromname":fromname,
+            "fromemailaddress":fromemailaddress,
+            "replytoaddress":replytoaddress,
+            "emailreturnpath":emailreturnpath,
+            "dsnscheme":dsnscheme,
+            "dsnhost":dsnhost,
+            "dsnport":dsnport,
+            "dsnpath":dsnpath,
+            "dsnuser":dsnuser,
+            "dsnpassword":dsnpassword
+        };
+        
+        httpRequest(url, postJson, function(resp){
+            var C = resp.C;
+            
+            var msg = resp.M;
+            var R = resp.R;
+
+            var error = 0;
+            if(C == 100){
+                error = 0;
+            }else{
+                error = 1;
+            }
+
+            showToastMsg(0, msg);
+
+            setIsLoading(false);
+        });
+        
+    }
+
+    const sendTestEmail = () => {
+        // send test mail
+        
+        setIsLoading(true);
+
+        var url = "emaildsn/sendtestmail";
+        var postJson = {
+            "_token":csrfToken,
+        };
+        
+        httpRequest(url, postJson, function(resp){
+            var C = resp.C;
+            
+            var error = resp.M.error;
+            var msg = resp.M.message;
+            var R = resp.R;
+
+            showToastMsg(error, msg);
+            
+            setIsLoading(false);
+        });
+    }
+
+    const cancel = () => {
+        window.location.href = window.url('settings');
+    }
 
     return (
         <Layout pageTitle={pageTitle}>
@@ -73,13 +221,13 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                                 >
                                                     Email
                                                 </a>
-                                                <a
+                                                {/*<a
                                                     className={`nav-link ${activeTab === "user" ? "active" : ""}`}
                                                     onClick={() => handleTabChange("user")}
                                                     role="tab"
                                                 >
                                                     Authentication
-                                                </a>
+                                                </a>*/}
                                             </div>
 
                     <div className={`${Styles.tabContent} col-md-9`}>
@@ -88,7 +236,8 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                             <div role="tabpanel" className={`tab-pane bdr-w-0 active in`}>
 
                                 <div className="pt-md pr-md pl-md pb-md">
-                                <div className={`${Styles.panel} ${Styles.panelPrimary}`}>
+                                    <form ref={formRefDNS}>
+                                    <div className={`${Styles.panel} ${Styles.panelPrimary}`}>
                                         <div className={`${Styles.panelHeading}`}>
                                             <h3 className={`${Styles.panelTitle}`}>Mail Send Settings</h3>
                                         </div>
@@ -109,7 +258,7 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                                         ></i>
                                                         </InputLabel>
 
-                                                        <TextInput type="text" className="form-control" name="fromname" id="fromname" placeholder="From Name" value={formValues.fromname} onChange={handleInputChange} />
+                                                        <TextInput type="text" className="form-control" name="fromname" id="fromname" placeholder="From Name" value={formValuesDNS.fromname} onChange={handleInputChange} />
 
 
                                                         </div>
@@ -127,7 +276,7 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                                         style={{ cursor: "pointer" }}
                                                         ></i>
                                                         </InputLabel>
-                                                        <TextInput type="text" className="form-control" name="replytoaddress" id="replytoaddress" placeholder="Replyto Email Address" value={formValues.fromname} onChange={handleInputChange} />
+                                                        <TextInput type="text" className="form-control" name="replytoaddress" id="replytoaddress" placeholder="Replyto Email Address" value={formValuesDNS.replytoaddress} onChange={handleInputChange} />
 
 
                                                         </div>
@@ -147,7 +296,7 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                                         style={{ cursor: "pointer" }}
                                                         ></i>
                                                         </InputLabel>
-                                                        <TextInput type="text" className="form-control" name="fromemailaddress" id="fromemailaddress" placeholder="From Email Address" value={formValues.fromname} onChange={handleInputChange} />
+                                                        <TextInput type="text" className="form-control" name="fromemailaddress" id="fromemailaddress" placeholder="From Email Address" value={formValuesDNS.fromemailaddress} onChange={handleInputChange} />
                                                         </div>
                                                     </div>
 
@@ -162,7 +311,7 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                                         style={{ cursor: "pointer" }}
                                                         ></i>
                                                         </InputLabel>
-                                                        <TextInput type="text" className="form-control" name="emailreturnpath" id="emailreturnpath" placeholder="Bounce path" value={formValues.fromname} onChange={handleInputChange} />
+                                                        <TextInput type="text" className="form-control" name="emailreturnpath" id="emailreturnpath" placeholder="Bounce path" value={formValuesDNS.emailreturnpath} onChange={handleInputChange} />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -186,7 +335,7 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                                         <InputLabel className="form-label"
                                                         value="Scheme"/>
                                                         
-                                                        <TextInput type="text" className="form-control" name="dsnscheme" id="dsnscheme" placeholder="Scheme" value={formValues.fromname} onChange={handleInputChange}/>
+                                                        <TextInput type="text" className="form-control" name="dsnscheme" id="dsnscheme" placeholder="Scheme" value={formValuesDNS.dsnscheme} onChange={handleInputChange}/>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -203,7 +352,8 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                                                 <span>://</span>
                                                             </span>
 
-                                                            <TextInput type="text" className={`${Styles.inputGroupBorder} form-control`} name="dsnhost" id="dsnhost" placeholder="Host" value={formValues.fromname} onChange={handleInputChange}/>
+                                                            <TextInput type="text" className={`${Styles.inputGroupBorder} form-control`} name="dsnhost" id="dsnhost" placeholder="Host" value={formValuesDNS.dsnhost} onChange={handleInputChange}/>
+
                                                         </div>
                                                         </div>
                                                     </div>
@@ -221,7 +371,7 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                                                 <span>:</span>
                                                             </span>
 
-                                                            <TextInput type="text" className={`${Styles.inputGroupBorder} form-control`} name="dsnport" id="dsnport" placeholder="Port" value={formValues.fromname} onChange={handleInputChange}/>
+                                                            <TextInput type="text" className={`${Styles.inputGroupBorder} form-control`} name="dsnport" id="dsnport" placeholder="Port" value={formValuesDNS.dsnport} onChange={handleInputChange}/>
                                                         </div>
                                                         </div>
                                                     </div>
@@ -238,7 +388,7 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                                             <span className={`${Styles.inputGroupAddon} preaddon`}>
                                                                 <span>/</span>
                                                             </span>
-                                                            <TextInput type="text" className={`${Styles.inputGroupBorder} form-control`} name="dsnpath" id="dsnpath" placeholder="Path" value={formValues.fromname} onChange={handleInputChange}/>
+                                                            <TextInput type="text" className={`${Styles.inputGroupBorder} form-control`} name="dsnpath" id="dsnpath" placeholder="Path" value={formValuesDNS.dsnpath} onChange={handleInputChange}/>
                                                         </div>
                                                         </div>
                                                     </div>
@@ -254,7 +404,7 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                                             <div className="form-group col-xs-12">
                                                             <InputLabel className="form-label" value="User"/>
                                                                                 
-                                                            <TextInput type="text" className="form-control" name="dsnuser" id="dsnuser" placeholder="User" value={formValues.fromname} onChange={handleInputChange}/>
+                                                            <TextInput type="text" className="form-control" name="dsnuser" id="dsnuser" placeholder="User" value={formValuesDNS.dsnuser} onChange={handleInputChange}/>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -269,7 +419,7 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                                             <span className={`${Styles.inputGroupAddon} preaddon`}>
                                                                 <span>:</span>
                                                             </span>
-                                                            <TextInput type="text" className={`${Styles.inputGroupBorder} form-control`} name="dsnpassword" id="dsnpassword" placeholder="Password" value={formValues.fromname} onChange={handleInputChange}/>
+                                                            <TextInput type="text" className={`${Styles.inputGroupBorder} form-control`} name="dsnpassword" id="dsnpassword" placeholder="Password" value={formValuesDNS.dsnpassword} onChange={handleInputChange}/>
                                                         </div>
                                                         </div>
                                                     </div>
@@ -286,20 +436,18 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                             <div className="form-inline">
                                                 <div className="form-group btn-group" role="group">
 
-                                                <PrimaryButton id="builderBtn" type="button" className="btn btn-primary" onClick={() => setIsBuilderVisible(true)}><i className="bi bi-window-sidebar"></i> Send test email</PrimaryButton>
+                        <PrimaryButton id="builderBtn" type="button" isLoading={isLoading} className="btn btn-primary" onClick={sendTestEmail}><i className="bi bi-window-sidebar"></i> Send test email</PrimaryButton>
                     
-                    <PrimaryButton type="submit" isLoading={isLoading} className="btn btn-primary"><i className="bi bi-floppy2-fill"></i> Save</PrimaryButton>
+                    <PrimaryButton type="button" isLoading={isLoading} className="btn btn-primary" onClick={save}><i className="bi bi-floppy2-fill"></i> Save</PrimaryButton>
                     
-                    {/*<PrimaryButton type="button" className="btn btn-primary"><i className="bi bi-floppy2-fill"></i> Save</PrimaryButton>*/}
+                    
 
-
-                    <PrimaryButton type="button" className="btn btn-primary" onClick={() => cancel()}><i className="bi bi-x"></i> Cancel</PrimaryButton>
                                                 </div>
 
                                             <div className={`${Styles.testContainerWidth} form-group`}>
                                                 <div className="form-control-static ml-10">
                                                     <span className="text-muted">Using currently saved DSN:</span>
-                                                    <code>smtp://5c7439003%40smtp-brevo.comt:SECRET@smtp-relay.brevo.comp:587</code>
+                                                    <code>{mailerDsn}</code>
                                                 </div>
                                             </div>
                                         </div>
@@ -316,6 +464,7 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                             </div>
                                         </div>
                                     </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>

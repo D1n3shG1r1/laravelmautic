@@ -17,8 +17,10 @@ return [
     "109" => ["error" => 0,"message" =>"The email has been successfully created."],
     "110" => ["error" => 0,"message" =>"The email has been successfully deleted."],
     "111" => ["error" => 0,"message" =>"The email has been successfully updated."],
-
-
+    "112" => ["error" => 0,"message" =>"The email DNS has been saved successfully."],
+    "113" => ["error" => 0,"message" =>"Your SMTP configuration has been successfully passed."],
+    "114" => ["error" => 0,"message" =>"Connection could not be established with host."],
+    
     "1004" => ["error" => 1,"message" =>"Your session has expired. Please log in again to continue."],
 
 ];

@@ -7,6 +7,7 @@ use App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Contacts;
 use App\Http\Controllers\Segments;
 use App\Http\Controllers\Emailsbuilder;
+use App\Http\Controllers\Tags;
 use App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Media;
@@ -42,7 +43,6 @@ Route::get('/segment/edit/{id}',[Segments::class,'segment']);
 Route::post('/segment/update',[Segments::class,'update']);
 Route::post('/segment/delete',[Segments::class,'delete']);
 
-
 Route::get('/emails',[Emailsbuilder::class,'emails']);
 Route::get('/emails/new',[Emailsbuilder::class,'new']);
 Route::post('/email/save',[Emailsbuilder::class,'save']);
@@ -50,8 +50,17 @@ Route::get('/email/edit/{id}',[Emailsbuilder::class,'email']);
 Route::post('/email/update',[Emailsbuilder::class,'update']);
 Route::post('/email/delete',[Emailsbuilder::class,'delete']);
 
-Route::get('/settings',[Settings::class,'settings']);
+Route::get('/tags',[Tags::class,'tags']);
+Route::get('/tags/new',[Tags::class,'new']);
+Route::post('/tag/save',[Tags::class,'save']);
+Route::get('/tag/edit/{id}',[Tags::class,'tag']);
+Route::post('/tag/update',[Tags::class,'update']);
+Route::post('/tag/delete',[Tags::class,'delete']);
 
+
+Route::get('/settings',[Settings::class,'settings']);
+Route::post('/emaildsn/update',[Settings::class,'updateEmaildsn']);
+Route::post('/emaildsn/sendtestmail',[Settings::class,'sendTestEmail']);
 
 Route::post('/media/save',[Media::class,'save']);
 

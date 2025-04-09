@@ -1,0 +1,184 @@
+import React, { useState, useRef, useEffect } from 'react';
+import ReactDOM from 'react-dom/client';
+import Layout from '@/Layouts/Layout';  // Import the layout component
+import InputLabel from '@/Components/InputLabel';
+import TextInput from '@/Components/TextInput';
+import Checkbox from '@/Components/Checkbox';
+import NavLink from '@/Components/NavLink';
+import PrimaryButton from '@/Components/PrimaryButton';
+
+import Styles from "../../css/Modules/Tags.module.css"; // Import styles from the CSS module
+var filtersCount = 0;
+const newtag = ({pageTitle,csrfToken,params}) => {
+    //console.log(pageTitle,csrfToken,params);
+    var decsriptionData = '';
+    const formRef = useRef();
+
+    const descriptionMaxLength = 160;
+    const [formValues, setFormValues] = useState({
+        name: '',
+        description: ''
+    });
+
+    
+    const [isLoading, setIsLoading] = useState(false);
+    
+    const handleInputChange = (e) => {
+        
+        const { name, value } = e.target;
+        setFormValues({
+        ...formValues,
+        [name]: value
+        });
+    };
+
+    const save = (event) => {
+        
+        event.preventDefault();
+
+        const minLength = 2;
+        const maxLength = 50;
+        const validCharacters = /^[A-Za-z0-9\s]+$/; // Only letters, numbers and spaces
+
+        const name = document.getElementById("name").value;
+        
+        if (!isRealVal(name)) {
+            var err = 1;
+            var msg = "Segment Name is required.";
+            showToastMsg(err, msg);
+            return false;
+        }
+
+        if (nameObj.Err === 1) {
+            var err = 1;
+            var msg = nameObj.Msg;
+            showToastMsg(err, msg);
+            return false;
+        }
+
+        setIsLoading(true);
+
+
+        var url = "segment/save";
+
+        // Check if the form exists
+        const segmentForm = document.getElementById("segmentForm");
+        if (!segmentForm) {
+            console.log("Form not found!");
+            setIsLoading(false);
+            return;
+        }
+
+        // Log the formData contents for debugging
+        var formDataJson = $("#segmentForm").serialize();
+        
+        // Send data to the server (example placeholder)
+        const postJson = {
+            "_token": csrfToken,
+            "formData": formDataJson
+        };
+        
+        httpRequest(url, postJson, function(resp){
+            var C = resp.C;
+            var error = resp.M.error;
+            var msg = resp.M.message;
+            var R = resp.R;
+            
+            if(C == 100 && error == 0){
+                //signup successfull
+                showToastMsg(error, msg);
+                window.location.href = params.tagsUrl;
+
+            }else{
+                if(C == 102){
+                    //backend validations
+                    msg = JSON.stringify(R); 
+                }
+                showToastMsg(error, msg);
+            }
+            
+            setIsLoading(false);
+        });
+        
+    };
+
+    return (
+    <Layout pageTitle={pageTitle}>
+        <div className="midde_cont">
+            <div className="container-fluid">
+            
+                <div className="row column_title">
+                    <div className="col-md-12">
+                        <div className="page_title">
+                            <h2>Create new tag</h2>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                
+                <div className="row column1">
+                    
+                    <div className="col-md-9">
+                        <form id="segmentForm" className="white_shd full margin_bottom_30" ref={formRef} onSubmit={save} method="post">
+                            <div className="full inner_elements">
+                                <div className="row">
+                                    <div className="col-md-12">
+                                        <ul className="nav nav-tabs" id="myTab" role="tablist">
+                                            <li className="nav-item" role="presentation">
+                                                <button className={`${Styles.borderRadius} nav-link active`} id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab" aria-controls="details" aria-selected="true">Details</button>
+                                            </li>
+                                            </ul>
+                                            <div className="tab-content" id="myTabContent">
+                                            <div className="tab-pane fade show active" id="details" role="tabpanel" aria-labelledby="details-tab">
+                                                <div className="full dis_flex center_text">
+                                                    <div className="col-md-12 form-group mb-3">
+                                                        <div className="row mb-3">
+                                                            <div className="col-md-12">
+                                                                <InputLabel className="form-label" value="Name"/>
+                                                                <TextInput type="text" className="form-control" name="name" id="name" placeholder="Segment Name" value={formValues.name} onChange={handleInputChange} />
+                                                            </div>
+                                                            
+                                                        </div>
+                                                        
+                                                        <div className="row mb-3">
+                                                            <div className="col-md-12">
+                                                                <InputLabel className="form-label" value="Description"/>
+                                                                
+                                                                <TextInput type="text" className="form-control" name="description" id="description" placeholder="Description" value={formValues.description} onChange={handleInputChange} />
+                                                                
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="row">
+                                                            <div className="col-md-6">
+                                                            </div>
+                                                            <div className={`${Styles.textAlignRight} col-md-6`}>
+                                                                <PrimaryButton type="submit" isLoading={isLoading} className="main_bt">Save</PrimaryButton>
+                                                            </div>
+                                                        </div>
+
+
+                                                    </div>
+                                                
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div className="col-md-3">
+                        <div className="white_shd full margin_bottom_30"></div>
+                    </div>
+
+                </div>
+                
+            </div>
+        </div>
+    </Layout>
+);
+};
+
+export default newtag;

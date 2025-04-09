@@ -16,6 +16,7 @@ const Layout = ({ pageTitle, children }) => {
     const segmentsUrl = window.url('segments');
     const campaignsUrl = window.url('campaigns');
     const emailsUrl = window.url('emails');
+    const tagsUrl = window.url('tags');
     const settingsUrl = window.url('settings');
 
 
@@ -92,6 +93,8 @@ const Layout = ({ pageTitle, children }) => {
                                         </li>
                                     </ul>
                                 </li>
+
+                                <li><a href={tagsUrl}><i className="fa fa-tags orange_color"></i> <span>Tags</span></a></li>
                             </ul>
                         </div>
                     </nav>
