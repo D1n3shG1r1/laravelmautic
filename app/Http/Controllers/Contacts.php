@@ -171,4 +171,48 @@ class Contacts extends Controller
         }
         return response()->json($response); die;
     }
+
+    function contact($id){
+        if($this->USERID > 0){
+            $csrfToken = csrf_token();
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
+             //tags_contacts_model
+            if ($isAdmin > 0) {
+                $contactObj = contacts_model::where("created_by_company", $userCompany)->where("id", $id)->first();
+            } else {
+                $contactObj = contacts_model::where("created_by", $this->USERID)->where("id", $id)->first();
+            }
+
+            if($contactObj){
+                
+                $data["contactsUrl"] = url('contacts');
+                $data["contact"] = $contactObj;
+                
+                //echo "<pre>"; print_r($data); die;
+
+                return Inertia::render('EditContact', [
+                    'pageTitle'  => 'Edit Contact',
+                    'csrfToken' => $csrfToken,
+                    'params' => $data
+                ]);
+
+            }else{
+                // Return a 404 response
+                abort(404, 'Page not found');
+            }
+            
+        }else{
+            //redirect to signin
+            return Redirect::to(url('signin'));
+        }
+    }
+    
+    function update(Request $request){
+
+    }
+    
+    function delete(Request $request){
+
+    }
 }

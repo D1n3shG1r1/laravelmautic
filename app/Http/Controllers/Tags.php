@@ -91,18 +91,203 @@ class Tags extends Controller
     }
     
     function save(Request $request){
+        //dd($request); die;
+        if($this->USERID > 0){
+            $userCompany = $this->getSession('companyId');
+            $firstName = $this->getSession('firstName');
+            $lastName = $this->getSession('lastName');
+            $fullName = $firstName." ".$lastName; 
+            $today = date("Y-m-d");
+            
+            $formData = $request->input("formData");
+            
+            $unserializeFormData = [];
+            parse_str($formData,$unserializeFormData);
+            
+            $name = strtolower($unserializeFormData["name"]);
+            $description = $unserializeFormData["description"];
+            
 
+            // Define the validation rules
+            $rules = [
+                'name' => 'required|string|min:2|max:50'
+            ];
+
+            // Create the validator instance
+            $validator = Validator::make($unserializeFormData, $rules);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                // Return a JSON response with errors
+                $response = [
+                    'C' => 102,
+                    'M' => $this->ERRORS[102],
+                    'R' => $validator->errors(),
+                ];
+
+            }else{
+
+                $tagObj = new tags_model();
+                //$tagObj->id
+                $tagObj->tag = $name;
+                $tagObj->description = $description;
+                $tagObj->date_added = $today;
+                $tagObj->created_by = $this->USERID;
+                $tagObj->created_by_user = $fullName;
+                $tagObj->created_by_company = $userCompany;
+                $tagObj->date_modified = $today;
+                $tagObj->modified_by = $this->USERID;
+                $tagObj->modified_by_user = $fullName;
+
+                $tagObj->save();
+                //$tagObj->id;
+                
+                $response = [
+                    'C' => 100,
+                    'M' => $this->ERRORS[115],
+                    'R' => [],
+                ];
+            }
+        
+        }else{
+            //session expired
+            $response = [
+                'C' => 1004,
+                'M' => $this->ERRORS[1004],
+                'R' => [],
+            ];
+        }
+        return response()->json($response); die;
     }
     
-    function tag(Request $request){
+    function tag($id){
+        if($this->USERID > 0){
+            $csrfToken = csrf_token();
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
+             //tags_contacts_model
+            if ($isAdmin > 0) {
+                $tagObj = tags_model::where("created_by_company", $userCompany)->where("id", $id)->first();
+            } else {
+                $tagObj = tags_model::where("created_by", $this->USERID)->where("id", $id)->first();
+            }
 
+            if($tagObj){
+                
+                $data["tagsUrl"] = url('tags');
+                $data["tag"] = $tagObj;
+                
+                return Inertia::render('EditTag', [
+                    'pageTitle'  => 'Edit Tag',
+                    'csrfToken' => $csrfToken,
+                    'params' => $data
+                ]);
+
+            }else{
+                // Return a 404 response
+                abort(404, 'Page not found');
+            }
+            
+        }else{
+            //redirect to signin
+            return Redirect::to(url('signin'));
+        }
     }
     
     function update(Request $request){
+        if($this->USERID > 0){
+            $userCompany = $this->getSession('companyId');
+            $firstName = $this->getSession('firstName');
+            $lastName = $this->getSession('lastName');
+            $fullName = $firstName." ".$lastName; 
+            $today = date("Y-m-d");
+            
+            $formData = $request->input("formData");
+            
+            $unserializeFormData = [];
+            parse_str($formData,$unserializeFormData);
 
+            $id = strtolower($unserializeFormData["tagId"]);
+            $name = strtolower($unserializeFormData["name"]);
+            $description = $unserializeFormData["description"];
+
+            // Define the validation rules
+            $rules = [
+                'name' => 'required|string|min:2|max:50'
+            ];
+
+            // Create the validator instance
+            $validator = Validator::make($unserializeFormData, $rules);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                // Return a JSON response with errors
+                $response = [
+                    'C' => 102,
+                    'M' => $this->ERRORS[102],
+                    'R' => $validator->errors(),
+                ];
+
+                
+            }else{
+                
+                $updateData = array(
+                    "tag" => $name,
+                    "description" => $description,
+                    "date_modified" => $today,
+                    "modified_by" => $this->USERID,
+                    "modified_by_user" => $fullName
+                );
+
+                tags_model::where("created_by_company",$userCompany)->where("id",$id)->update($updateData);
+
+                $response = [
+                    'C' => 100,
+                    'M' => $this->ERRORS[117],
+                    'R' => [],
+                ];
+
+            }
+
+        }else{
+            //session expired
+            $response = [
+                'C' => 1004,
+                'M' => $this->ERRORS[1004],
+                'R' => [],
+            ];
+        }
+        return response()->json($response); die;
     }
     
     function delete(Request $request){
+        if($this->USERID > 0){
+            $csrfToken = csrf_token();
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
 
+            $id = $request->input("id");
+             
+            tags_model::where("created_by_company", $userCompany)->where("id", $id)->delete();
+            tags_contacts_model::where("tag_id", $id)->delete();
+            
+            $response = [
+                'C' => 100,
+                'M' => $this->ERRORS[116],
+                'R' => [],
+            ];
+
+
+        }else{
+            //session expired
+            
+            $response = [
+                'C' => 1004,
+                'M' => $this->ERRORS[1004],
+                'R' => [],
+            ];
+        }
+
+        return response()->json($response); die;
     }
 }

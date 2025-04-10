@@ -71,9 +71,9 @@ const Layout = ({ pageTitle, children }) => {
                         <div className="sidebar_blog_2">
                             <h4>General</h4>
                             <ul className="list-unstyled components">
-                                <li><a href={dashboardUrl}><i className="fa fa-line-chart yellow_color"></i> <span>Dashboard</span></a></li>
+                                <li><a href={dashboardUrl}><i className="fa fa-line-chart orange_color"></i> <span>Dashboard</span></a></li>
                                 <li><a href={contactsUrl}><i className="fa fa-user orange_color"></i> <span>Contacts</span></a></li>
-                                <li><a href={companiesUrl}><i className="fa fa-building-o orange_color"></i> <span>Companies</span></a></li>
+                                {/*<li><a href={companiesUrl}><i className="fa fa-building-o orange_color"></i> <span>Companies</span></a></li>*/}
                                 <li><a href={segmentsUrl}><i className="fa fa-pie-chart orange_color"></i> <span>Segments</span></a></li>
                                 <li><a href={campaignsUrl}><i className="fa fa-bullhorn orange_color"></i> <span>Campaigns</span></a></li>
                                 <li>

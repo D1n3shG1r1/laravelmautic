@@ -35,6 +35,9 @@ Route::get('/dashboard',[Dashboard::class,'dashboard']);
 Route::get('/contacts',[Contacts::class,'contacts']);
 Route::get('/contacts/new',[Contacts::class,'new']);
 Route::post('/contact/save',[Contacts::class,'save']);
+Route::get('/contact/edit/{id}',[Contacts::class,'contact']);
+Route::post('/contact/update',[Contacts::class,'update']);
+Route::post('/contact/delete',[Contacts::class,'delete']);
 
 Route::get('/segments',[Segments::class,'segments']);
 Route::get('/segments/new',[Segments::class,'new']);

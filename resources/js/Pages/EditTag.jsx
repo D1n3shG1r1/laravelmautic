@@ -12,19 +12,30 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Styles from "../../css/Modules/Tags.module.css"; // Import styles from the CSS module
 var filtersCount = 0;
 const newtag = ({pageTitle,csrfToken,params}) => {
-    //console.log(pageTitle,csrfToken,params);
+    
+    const tag = params.tag;
     var decsriptionData = '';
     const formRef = useRef();
 
     const descriptionMaxLength = 160;
     const [formValues, setFormValues] = useState({
-        name: '',
-        description: ''
+        name: tag.tag || '',
+        description: tag.description || ''
     });
 
     const [editorData, setEditorData] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     
+    useEffect(() => {
+        if (tag.description) {
+            setEditorData(tag.description);
+            setFormValues((prevValues) => ({
+                ...prevValues,
+                description: tag.description,
+            }));
+        }
+    }, [tag.description]);
+
     const handleEditorChange = (event, editor) => {
         const data = editor.getData();
         if (data.length > descriptionMaxLength) {
@@ -81,7 +92,7 @@ const newtag = ({pageTitle,csrfToken,params}) => {
         setIsLoading(true);
 
 
-        var url = "tag/save";
+        var url = "tag/update";
 
         // Check if the form exists
         const tagForm = document.getElementById("tagForm");
@@ -132,7 +143,7 @@ const newtag = ({pageTitle,csrfToken,params}) => {
                 <div className="row column_title">
                     <div className="col-md-12">
                         <div className="page_title">
-                            <h2>Create new tag</h2>
+                            <h2>Tag</h2>
                         </div>
                     </div>
                 </div>
@@ -158,6 +169,9 @@ const newtag = ({pageTitle,csrfToken,params}) => {
                                                         <div className="row mb-3">
                                                             <div className="col-md-12">
                                                                 <InputLabel className="form-label" value="Name"/>
+                                                                
+                                                                <TextInput type="hidden" className="form-control" name="tagId" id="tagId" placeholder="Tag ID" defaultValue={tag.id} />
+
                                                                 <TextInput type="text" className="form-control" name="name" id="name" placeholder="Tag Name" value={formValues.name} onChange={handleInputChange} />
                                                             </div>
                                                             

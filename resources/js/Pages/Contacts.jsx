@@ -1,13 +1,25 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Layout from '@/Layouts/Layout';  // Import the layout component
 import NavLink from '@/Components/NavLink';
+import LinkButton from '@/Components/LinkButton';
+import ConfirmBox from '@/Components/ConfirmBox';
 import { Link } from '@inertiajs/react'; // Ensure you're using Inertia's Link
 
 import Styles from "../../css/Modules/Contacts.module.css"; // Import styles from the CSS module
 
 const Contacts = ({ pageTitle, csrfToken, params }) => {
+    
     const contacts = params.contacts.data;
     const links = params.contacts.links;
+
+    useEffect(() => {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltips = [...tooltipTriggerList].map((tooltip) => new bootstrap.Tooltip(tooltip));
+        
+        return () => {
+            tooltips.forEach((tooltip) => tooltip.dispose());
+        };
+    }, []);
 
     let prevLink = links[0]?.url || '';
     let nextLink = links[links.length - 1]?.url || '';
@@ -46,6 +58,56 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
         activePageNum = "1";
     }
 
+
+    const editContact = (id) =>{
+        window.location.href = window.url('contact/edit/'+id);
+    };
+
+    const [showConfirmBox, setShowConfirmBox] = useState(false);
+    const [currentId, setCurrentId] = useState(null); // State to hold the current ID
+    const [currentName, setCurrentName] = useState(null); // State to hold the current ID
+  
+    const deleteContact = (contact) =>{
+        const name = contact.title+' '+contact.firstname+' '+contact.lastname;
+        setCurrentId(contact.id); // Set the ID when the confirm box is shown
+        setCurrentName(name);
+        setShowConfirmBox(true); // Show the custom confirmation box
+    };
+    
+    const handleYes = () => {
+      
+        const url = "contact/delete";
+        const postJson = {
+            "_token": csrfToken,
+            "id": currentId
+        };
+        
+        httpRequest(url, postJson, function(resp){
+            var C = resp.C;
+            var error = resp.M.error;
+            var msg = resp.M.message;
+            var R = resp.R;
+            
+            if(C == 100 && error == 0){
+                //signup successfull
+                showToastMsg(error, msg);
+                window.location.href = params.tagsUrl;
+
+            }else{
+               showToastMsg(error, msg);
+            }
+        
+            setShowConfirmBox(false); // Hide the custom confirmation box
+            
+        });
+
+      
+    };
+  
+    const handleNo = () => {
+      setShowConfirmBox(false); // Hide the custom confirmation box
+    };
+
     return (
         <Layout pageTitle={pageTitle}>
             <div className="midde_cont">
@@ -80,13 +142,16 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                                                 <tr>
                                                     <th>Name</th>
                                                     <th>Email</th>
+                                                    <th>Date created</th>
+                                                    <th>Created by</th>
                                                     <th>ID</th>
+                                                    <th>Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {contacts.length === 0 ? (
                                                     <tr>
-                                                        <td colSpan="3" style={{ textAlign: "center" }}>
+                                                        <td colSpan="6" style={{ textAlign: "center" }}>
                                                             No contacts available.
                                                         </td>
                                                     </tr>
@@ -94,19 +159,31 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                                                     contacts.map(contact => (
                                                         <tr key={contact.id}>
                                                             <td>
-                                                                <Link href={`/contact/${contact.id}`} style={{ textDecoration: 'none' }}>
-                                                                    {contact.title} {contact.firstname} {contact.lastname}
-                                                                </Link>
+                                                                {contact.title} {contact.firstname} {contact.lastname}
                                                             </td>
                                                             <td>
-                                                                <Link href={`/contact/${contact.id}`} style={{ textDecoration: 'none' }}>
-                                                                    {contact.email}
-                                                                </Link>
+                                                                {contact.email}
                                                             </td>
                                                             <td>
-                                                                <Link href={`/contact/${contact.id}`} style={{ textDecoration: 'none' }}>
-                                                                    {contact.id}
-                                                                </Link>
+                                                                {contact.date_added}
+                                                            </td>
+                                                            <td>
+                                                                {contact.created_by_user}
+                                                            </td>
+
+                                                            <td>
+                                                                {contact.id}
+                                                            </td>
+                                                            <td>
+                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => editContact(contact.id)} title="Edit">
+                                                                    <i className={`${Styles.filterTrashIcon} fa fa-edit`}></i>
+                                                                </LinkButton>
+
+                                                                <span className={`${Styles.buttonSeprator}`}></span>
+
+                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => deleteContact(contact)} title="Delete">
+                                                                    <i className={`${Styles.filterTrashIcon} fa fa-trash-o`}></i>
+                                                                </LinkButton>
                                                             </td>
                                                         </tr>
                                                     ))
@@ -153,6 +230,14 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                     </div>
                 </div>
             </div>
+
+            {showConfirmBox && (
+            <ConfirmBox
+                message={`Delete the contact, ${currentName} (${currentId})? It will be removed from all associated records.`}
+                onConfirm={handleYes}
+                onCancel={handleNo}
+            />
+            )}
         </Layout>
     );
 };

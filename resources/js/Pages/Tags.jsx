@@ -12,6 +12,16 @@ const Tags = ({ pageTitle, csrfToken, params }) => {
     const tags = params.tags.data;
     const links = params.tags.links;
 
+
+    useEffect(() => {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltips = [...tooltipTriggerList].map((tooltip) => new bootstrap.Tooltip(tooltip));
+        
+        return () => {
+            tooltips.forEach((tooltip) => tooltip.dispose());
+        };
+    }, []);
+    
     let prevLink = links[0]?.url || '';
     let nextLink = links[links.length - 1]?.url || '';
 
@@ -49,18 +59,17 @@ const Tags = ({ pageTitle, csrfToken, params }) => {
         activePageNum = "1";
     }
 
-    const editSegment = (id) =>{
+    const editTag = (id) =>{
         window.location.href = window.url('tag/edit/'+id);
     };
 
-    
     const [showConfirmBox, setShowConfirmBox] = useState(false);
     const [currentId, setCurrentId] = useState(null); // State to hold the current ID
     const [currentName, setCurrentName] = useState(null); // State to hold the current ID
   
-    const deleteSegment = (segment) =>{
-        setCurrentId(segment.id); // Set the ID when the confirm box is shown
-        setCurrentName(segment.name);
+    const deleteTag = (tag) =>{
+        setCurrentId(tag.id); // Set the ID when the confirm box is shown
+        setCurrentName(tag.tag);
         setShowConfirmBox(true); // Show the custom confirmation box
     };
     
@@ -81,7 +90,7 @@ const Tags = ({ pageTitle, csrfToken, params }) => {
             if(C == 100 && error == 0){
                 //signup successfull
                 showToastMsg(error, msg);
-                window.location.href = params.segmentsUrl;
+                window.location.href = params.tagsUrl;
 
             }else{
                showToastMsg(error, msg);
@@ -150,7 +159,7 @@ const Tags = ({ pageTitle, csrfToken, params }) => {
                                                     tags.map(tag => (
                                                         <tr key={tag.id}>
                                                             <td>
-                                                                {tag.name}
+                                                                {tag.tag}
                                                             </td>
                                                             <td>
                                                                 {tag.contacts}
@@ -223,7 +232,7 @@ const Tags = ({ pageTitle, csrfToken, params }) => {
             </div>
             {showConfirmBox && (
             <ConfirmBox
-                message={`Delete the tag, ${currentName} (${currentId})?`}
+                message={`Delete the tag, ${currentName} (${currentId})? It will be removed from all associated contacts.`}
                 onConfirm={handleYes}
                 onCancel={handleNo}
             />

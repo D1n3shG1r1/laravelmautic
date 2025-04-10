@@ -20,6 +20,11 @@ return [
     "112" => ["error" => 0,"message" =>"The email DNS has been saved successfully."],
     "113" => ["error" => 0,"message" =>"Your SMTP configuration has been successfully passed."],
     "114" => ["error" => 0,"message" =>"Connection could not be established with host."],
+    "115" => ["error" => 0,"message" =>"The tag has been successfully created."],
+    "116" => ["error" => 0,"message" =>"The tag was successfully deleted."],
+    "117" => ["error" => 0,"message" =>"The tag has been successfully updated."],
+
+
     
     "1004" => ["error" => 1,"message" =>"Your session has expired. Please log in again to continue."],
 
