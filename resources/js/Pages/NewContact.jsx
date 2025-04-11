@@ -11,8 +11,36 @@ import Styles from "../../css/Modules/Contacts.module.css"; // Import styles fro
 const newcontact = ({pageTitle,csrfToken,params}) => {
 
     //title fname lname email company position address1 address2 city state mobile phone points fax website facebook foursquare instagram linkedin skype twitter stage contactowner tags
-
+    const tags = params.tags;
     const [isLoading, setIsLoading] = useState(false);
+    
+    // State to hold the selected tag ids
+    const [selectedTags, setSelectedTags] = useState([]);
+
+    useEffect(() => {
+        //if (window.jQuery) {
+          // Initialize Select2 for the tags select input
+        $('#contactTags').select2({
+            placeholder: "Select contact tags",
+            allowClear: true,
+            width: '100%', // Makes it responsive
+            dropdownParent: $('#tagsContainer'),
+        });
+
+        // Listen to the change event on the select2 element
+        $('#contactTags').on('change', function () {
+            const selectedValues = $(this).val(); // Get the selected values from Select2
+            setSelectedTags(selectedValues); // Update state
+            console.log('Selected Tags:', selectedValues); // Log the selected values for debugging
+        });
+
+        // Cleanup Select2 and event listener when the component unmounts
+        return () => {
+            $('#contactTags').select2('destroy'); // Destroy Select2 instance
+            $('#contactTags').off('change'); // Remove the change event listener
+        };
+        //}
+      }, []);
     
     const formRef = useRef();
     
@@ -28,6 +56,8 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         address2: '',
         city: '',
         state: '',
+        zip: '',
+        country: '',
         mobile: '',
         phone: '',
         points: 0,
@@ -53,9 +83,15 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         });
     };
 
+    const handleTagChange = (event) => {
+        const selectedValues = Array.from(event.target.selectedOptions, (option) => option.value);
+        setSelectedTags(selectedValues);
+        console.log('Selected Tags:', selectedValues); 
+    };
+
     const save = (event) => {
         event.preventDefault();
-
+        console.log('Submitting Selected Tags:', selectedTags); 
         const minLength = 2;
         const maxLength = 50;
         const validCharacters = /^[A-Za-z0-9\s]+$/; // Only letters, numbers and spaces
@@ -71,6 +107,8 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         const zip = document.getElementById("zip").value;
         const country = document.getElementById("country").value;
         const mobile = document.getElementById("mobile").value;
+        const contactTags = selectedTags;
+        
         /*
         const company = document.getElementById("company").value;
         const position = document.getElementById("position").value;
@@ -150,7 +188,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         }
         
         if(isRealVal(address1)){
-            if(address1.length > minLength || address1.length > maxLength){
+            if(address1.length < minLength || address1.length > maxLength){
                 var err = 1;
                 var msg = "Address Line must be between 2 and 50 characters long.";
                 showToastMsg(err, msg);
@@ -167,7 +205,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         }
 
         if(isRealVal(address2)){
-            if(address2.length > minLength || address2.length > maxLength){
+            if(address2.length < minLength || address2.length > maxLength){
                 var err = 1;
                 var msg = "Address Line must be between 2 and 50 characters long.";
                 showToastMsg(err, msg);
@@ -184,7 +222,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         }
 
         if(isRealVal(city)){
-            if(city.length > minLength || city.length > maxLength){
+            if(city.length < minLength || city.length > maxLength){
                 var err = 1;
                 var msg = "City must be between 2 and 50 characters long.";
                 showToastMsg(err, msg);
@@ -201,7 +239,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         }
 
         if(isRealVal(state)){
-            if(state.length > minLength || state.length > maxLength){
+            if(state.length < minLength || state.length > maxLength){
                 var err = 1;
                 var msg = "State must be between 2 and 50 characters long.";
                 showToastMsg(err, msg);
@@ -218,7 +256,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         }
 
         if(isRealVal(zip)){
-            if(zip.length > minLength || zip.length > maxLength){
+            if(zip.length < minLength || zip.length > maxLength){
                 var err = 1;
                 var msg = "Zip must be between 2 and 50 characters long.";
                 showToastMsg(err, msg);
@@ -235,7 +273,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         }
 
         if(isRealVal(country)){
-            if(country.length > minLength || country.length > maxLength){
+            if(country.length < minLength || country.length > maxLength){
                 var err = 1;
                 var msg = "Country must be between 2 and 50 characters long.";
                 showToastMsg(err, msg);
@@ -273,7 +311,8 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
             "state":state,
             "zipcode":zip,
             "country":country,
-            "mobile":mobile
+            "mobile":mobile,
+            "tags":contactTags
         };
         
         httpRequest(url, postJson, function(resp){
@@ -282,10 +321,10 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
             var msg = resp.M.message;
             var R = resp.R;
 
-            /*if(C == 100 && error == 0){
+            if(C == 100 && error == 0){
                 //signup successfull
                 showToastMsg(error, msg);
-                window.location.href = params.signinUrl;
+                window.location.href = params.contactsUrl;
 
             }else{
                 if(C == 102){
@@ -293,7 +332,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                     msg = JSON.stringify(R); 
                 }
                 showToastMsg(error, msg);
-            }*/
+            }
 
             setIsLoading(false);
         });
@@ -302,6 +341,17 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
 
     return (
     <Layout pageTitle={pageTitle}>
+         <style>
+            {`
+                #tagsContainer .select2-container .selection {
+                    width: 100%;
+                }
+
+                #contactTags {
+                    width: 100% !important;
+                }
+            `}
+        </style>
         <div className="midde_cont">
             <div className="container-fluid">
                 <div className="row column_title">
@@ -412,14 +462,29 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                                             </div>
                                             
                                             <div className="form-group mb-3">
-                                                <div className="row">
-                                                    <div className="col-md-12">
+                                                <div className="row mb-3">
+                                                    <div className="col-md-6">
                                                         <InputLabel className="form-label" value="Mobile"/>
-                                                    </div>
-                                                </div>
-                                                <div className="row">
-                                                    <div className="col-md-12">
                                                         <TextInput type="text" className="form-control" name="mobile" id="mobile" placeholder="Mobile" value={formValues.mobile} onChange={handleInputChange}/>
+                                                    </div>
+                                                
+                                                    <div id="tagsContainer" className="col-md-6">
+                                                        <InputLabel className="form-label" value="Tags"/>
+                                                        {/*<TextInput type="text" className="form-control" name="tags" id="tags" placeholder="Tags" value={formValues.tags} onChange={handleInputChange}/>*/}
+                                                        
+                                                        <select id="contactTags" multiple="multiple" className="form-select"
+                                                        style={{ width: '100%' }}
+                                                        value={selectedTags}>
+                                                        {tags.map((tag) => (
+                                                            <option
+                                                            key={`tag_${tag.id}`}
+                                                            id={`tag_${tag.id}`}
+                                                            title={`${tag.tag}`}
+                                                            value={tag.id}>
+                                                                {`${tag.tag}`}
+                                                            </option>
+                                                            ))}
+                                                        </select>
                                                     </div>
                                                 </div>
                                             </div>
@@ -533,13 +598,12 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                                                         <InputLabel className="form-label" value="Contact Owner"/>
                                                         <TextInput type="text" className="form-control" name="contactowner" id="contactowner" placeholder="Contact Owner" value={formValues.contactowner} onChange={handleInputChange}/>
                                                     </div>
-                                                    <div className="col-md-6">
-                                                        <InputLabel className="form-label" value="Tags"/>
-                                                        <TextInput type="text" className="form-control" name="tags" id="tags" placeholder="Tags" value={formValues.tags} onChange={handleInputChange}/>
+                                                    <div id="tagsContainer" className="col-md-6">
                                                     </div>
                                                 </div>
                                             </div>
-                                            */}    
+                                            */}
+                                                
                                             <div className="form-group mb-3">
                                                 <div className="row">
                                                     <div className="col-md-6">

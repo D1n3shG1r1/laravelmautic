@@ -15,6 +15,8 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
 
 use App\Models\contacts_model;
+use App\Models\tags_model;
+use App\Models\tags_contacts_model;
 use App\Models\role_model;
 class Contacts extends Controller
 {
@@ -39,6 +41,7 @@ class Contacts extends Controller
             }
             
             $data = array();
+            $data["contactsUrl"] = url('contacts');
             $data["contacts"] = $contactsObj;
 
             return Inertia::render('Contacts', [
@@ -56,8 +59,18 @@ class Contacts extends Controller
     function new(Request $request){
         if($this->USERID > 0){
             $csrfToken = csrf_token();
-        
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
+
+            if ($isAdmin > 0) {
+                $tags = tags_model::select("id","tag")->where("created_by_company", $userCompany)->get();
+            } else {
+                $tags = tags_model::select("id","tag")->where("created_by", $this->USERID)->get();
+            }
+            
             $data = array();
+            $data["contactsUrl"] = url('contacts');
+            $data["tags"] = $tags;
             
             return Inertia::render('NewContact', [
                 'pageTitle'  => 'New Contact',
@@ -72,6 +85,8 @@ class Contacts extends Controller
     }
 
     function save(Request $request){
+
+        dd($request); die;
         if($this->USERID > 0){
             $userCompany = $this->getSession('companyId');
             $firstName = $this->getSession('firstName');
@@ -151,7 +166,7 @@ class Contacts extends Controller
                     $contactObj->points = 0;
                     $contactObj->save();
                     $conatctId = $contactObj->id;
-
+                    
                     $response = [
                         'C' => 100,
                         'M' => $this->ERRORS[105],
@@ -209,7 +224,92 @@ class Contacts extends Controller
     }
     
     function update(Request $request){
+        if($this->USERID > 0){
+            $userCompany = $this->getSession('companyId');
+            $firstName = $this->getSession('firstName');
+            $lastName = $this->getSession('lastName');
+            $fullName = $firstName." ".$lastName; 
+            $today = date("Y-m-d");
 
+            $id = $request->input("id");
+            $title = $request->input("title");
+            $firstname = $request->input("firstname");
+            $lastname = $request->input("lastname");
+            $email = $request->input("email");
+            $address1 = $request->input("address1");
+            $address2 = $request->input("address2");
+            $city = $request->input("city");
+            $state = $request->input("state");
+            $zip = $request->input("zipcode");
+            $country = $request->input("country");
+            $mobile = $request->input("mobile");
+
+            // Define the validation rules
+            $rules = [
+                'title' => 'required|string|min:2|max:50',
+                'firstname' => 'required|string|min:2|max:50',
+                'lastname' => 'required|string|min:2|max:50',
+                'email' => 'required|email|unique:users,email',
+                'address1' => 'nullable|string|min:2|max:50',
+                'address2' => 'nullable|string|min:2|max:50',
+                'city' => 'nullable|string|min:2|max:50',
+                'state' => 'nullable|string|min:2|max:50',
+                'zip' => 'nullable|string|min:2|max:50',
+                'country' => 'nullable|string|min:2|max:50',
+                'mobile' => 'nullable|string|min:10|max:15',
+            ];
+
+            // Create the validator instance
+            $validator = Validator::make($request->all(), $rules);        
+        
+            // Check if validation fails
+            if ($validator->fails()) {
+                // Return a JSON response with errors
+                $response = [
+                    'C' => 102,
+                    'M' => $this->ERRORS[102],
+                    'R' => $validator->errors(),
+                ];
+            
+            }else{
+
+                $updateData = array(
+                    "title" => $title,
+                    "firstname" => $firstname,
+                    "lastname" => $lastname,
+                    "email" => $email,
+                    "address1" => $address1,
+                    "address2" => $address2,
+                    "city" => $city,
+                    "state" => $state,
+                    "zipcode" => $zip,
+                    "country" => $country,
+                    "mobile" => $mobile,
+                    "date_modified" => $today,
+                    "modified_by" => $this->USERID,
+                    "modified_by_user" => $fullName
+                );
+
+                
+                contacts_model::where("created_by_company",$userCompany)->where("id",$id)->update($updateData);
+
+                $response = [
+                    'C' => 100,
+                    'M' => $this->ERRORS[118],
+                    'R' => [],
+                ];
+            }
+
+        }else{
+            //session expired
+            $response = [
+                'C' => 1004,
+                'M' => $this->ERRORS[1004],
+                'R' => [],
+            ];
+        }
+
+        return response()->json($response); die;
     }
     
     function delete(Request $request){

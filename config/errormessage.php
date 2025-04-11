@@ -23,7 +23,7 @@ return [
     "115" => ["error" => 0,"message" =>"The tag has been successfully created."],
     "116" => ["error" => 0,"message" =>"The tag was successfully deleted."],
     "117" => ["error" => 0,"message" =>"The tag has been successfully updated."],
-
+    "118" => ["error" => 0,"message" =>"The contact has been successfully updated."],
 
     
     "1004" => ["error" => 1,"message" =>"Your session has expired. Please log in again to continue."],

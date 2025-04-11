@@ -31,6 +31,8 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         address2: contact.address2 || '',
         city: contact.city || '',
         state: contact.state || '',
+        zip: contact.zipcode || '',
+        country: contact.country || '',
         mobile: contact.mobile || '',
         phone: contact.phone || '',
         points: contact.points,
@@ -152,9 +154,9 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
             showToastMsg(err, msg);
             return false;
         }
-        
+        console.log('address1.length:'+address1.length);
         if(isRealVal(address1)){
-            if(address1.length > minLength || address1.length > maxLength){
+            if(address1.length < minLength || address1.length > maxLength){
                 var err = 1;
                 var msg = "Address Line must be between 2 and 50 characters long.";
                 showToastMsg(err, msg);
@@ -171,7 +173,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         }
 
         if(isRealVal(address2)){
-            if(address2.length > minLength || address2.length > maxLength){
+            if(address2.length < minLength || address2.length > maxLength){
                 var err = 1;
                 var msg = "Address Line must be between 2 and 50 characters long.";
                 showToastMsg(err, msg);
@@ -188,7 +190,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         }
 
         if(isRealVal(city)){
-            if(city.length > minLength || city.length > maxLength){
+            if(city.length < minLength || city.length > maxLength){
                 var err = 1;
                 var msg = "City must be between 2 and 50 characters long.";
                 showToastMsg(err, msg);
@@ -205,7 +207,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         }
 
         if(isRealVal(state)){
-            if(state.length > minLength || state.length > maxLength){
+            if(state.length < minLength || state.length > maxLength){
                 var err = 1;
                 var msg = "State must be between 2 and 50 characters long.";
                 showToastMsg(err, msg);
@@ -222,7 +224,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         }
 
         if(isRealVal(zip)){
-            if(zip.length > minLength || zip.length > maxLength){
+            if(zip.length < minLength || zip.length > maxLength){
                 var err = 1;
                 var msg = "Zip must be between 2 and 50 characters long.";
                 showToastMsg(err, msg);
@@ -239,7 +241,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         }
 
         if(isRealVal(country)){
-            if(country.length > minLength || country.length > maxLength){
+            if(country.length < minLength || country.length > maxLength){
                 var err = 1;
                 var msg = "Country must be between 2 and 50 characters long.";
                 showToastMsg(err, msg);
@@ -264,7 +266,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
 
         setIsLoading(true);
         
-        var url = "contact/save";
+        var url = "contact/update";
         var postJson = {
             "_token":csrfToken,
             "id":id,
@@ -287,10 +289,10 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
             var msg = resp.M.message;
             var R = resp.R;
 
-            /*if(C == 100 && error == 0){
+            if(C == 100 && error == 0){
                 //signup successfull
                 showToastMsg(error, msg);
-                window.location.href = params.signinUrl;
+                window.location.href = params.contactsUrl;
 
             }else{
                 if(C == 102){
@@ -298,7 +300,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                     msg = JSON.stringify(R); 
                 }
                 showToastMsg(error, msg);
-            }*/
+            }
 
             setIsLoading(false);
         });
@@ -312,7 +314,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                 <div className="row column_title">
                     <div className="col-md-12">
                         <div className="page_title">
-                            <h2>New Contact</h2>
+                            <h2>Contact</h2>
                         </div>
                     </div>
                 </div>
