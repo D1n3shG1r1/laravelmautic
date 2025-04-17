@@ -86,7 +86,6 @@ class Contacts extends Controller
 
     function save(Request $request){
 
-        dd($request); die;
         if($this->USERID > 0){
             $userCompany = $this->getSession('companyId');
             $firstName = $this->getSession('firstName');
@@ -105,6 +104,8 @@ class Contacts extends Controller
             $zip = $request->input("zipcode");
             $country = $request->input("country");
             $mobile = $request->input("mobile");
+            $tags = $request->input("tags");
+            
 
             // Define the validation rules
             $rules = [
@@ -164,9 +165,24 @@ class Contacts extends Controller
                     $contactObj->created_by_user = $fullName; 
                     $contactObj->created_by_company = $userCompany;
                     $contactObj->points = 0;
-                    $contactObj->save();
+                    $saved = $contactObj->save();
                     $conatctId = $contactObj->id;
                     
+                    if($saved){
+                        if(!empty($tags)){
+                            
+                            $batchRows = [];
+                            foreach($tags as $tag){
+                                $batchRows[] = [  
+                                    "tag_id" => $tag,
+                                    "contact_id" => $conatctId,
+                                ];
+                            }
+
+                            $tagsSaved = tags_contacts_model::insert($batchRows);
+                        }
+                    }
+
                     $response = [
                         'C' => 100,
                         'M' => $this->ERRORS[105],
@@ -192,17 +208,32 @@ class Contacts extends Controller
             $csrfToken = csrf_token();
             $userCompany = $this->getSession('companyId');
             $isAdmin = $this->getSession('isAdmin');
-             //tags_contacts_model
+            
             if ($isAdmin > 0) {
                 $contactObj = contacts_model::where("created_by_company", $userCompany)->where("id", $id)->first();
             } else {
                 $contactObj = contacts_model::where("created_by", $this->USERID)->where("id", $id)->first();
             }
 
+            if ($isAdmin > 0) {
+                $tags = tags_model::select("id","tag")->where("created_by_company", $userCompany)->get();
+            } else {
+                $tags = tags_model::select("id","tag")->where("created_by", $this->USERID)->get();
+            }
+
             if($contactObj){
-                
+                $contactTags = array();
+                $contactTagsObj = tags_contacts_model::select("tag_id")->where("contact_id", $id)->get();
+                if($contactTagsObj){
+                    foreach($contactTagsObj as $contactTag){
+                        $contactTags[] = $contactTag["tag_id"];
+                    }
+                }
+
                 $data["contactsUrl"] = url('contacts');
                 $data["contact"] = $contactObj;
+                $data["tags"] = $tags;
+                $data["contactTags"] = $contactTags;
                 
                 //echo "<pre>"; print_r($data); die;
 
@@ -225,6 +256,7 @@ class Contacts extends Controller
     
     function update(Request $request){
         if($this->USERID > 0){
+            
             $userCompany = $this->getSession('companyId');
             $firstName = $this->getSession('firstName');
             $lastName = $this->getSession('lastName');
@@ -243,6 +275,7 @@ class Contacts extends Controller
             $zip = $request->input("zipcode");
             $country = $request->input("country");
             $mobile = $request->input("mobile");
+            $tags = $request->input("tags");
 
             // Define the validation rules
             $rules = [
@@ -292,6 +325,22 @@ class Contacts extends Controller
 
                 
                 contacts_model::where("created_by_company",$userCompany)->where("id",$id)->update($updateData);
+
+                // delete old entries and insert new one
+                $deleted = tags_contacts_model:: where("contact_id", $id)->delete();
+                if(!empty($tags)){
+                            
+                    $batchRows = [];
+                    foreach($tags as $tag){
+                        $batchRows[] = [  
+                            "tag_id" => $tag,
+                            "contact_id" => $id,
+                        ];
+                    }
+
+                    $tagsSaved = tags_contacts_model::insert($batchRows);
+                }
+
 
                 $response = [
                     'C' => 100,

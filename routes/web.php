@@ -20,6 +20,9 @@ use App\Http\Controllers\Test;
 
 //Route::get('/',[Campaign::class, 'index']);
 //Route::get('/campaignbuilder',[Campaign::class, 'campaignBuilder']);
+
+Route::get('/campaigns',[Campaign::class, 'campaigns']);
+Route::get('/campaigns/new',[Campaign::class, 'new']);
 Route::post('/newevent',[Campaign::class, 'getEventHtml']);
 Route::post('/savenewevent',[Campaign::class, 'saveEvent']);
 Route::post('/addcampaignsegment',[Campaign::class, 'addCampaignSegment']);

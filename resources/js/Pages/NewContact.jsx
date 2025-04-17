@@ -470,8 +470,6 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                                                 
                                                     <div id="tagsContainer" className="col-md-6">
                                                         <InputLabel className="form-label" value="Tags"/>
-                                                        {/*<TextInput type="text" className="form-control" name="tags" id="tags" placeholder="Tags" value={formValues.tags} onChange={handleInputChange}/>*/}
-                                                        
                                                         <select id="contactTags" multiple="multiple" className="form-select"
                                                         style={{ width: '100%' }}
                                                         value={selectedTags}>

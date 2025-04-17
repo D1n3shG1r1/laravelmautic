@@ -1,5 +1,12 @@
 <?php
-
+/* just for ref
+$this->setSession('userId',$userId);
+$this->setSession('roleId',$roleId);
+$this->setSession('companyId',$companyId);
+$this->setSession('userEmail',$userEmail);
+$this->setSession('firstName',$firstName);
+$this->setSession('lastName',$lastName);
+*/
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -11,8 +18,11 @@ use App\Models\campaign_events_model;
 use App\Models\contacts_model;
 use App\Models\segments_model;
 use App\Models\segment_contacts_model;
+use App\Models\role_model;
 use Facade\FlareClient\View;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Validator;
+
 
 //Manoj Nakra
 //https://us02web.zoom.us/j/8672294022?pwd=RVJxZnA3RktPT1Y3Kzk5bTFoSDFoQT09
@@ -28,7 +38,67 @@ return Inertia::render('Admin/Users',
 */
 class Campaign extends Controller
 {
-    //
+    
+    var $ERRORS = [];
+    var $USERID = 0;
+    function __construct(){
+        parent::__construct();    
+        $this->ERRORS = config("errormessage");
+        $this->USERID = $this->getSession('userId');
+    }
+    
+    function campaigns(Request $request){
+        if($this->USERID > 0){
+            $csrfToken = csrf_token();
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
+
+            if ($isAdmin > 0) {
+                $campaignsObj = campaigns_model::where("created_by_company", $userCompany)->paginate(10)->toArray();
+            } else {
+                $campaignsObj = campaigns_model::where("created_by", $this->USERID)->paginate(10)->toArray();
+            }
+            
+            $data = array();
+            $data["campaignsUrl"] = url('contacts');
+            $data["campaigns"] = $campaignsObj;
+            
+            //echo "data:<pre>"; print_r($data); die;
+
+            return Inertia::render('Campaigns', [
+                'pageTitle'  => 'Campaigns',
+                'csrfToken' => $csrfToken,
+                'params' => $data
+            ]);
+
+        }else{
+            //redirect to signin
+            return Redirect::to(url('signin'));
+        }
+    }
+
+    function new(Request $request){
+        if($this->USERID > 0){
+            $csrfToken = csrf_token();
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
+
+            $data = array();
+            $data["campaignsUrl"] = url('campaigns');
+            
+            return Inertia::render('NewCampaign', [
+                'pageTitle'  => 'New Campaign',
+                'csrfToken' => $csrfToken,
+                'params' => $data
+            ]);
+
+        }else{
+            //redirect to signin
+            return Redirect::to(url('signin'));
+        }
+    }
+    
+    // --- old code ok report
     function index(Request $request){
         
         $segments = array(

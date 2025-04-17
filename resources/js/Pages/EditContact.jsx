@@ -10,13 +10,48 @@ import Styles from "../../css/Modules/Contacts.module.css"; // Import styles fro
 
 const newcontact = ({pageTitle,csrfToken,params}) => {
     //params.contactsUrl
+    const contactsUrl = params.contactsUrl;
     const contact = params.contact;
-
+    const contactTags = params.contactTags;
+    const tags = params.tags;
 
     //title fname lname email company position address1 address2 city state mobile phone points fax website facebook foursquare instagram linkedin skype twitter stage contactowner tags
 
     const [isLoading, setIsLoading] = useState(false);
+
+    // State to hold the selected tag ids
+    const [selectedTags, setSelectedTags] = useState(contactTags);
+
+    useEffect(() => {
+        //if (window.jQuery) {
+        // Initialize Select2 for the tags select input
+        $('#contactTags').select2({
+            placeholder: "Select contact tags",
+            allowClear: true,
+            width: '100%', // Makes it responsive
+            dropdownParent: $('#tagsContainer'),
+        });
+
+        // After Select2 is initialized, set the pre-selected values
+        $('#contactTags').val(selectedTags).trigger('change');
+
+        // Listen to the change event on the select2 element
+        $('#contactTags').on('change', function () {
+            const selectedValues = $(this).val(); // Get the selected values from Select2
+            setSelectedTags(selectedValues); // Update state
+            console.log('Selected Tags:', selectedValues); // Log the selected values for debugging
+        });
+
+        // Cleanup Select2 and event listener when the component unmounts
+        return () => {
+            $('#contactTags').select2('destroy'); // Destroy Select2 instance
+            $('#contactTags').off('change'); // Remove the change event listener
+        };
+        //}
+      }, [selectedTags]);
     
+      
+
     const formRef = useRef();
     
     // States for form values and errors
@@ -77,6 +112,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         const zip = document.getElementById("zip").value;
         const country = document.getElementById("country").value;
         const mobile = document.getElementById("mobile").value;
+        const contactTags = selectedTags;
         /*
         const company = document.getElementById("company").value;
         const position = document.getElementById("position").value;
@@ -280,7 +316,8 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
             "state":state,
             "zipcode":zip,
             "country":country,
-            "mobile":mobile
+            "mobile":mobile,
+            "tags":contactTags
         };
         
         httpRequest(url, postJson, function(resp){
@@ -309,6 +346,17 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
 
     return (
     <Layout pageTitle={pageTitle}>
+        <style>
+            {`
+                #tagsContainer .select2-container .selection {
+                    width: 100%;
+                }
+
+                #contactTags {
+                    width: 100% !important;
+                }
+            `}
+        </style>
         <div className="midde_cont">
             <div className="container-fluid">
                 <div className="row column_title">
@@ -423,13 +471,28 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                                             
                                             <div className="form-group mb-3">
                                                 <div className="row">
-                                                    <div className="col-md-12">
+                                                    <div className="col-md-6">
                                                         <InputLabel className="form-label" value="Mobile"/>
-                                                    </div>
-                                                </div>
-                                                <div className="row">
-                                                    <div className="col-md-12">
                                                         <TextInput type="text" className="form-control" name="mobile" id="mobile" placeholder="Mobile" value={formValues.mobile} onChange={handleInputChange}/>
+                                                    </div>
+                                                    <div id="tagsContainer" className="col-md-6">
+                                                        <InputLabel className="form-label" value="Tags"/>
+                                                        <select id="contactTags" multiple="multiple" className="form-select"
+                                                        style={{ width: '100%' }}
+                                                        value={selectedTags}
+                                                        onChange={(e) => setSelectedTags([...e.target.selectedOptions].map(option => option.value))}
+                
+                                                        >
+                                                        {tags.map((tag) => (
+                                                            <option
+                                                            key={`tag_${tag.id}`}
+                                                            id={`tag_${tag.id}`}
+                                                            title={`${tag.tag}`}
+                                                            value={tag.id}>
+                                                                {`${tag.tag}`}
+                                                            </option>
+                                                            ))}
+                                                        </select>
                                                     </div>
                                                 </div>
                                             </div>

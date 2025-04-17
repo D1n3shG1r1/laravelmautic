@@ -5,12 +5,12 @@ import LinkButton from '@/Components/LinkButton';
 import ConfirmBox from '@/Components/ConfirmBox';
 import { Link } from '@inertiajs/react'; // Ensure you're using Inertia's Link
 
-import Styles from "../../css/Modules/Contacts.module.css"; // Import styles from the CSS module
+import Styles from "../../css/Modules/Campaigns.module.css"; // Import styles from the CSS module
 
-const Contacts = ({ pageTitle, csrfToken, params }) => {
-    
-    const contacts = params.contacts.data;
-    const links = params.contacts.links;
+const Campaigns = ({ pageTitle, csrfToken, params }) => {
+    //campaignsUrl 
+    const campaigns = params.campaigns.data;
+    const links = params.campaigns.links;
 
     useEffect(() => {
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
@@ -59,24 +59,24 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
     }
 
 
-    const editContact = (id) =>{
-        window.location.href = window.url('contact/edit/'+id);
+    const editCampaign = (id) =>{
+        window.location.href = window.url('campaign/edit/'+id);
     };
 
     const [showConfirmBox, setShowConfirmBox] = useState(false);
     const [currentId, setCurrentId] = useState(null); // State to hold the current ID
     const [currentName, setCurrentName] = useState(null); // State to hold the current ID
   
-    const deleteContact = (contact) =>{
-        const name = contact.title+' '+contact.firstname+' '+contact.lastname;
-        setCurrentId(contact.id); // Set the ID when the confirm box is shown
+    const deleteCampaign = (campaign) =>{
+        const name = campaign.title+' '+campaign.firstname+' '+campaign.lastname;
+        setCurrentId(campaign.id); // Set the ID when the confirm box is shown
         setCurrentName(name);
         setShowConfirmBox(true); // Show the custom confirmation box
     };
     
     const handleYes = () => {
       
-        const url = "contact/delete";
+        const url = "campaign/delete";
         const postJson = {
             "_token": csrfToken,
             "id": currentId
@@ -91,7 +91,7 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
             if(C == 100 && error == 0){
                 //signup successfull
                 showToastMsg(error, msg);
-                window.location.href = params.contactsUrl;
+                window.location.href = params.campaignsUrl;
 
             }else{
                showToastMsg(error, msg);
@@ -116,10 +116,10 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                         <div className="col-md-12">
                             <div className="page_title row">
                                 <div className="col-md-6">
-                                    <h2>Contacts</h2>
+                                    <h2>Campaigns</h2>
                                 </div>
                                 <div className={`${Styles.textAlignRight} col-md-6`}>
-                                    <NavLink className="btn cur-p btn-outline-primary" href="contacts/new">
+                                    <NavLink className="btn cur-p btn-outline-primary" href="campaigns/new">
                                         <i className={`${Styles.newBtnIcon} fa fa-plus`}></i> New
                                     </NavLink>
                                 </div>
@@ -132,7 +132,7 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                             <div className="white_shd full margin_bottom_30">
                                 <div className="full graph_head">
                                     <div className="heading1 margin_0">
-                                        <h2>Contacts List</h2>
+                                        <h2>Campaigns List</h2>
                                     </div>
                                 </div>
                                 <div className="table_section padding_infor_info">
@@ -149,33 +149,33 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {contacts.length === 0 ? (
+                                                {campaigns.length === 0 ? (
                                                     <tr>
                                                         <td colSpan="6" style={{ textAlign: "center" }}>
-                                                            No contacts available.
+                                                            No campaigns available.
                                                         </td>
                                                     </tr>
                                                 ) : (
-                                                    contacts.map(contact => (
-                                                        <tr key={contact.id}>
+                                                    campaigns.map(campaigns => (
+                                                        <tr key={campaign.id}>
                                                             <td>
-                                                                {contact.title} {contact.firstname} {contact.lastname}
+                                                                {campaign.title} {campaign.firstname} {campaign.lastname}
                                                             </td>
                                                             <td>
-                                                                {contact.email}
+                                                                {campaign.email}
                                                             </td>
                                                             <td>
-                                                                {contact.date_added}
+                                                                {campaign.date_added}
                                                             </td>
                                                             <td>
-                                                                {contact.created_by_user}
+                                                                {campaign.created_by_user}
                                                             </td>
 
                                                             <td>
-                                                                {contact.id}
+                                                                {campaign.id}
                                                             </td>
                                                             <td>
-                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => editContact(contact.id)} title="Edit">
+                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => editContact(campaign.id)} title="Edit">
                                                                     <i className={`${Styles.filterTrashIcon} fa fa-edit`}></i>
                                                                 </LinkButton>
 
@@ -233,7 +233,7 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
 
             {showConfirmBox && (
             <ConfirmBox
-                message={`Delete the contact, ${currentName} (${currentId})? It will be removed from all associated records.`}
+                message={`Delete the campaign, ${currentName} (${currentId})? It will be removed from all associated records.`}
                 onConfirm={handleYes}
                 onCancel={handleNo}
             />
@@ -242,4 +242,4 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
     );
 };
 
-export default Contacts;
+export default Campaigns;

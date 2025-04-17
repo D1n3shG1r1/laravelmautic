@@ -230,22 +230,6 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
       "plaintext":plaintext,
     };
     
-    console.log('isListEmail');
-    console.log(isListEmail);
-
-    console.log('selectedTemplateName');
-    console.log(selectedTemplateName);
-
-    console.log('htmlContent');
-    console.log(htmlContent);
-
-    console.log('cssContent');
-    console.log(cssContent);
-
-    console.log('postJson');
-    console.log(postJson);
-
-
     httpRequest(url, postJson, function(resp){
         var C = resp.C;
         var error = resp.M.error;

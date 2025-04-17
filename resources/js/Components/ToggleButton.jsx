@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const ToggleButton = ({ onToggle, state = false }) => {
+const ToggleButton = ({ onToggle, state = false, onText = "ON", offText = "OFF" }) => {
   const [isOn, setIsOn] = useState(state);
 
   const toggle = () => {
@@ -25,7 +25,7 @@ const ToggleButton = ({ onToggle, state = false }) => {
         style={{ width: "3em", height: "1.8em" }}
       />
       <label className="form-check-label ms-3" htmlFor="toggleSwitch">
-        {isOn ? "ON" : "OFF"}
+        {isOn ? onText : offText}
       </label>
     </div>
   );

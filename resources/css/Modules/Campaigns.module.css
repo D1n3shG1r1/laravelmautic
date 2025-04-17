@@ -1,0 +1,56 @@
+.buttonSeprator {
+    border-left: 1px solid #898989;
+    height: 10px;
+    width: 10px;
+    margin-left: 10px;
+}
+
+.textAlignRight{
+    text-align: right;
+}
+
+.newBtnIcon{
+    margin-right: 5px;
+}
+
+.photoSpan {
+    height: 223px;
+    width: 223px;
+    background-color: #fff;
+    border-radius: 5px;
+}
+
+.filterTrash {
+    padding: 5px 10px 5px 10px !important;
+    color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.filterTrash:hover {
+    padding: 5px 10px 5px 10px !important;
+    color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    background-color: #fff !important;
+}
+
+.filterTrashIcon {
+    color: #dc3545 !important;
+}
+
+.required:after {
+    content: " *";
+    color: #F86B4F;
+}
+
+.pdt_5{
+    padding-top: 5px;
+}
+
+.marginlrmin40{
+    margin-left: -40px !important;
+    margin-right: -40px !important;
+}
+
+.textRight{
+    text-align: right;
+}
