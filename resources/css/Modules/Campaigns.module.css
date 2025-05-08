@@ -54,3 +54,165 @@
 .textRight{
     text-align: right;
 }
+
+/*--- campaign builder ---*/
+
+
+.campaignBuilder {
+    position: absolute;
+    background: #e7dadaf2;
+    border: 1px solid #ddd;
+    overflow: auto;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1030;
+    /* width: 100%; */
+    /* height: 600px; */
+}
+
+
+.btnsBuilder {
+    position: fixed;
+    top: 15px;
+    right: 30px;
+    z-index: 1040;
+}
+
+.builderErrors {
+    position: fixed;
+    top: 52px;
+    right: 30px;
+    z-index: 1040;
+}
+
+.CampaignEventPanel {
+    left: 523px;
+    top: 85px;
+    /* width: 500px; */
+    /* height: 280px; */
+    margin: auto;
+    position: absolute;
+    padding: 10px 20px;
+    background-color: #ededed;
+    border: 1px solid #cdcdcd;
+    border-radius: 4px;
+    z-index: 1035;
+}
+
+.CampaignEventPanelGroups {
+    width: 500px;
+    height: 280px;
+}
+
+
+.panel{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+    border: 1px solid #ebedf0;
+    -webkit-box-shadow: 0 1px 1px #f3f3f3;
+    box-shadow: 0 1px 1px #f3f3f3;
+    background-color: #fff;
+    border-radius: 3px;
+}
+
+.panelSuccess {
+    border-color: rgb(0 0 0 / .03);
+}
+
+.panelPrimary {
+    border-color: rgb(0 0 0 / .03);
+}
+
+.panelHeading {
+    color: #fff;
+    background-color: #00B49C;
+    border-color: rgb(0 0 0 / .03);
+    padding: 0 15px;
+    border-bottom: 1px solid #fff0;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+}
+
+.panelTitle {
+    padding: 10px 0;
+    display: table-cell;
+    vertical-align: middle;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 15px;
+    color: inherit;
+}
+
+.textSuccess {
+    --bs-text-opacity: 1;
+    color: rgba(25 135 84);
+}
+
+.panelBody {
+    height: 150px;
+    flex-grow: 1;
+    padding: 15px;
+}
+
+.panelFooter {
+    overflow: hidden;
+    background-color: #fbfbfb;
+    padding: 10px 15px;
+    border-top: 1px solid #ebedf0;
+    border-bottom-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+.textCenter {
+    text-align: center!important;
+}
+
+.CampaignPasteContainer {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.EventGroupList {
+    width: 200px;
+}
+
+.CampaignCanvas {
+    height: 10000px;
+    width: 10000px;
+    position: relative;
+}
+
+.listCampaignLeadsource {
+    border: solid 1px #fdb933;
+}
+
+.listCampaignEvent, .listCampaignSource {
+    width: 200px;
+    height: 45px;
+    position: absolute;
+    padding: 10px 15px;
+    z-index: 1010;
+    background: #FFF;
+    border-radius: 3px;
+}
+
+.campaignEventContent {
+    cursor: pointer;
+    position: relative;
+}
+
+.ellipsis {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

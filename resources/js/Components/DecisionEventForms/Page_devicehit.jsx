@@ -15,6 +15,15 @@ const DecisionModalContent = (inputData) => {
   const csrftoken = inputData.inputData.csrftoken;
 
   useEffect(() => {
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltips = [...tooltipTriggerList].map((tooltip) => new bootstrap.Tooltip(tooltip));
+  
+    return () => {
+      tooltips.forEach((tooltip) => tooltip.dispose());
+    };
+  }, []);
+
+  useEffect(() => {
     if (window.jQuery) {
       
       // Initialize the Select2 plugin
@@ -219,42 +228,45 @@ const DecisionModalContent = (inputData) => {
 
     if(type != 'source'){
         
+        const connectingLine = {
+          source: parentNodeId,
+          target: id,
+          isSource: true,
+          isTarget: true,
+          anchor: "Continuous",
+          anchors: [
+              [anchSrcX, anchSrcY, anchSrcXornt, anchSrcYornt, anchSrcXofst, anchSrcYofst], 
+              [anchTrgX, anchTrgY, anchTrgXornt, anchTrgYornt, anchTrgXofst, anchTrgYofst],
+          ],
+          endpoint: ["Dot", { radius: 6 }],
+          /*paintStyle: { fill: "#4caf50" },
+          connector: ["Bezier", { curviness: 50 }],*/
+          connectorStyle: { stroke: "#4caf50", strokeWidth: 2 },
 
-        instance.connect(node, {
-            source: parentNodeId,
-            target: id,
-            isSource: true,
-            isTarget: true,
-            anchor: "Continuous",
-            anchors: [
-                [anchSrcX, anchSrcY, anchSrcXornt, anchSrcYornt, anchSrcXofst, anchSrcYofst], 
-                [anchTrgX, anchTrgY, anchTrgXornt, anchTrgYornt, anchTrgXofst, anchTrgYofst],
-            ],
-            endpoint: ["Dot", { radius: 6 }],
-            /*paintStyle: { fill: "#4caf50" },
-            connector: ["Bezier", { curviness: 50 }],*/
-            connectorStyle: { stroke: "#4caf50", strokeWidth: 2 },
+          Connector: ["Bezier", { curviness: 50 }], // Smooth curved lines
+          PaintStyle: { stroke: "#bbb", strokeWidth: 2 }, // Line color and thickness
+          HoverPaintStyle: { stroke: "#999", strokeWidth: 3 }, // Line hover style
+          EndpointStyle: { fill: "#bbb", radius: 5 }, // Circle at endpoints
 
-            Connector: ["Bezier", { curviness: 50 }], // Smooth curved lines
-            PaintStyle: { stroke: "#bbb", strokeWidth: 2 }, // Line color and thickness
-            HoverPaintStyle: { stroke: "#999", strokeWidth: 3 }, // Line hover style
-            EndpointStyle: { fill: "#bbb", radius: 5 }, // Circle at endpoints
+          overlays: [
+              [
+                  "Arrow",
+                  {
+                  width: 10,
+                  length: 10,
+                  location: 0.5, // Arrowhead at the end
+                  foldback: 0.8, // Arrowhead style
+                  id: "arrow",
+                  direction: 1, // Points forward
+                  paintStyle: { fill: "#bbb" }, // Arrowhead color
+                  },
+              ],
+          ],
+      };
 
-            overlays: [
-                [
-                    "Arrow",
-                    {
-                    width: 10,
-                    length: 10,
-                    location: 0.5, // Arrowhead at the end
-                    foldback: 0.8, // Arrowhead style
-                    id: "arrow",
-                    direction: 1, // Points forward
-                    paintStyle: { fill: "#bbb" }, // Arrowhead color
-                    },
-                ],
-            ],
-        });
+      console.log('connectingLine');
+      console.log(connectingLine);
+        instance.connect(node, connectingLine);
     }
 
   };

@@ -15,6 +15,7 @@ const Layout = ({ pageTitle, children }) => {
     const companiesUrl = window.url('companies');
     const segmentsUrl = window.url('segments');
     const campaignsUrl = window.url('campaigns');
+    const whatsappUrl = window.url('whatsapp');
     const emailsUrl = window.url('emails');
     const tagsUrl = window.url('tags');
     const settingsUrl = window.url('settings');
@@ -85,6 +86,12 @@ const Layout = ({ pageTitle, children }) => {
                                         <i className="fa fa-rss orange_color"></i> <span>Channels</span>
                                     </a>
                                     <ul className={`collapse list-unstyled ${collapsedState['channels'] ? 'show' : ''}`} id="channels">
+                                        <li>
+                                            <a href={whatsappUrl}>
+                                                <i className="fa fa-angle-right"></i>
+                                                <span>Whatsapp</span>
+                                            </a>
+                                        </li>
                                         <li>
                                             <a href={emailsUrl}>
                                                 <i className="fa fa-angle-right"></i>

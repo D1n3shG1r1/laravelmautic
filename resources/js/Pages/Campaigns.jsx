@@ -141,7 +141,7 @@ const Campaigns = ({ pageTitle, csrfToken, params }) => {
                                             <thead>
                                                 <tr>
                                                     <th>Name</th>
-                                                    <th>Email</th>
+                                                    <th>Active</th>
                                                     <th>Date created</th>
                                                     <th>Created by</th>
                                                     <th>ID</th>
@@ -156,13 +156,14 @@ const Campaigns = ({ pageTitle, csrfToken, params }) => {
                                                         </td>
                                                     </tr>
                                                 ) : (
-                                                    campaigns.map(campaigns => (
+                                                    campaigns.map(campaign => (
+                    
                                                         <tr key={campaign.id}>
                                                             <td>
-                                                                {campaign.title} {campaign.firstname} {campaign.lastname}
+                                                                {campaign.name} 
                                                             </td>
                                                             <td>
-                                                                {campaign.email}
+                                                                {campaign.is_published === 1 ? 'Active' : 'Inactive'}
                                                             </td>
                                                             <td>
                                                                 {campaign.date_added}

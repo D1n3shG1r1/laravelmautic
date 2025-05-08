@@ -52,6 +52,12 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
             [name]: value,
         }));
     };
+
+    const [toggleValue, setToggleValue] = useState(false);
+
+    const handleToggle = (value) => {
+        setToggleValue(value);
+    };
     
     const save = (event) => {
 
@@ -213,7 +219,7 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                     <div className="col-md-12">
                                         <div className="tab_style3">
                                         <div className="tabbar padding_infor_info">
-                                            <div className={`${Styles.navBorderRight} col-md-3 nav flex-column nav-pills`} role="tablist" aria-orientation="vertical">
+                                            <div className={`${Styles.navBorderRight} ${Styles.minHeight600} col-md-3 nav flex-column nav-pills`} role="tablist" aria-orientation="vertical">
                                                 <a
                                                     className={`nav-link ${activeTab === "email" ? "active" : ""}`}
                                                     onClick={() => handleTabChange("email")}
@@ -221,17 +227,17 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                                 >
                                                     Email
                                                 </a>
-                                                {/*<a
+                                                <a
                                                     className={`nav-link ${activeTab === "user" ? "active" : ""}`}
                                                     onClick={() => handleTabChange("user")}
                                                     role="tab"
                                                 >
                                                     Authentication
-                                                </a>*/}
+                                                </a>
                                             </div>
 
                     <div className={`${Styles.tabContent} col-md-9`}>
-                        <div className={`tab-pane fade ${activeTab === "email" ? "show active" : ""}`} role="tabpanel">
+                        <div className={`tab-pane fade ${activeTab === "email" ? "show active" : "hide"}`} role="tabpanel">
 
                             <div role="tabpanel" className={`tab-pane bdr-w-0 active in`}>
 
@@ -426,6 +432,21 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
 
                                                     </div>
                                                 </div>
+                                                <div className="row">
+                                                    <div className="col-md-6">
+                                                        <InputLabel className="form-label" value="Use SCIP Email Service"/>
+                                                        <ToggleButton onToggle={handleToggle} onText = "Yes" offText="No"/>
+                                                    </div> 
+                                                    <div className="col-md-6">
+                                                        <div className="form-inline">
+                                                            <div className={`${Styles.testContainerWidth} form-group`}>
+                                                                <div className="form-control-static ml-10">
+                                                                    <span className="text-muted">If you don't have an SMTP account, please use the SCIP Email Service to send and receive emails, newsletters, and campaigns.</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>   
+                                                </div>
                                                 </div>
 
                                         <div className="col-md-6">
@@ -436,9 +457,9 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                             <div className="form-inline">
                                                 <div className="form-group btn-group" role="group">
 
-                        <PrimaryButton id="builderBtn" type="button" isLoading={isLoading} className="btn btn-primary" onClick={sendTestEmail}><i className="bi bi-window-sidebar"></i> Send test email</PrimaryButton>
+                        <PrimaryButton id="builderBtn" type="button" isLoading={isLoading} className="btn btn-primary" onClick={sendTestEmail} disabled><i className="bi bi-window-sidebar"></i> Send test email</PrimaryButton>
                     
-                    <PrimaryButton type="button" isLoading={isLoading} className="btn btn-primary" onClick={save}><i className="bi bi-floppy2-fill"></i> Save</PrimaryButton>
+                        <PrimaryButton type="button" isLoading={isLoading} className="btn btn-primary" onClick={save} disabled><i className="bi bi-floppy2-fill"></i> Save</PrimaryButton>
                     
                     
 
@@ -469,8 +490,8 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                             </div>
                         </div>
 
-                        <div className={`tab-pane fade ${activeTab === "user" ? "show active" : ""}`} role="tabpanel">
-                            <p>Content for user tab.</p>
+                        <div className={`tab-pane fade ${activeTab === "user" ? "show active" : "hide"}`} role="tabpanel">
+                            <p>Add users and their permissions</p>
                         </div>
                         </div>
                                             </div>

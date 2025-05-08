@@ -28,7 +28,7 @@
 }
 
 .user_info h6 {
-    color: #222;
+    color: #222 !important;
 }
 
 .counter_section .counter_no p.total_no {
@@ -41,7 +41,7 @@
 
 #sidebar h4 {
     background: #f3f3f3;
-    color: #222;
+    color: #222 !important;
     border-bottom: none;
 }
 

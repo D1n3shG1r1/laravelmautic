@@ -30,7 +30,7 @@ const dashBoard = ({pageTitle,csrfToken,params}) => {
                             <div className="counter_no">
                                 <div>
                                 <p className="total_no">152</p>
-                                <p className="head_couter">My Applicants</p>
+                                <p className="head_couter">Contacts</p>
                                 </div>
                             </div>
                         </div>
@@ -39,13 +39,13 @@ const dashBoard = ({pageTitle,csrfToken,params}) => {
                         <div className="full counter_section margin_bottom_30 blue1_bg">
                             <div className="couter_icon">
                                 <div> 
-                                <i className="fa fa-file-text-o"></i>
+                                <i className="fa fa-pie-chart"></i>
                                 </div>
                             </div>
                             <div className="counter_no">
                                 <div>
                                 <p className="total_no">545</p>
-                                <p className="head_couter">My Applications</p>
+                                <p className="head_couter">Segments</p>
                                 </div>
                             </div>
                         </div>
@@ -54,13 +54,13 @@ const dashBoard = ({pageTitle,csrfToken,params}) => {
                         <div className="full counter_section margin_bottom_30 green_bg">
                             <div className="couter_icon">
                                 <div> 
-                                <i className="fa fa-clock-o"></i>
+                                <i className="fa fa-bullhorn"></i>
                                 </div>
                             </div>
                             <div className="counter_no">
                                 <div>
                                 <p className="total_no" title="Pending Applications">45</p>
-                                <p className="head_couter" title="Pending Applications">Pending</p>
+                                <p className="head_couter" title="Pending Applications">Campaigns</p>
                                 </div>
                             </div>
                         </div>
@@ -69,13 +69,13 @@ const dashBoard = ({pageTitle,csrfToken,params}) => {
                         <div className="full counter_section margin_bottom_30 red_bg">
                             <div className="couter_icon">
                                 <div> 
-                                <i className="fa fa-comments-o"></i>
+                                <i className="fa fa-tags"></i>
                                 </div>
                             </div>
                             <div className="counter_no">
                                 <div>
                                 <p className="total_no">41</p>
-                                <p className="head_couter">Pending Applications</p>
+                                <p className="head_couter">Tags</p>
                                 </div>
                             </div>
                         </div>

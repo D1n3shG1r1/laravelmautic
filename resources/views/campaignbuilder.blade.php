@@ -1880,7 +1880,9 @@
             //validate and save event properties to db
             //campaignevent_name
             //campaignevent_properties
-
+            //eventType //decision/condition/action
+            var eventType = "decision";
+            var type = "page.devicehit";
             //Mandatory Inputs
             var nameInput = document.getElementById("campaignevent_name").value;
             var anchorInput = document.getElementById("campaignevent_anchor").value;
@@ -1894,7 +1896,7 @@
             
 
             
-            if(eventType == "decision"){
+            /*if(eventType == "decision"){
                 
                 if(type == "page.devicehit"){
                     //event properties
@@ -2078,9 +2080,9 @@
                 
                                 
             }
-            
+            */
             //validateEvent(eventTypeInput, typeInput);
-            return false;
+            //return false;
 
 
            /*

@@ -173,7 +173,7 @@ function getcsrfToken(){
     });
 }
 
-function httpRequest(url, postJson, cb){
+function httpRequest_dd(url, postJson, cb){
     // POST request using fetch with error handling
     const requestOptions = {
         method: 'POST',
@@ -225,6 +225,57 @@ function httpRequest(url, postJson, cb){
             var err = 1;
             var msg = error;
             showToastMsg(err, msg);
+            return false;
+        });
+}
+
+function httpRequest(url, postJson, cb, timeoutMs = 10000) {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(postJson),
+        signal: signal
+    };
+
+    const reqUrl = SERVICEURL + '/' + url;
+
+    // Set timeout
+    const timeoutId = setTimeout(() => {
+        controller.abort();
+    }, timeoutMs);
+
+    fetch(reqUrl, requestOptions)
+        .then(async (response) => {
+            clearTimeout(timeoutId);
+
+            const isJson = response.headers.get('content-type')?.includes('application/json');
+            const data = isJson && await response.json();
+
+            if (!response.ok) {
+                const error = (data && data.message) || response.status;
+                showToastMsg(1, JSON.stringify(error));
+                return false;
+            }
+
+            if (data.C === 1004) {
+                showToastMsg(1, 'Session expired.');
+                setTimeout(() => {
+                    window.location.href = SERVICEURL;
+                }, 2000);
+            } else {
+                cb(data);
+            }
+        })
+        .catch(error => {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                showToastMsg(1, 'Request timed out.');
+            } else {
+                showToastMsg(1, error.toString());
+            }
             return false;
         });
 }

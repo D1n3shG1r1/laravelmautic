@@ -145,3 +145,7 @@
 .navBorderRight{
     border-right: 1px solid #ebedf0;
 }
+
+.minHeight600{
+    min-height: 600px;
+}

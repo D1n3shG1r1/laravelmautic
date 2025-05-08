@@ -70,7 +70,6 @@
 /*------------------------------------------------------------------
     3. basic
 -------------------------------------------------------------------*/
-
 * {
     margin: 0;
     padding: 0;
@@ -312,6 +311,11 @@ a.btn {
 }
 
 button i {
+    /*color: #fff;*/
+    color: inherit;
+}
+
+.sidebar_toggle i{
     color: #fff;
 }
 
@@ -345,7 +349,7 @@ h3 {
     color: #000;
     line-height: normal;
     font-weight: 700;
-    text-transform: uppercase;
+    /*text-transform: uppercase;*/
 }
 
 h4 {
@@ -360,7 +364,7 @@ h4 {
 h5 {
     font-size: 15px;
     font-weight: 700;
-    text-transform: uppercase;
+    /*text-transform: uppercase;*/
     margin: 0;
     line-height: normal;
     color: #000;
@@ -815,10 +819,10 @@ a:focus {
     margin: 40px 0;
 }
 
-i,
+/*i,
 span {
     display: inline-block;
-}
+}*/
 
 #sidebar {
     min-width: 280px;

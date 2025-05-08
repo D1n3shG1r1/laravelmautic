@@ -10,23 +10,23 @@ body {
     display: none!important;
 }
 
-#CampaignEventPanel {
+/*#CampaignEventPanel {
     position: absolute;
     padding: 10px 20px;
     background-color: #ededed;
     border: 1px solid #cdcdcd;
     border-radius: 4px;
     z-index: 1035;
-}
+}*/
 
-#campaign-builder {
+/*#campaign-builder {
     position: relative;
     background: #ffffff;
     border: 1px solid #ddd;
     overflow: auto;
     width: 100%;
     height: 600px;
-}
+}*/
 
 .workflow-node {
     width: 200px;
@@ -131,18 +131,16 @@ body {
 }
 
 
-#CampaignEventPanel{
+/*#CampaignEventPanel{
     left: 523px;
     top: 85px;
-    /* width: 500px; */
-    /* height: 280px; */
     margin: auto;
-}
+}*/
 
-#CampaignEventPanelGroups{
+/*#CampaignEventPanelGroups{
     width: 500px;
     height: 280px;
-}
+}*/
 
 .EventGroupList{
     width: 200px;

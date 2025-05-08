@@ -13,9 +13,9 @@ $lastName = $AUTHDATA["lastName"];
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
         <style>
-            body {
+            /*body {
                 font-family: 'Nunito', sans-serif;
-            }
+            }*/
         </style>
         
         <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">-->
@@ -25,6 +25,7 @@ $lastName = $AUTHDATA["lastName"];
         -->
         <!--- pluto template --->
         <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">-->
+        <link rel="stylesheet" href="/css/remix-fa-icons.css" />
         <!-- bootstrap css -->
         <link rel="stylesheet" href="/css/pluto/css/bootstrap.min.css" />
         <!-- site css -->
@@ -47,9 +48,9 @@ $lastName = $AUTHDATA["lastName"];
         <!-- for campaign builder Temporary commented-->
         <link rel="stylesheet" href="/dcss/libraries.css"/>
         <link rel="stylesheet" href="/dcss/app.css"/>
-        <link rel="stylesheet" href="/css/custom.css"/>
+        <link rel="stylesheet" href="/dcss/custom.css"/>
 
-        <link href="https://dcdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css" rel="stylesheet" />
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css" rel="stylesheet" />
         <!-- Include Select2 CSS -->
         <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
         <!-- for campaign builder Temporary commented-->
@@ -72,7 +73,7 @@ $lastName = $AUTHDATA["lastName"];
         <script src="https://dcdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
         
-        <script src="/djs/jsplumb.min.js"></script>
+        <script src="/js/jsplumb.min.js"></script>
         <script src="/js/script.js"></script>
         
         <!--@routes -->

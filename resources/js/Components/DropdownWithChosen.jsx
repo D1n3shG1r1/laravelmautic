@@ -31,7 +31,7 @@ function DropdownWithChosen({ id, options, onChangeHandler, placeholder, isMulti
   
     return (
       <select id={id} ref={selectRef} className="campaign-event-selector" multiple={isMultiple}>
-        <option value="">Select...</option>
+        <option value="">{placeholder || "Select..."}</option>
         {options.map((option) => (
           <option
             key={option.key}

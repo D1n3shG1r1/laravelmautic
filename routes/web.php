@@ -6,11 +6,14 @@ use App\Http\Controllers\Register;
 use App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Contacts;
 use App\Http\Controllers\Segments;
+use App\Http\Controllers\Whatsapp;
 use App\Http\Controllers\Emailsbuilder;
 use App\Http\Controllers\Tags;
 use App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Media;
+
+use App\Http\Controllers\BrevoWebhookController;
 
 use App\Http\Controllers\Test;
 
@@ -18,14 +21,23 @@ use App\Http\Controllers\Test;
     return view('welcome');
 });*/
 
-//Route::get('/',[Campaign::class, 'index']);
-//Route::get('/campaignbuilder',[Campaign::class, 'campaignBuilder']);
+//Test Routes for Campaign Builder
+Route::get('/campaignbuilderidx',[Campaign::class, 'index']);
+Route::get('/campaignbuilder',[Campaign::class, 'campaignBuilder']);
+//Test Routes for Campaign Builder
 
 Route::get('/campaigns',[Campaign::class, 'campaigns']);
 Route::get('/campaigns/new',[Campaign::class, 'new']);
+Route::post('/campaign/save',[Campaign::class, 'save']);
 Route::post('/newevent',[Campaign::class, 'getEventHtml']);
 Route::post('/savenewevent',[Campaign::class, 'saveEvent']);
 Route::post('/addcampaignsegment',[Campaign::class, 'addCampaignSegment']);
+//Events Data-List Segments, Tags eg.
+Route::post('/campaigns/getEventDropdownSegmentsList',[Campaign::class, 'getEventDropdownSegmentsList']);
+Route::post('/campaigns/getEventDropdownTagsList',[Campaign::class, 'getEventDropdownTagsList']);
+Route::post('/campaigns/getEventDropdownEmailsList',[Campaign::class, 'getEventDropdownEmailsList']);
+Route::post('/campaigns/getEventCampaignList',[Campaign::class, 'getEventCampaignList']);
+
 
 Route::get('/',[Register::class,'signin_get']);
 Route::get('/signin',[Register::class,'signin_get']);
@@ -49,6 +61,8 @@ Route::get('/segment/edit/{id}',[Segments::class,'segment']);
 Route::post('/segment/update',[Segments::class,'update']);
 Route::post('/segment/delete',[Segments::class,'delete']);
 
+Route::get('/whatsapp',[Whatsapp::class,'whatsappmessages']);
+
 Route::get('/emails',[Emailsbuilder::class,'emails']);
 Route::get('/emails/new',[Emailsbuilder::class,'new']);
 Route::post('/email/save',[Emailsbuilder::class,'save']);
@@ -63,12 +77,15 @@ Route::get('/tag/edit/{id}',[Tags::class,'tag']);
 Route::post('/tag/update',[Tags::class,'update']);
 Route::post('/tag/delete',[Tags::class,'delete']);
 
-
 Route::get('/settings',[Settings::class,'settings']);
 Route::post('/emaildsn/update',[Settings::class,'updateEmaildsn']);
 Route::post('/emaildsn/sendtestmail',[Settings::class,'sendTestEmail']);
 
 Route::post('/media/save',[Media::class,'save']);
+
+
+//brevo webhook
+Route::post('/webhooks/brevo', [BrevoWebhookController::class, 'handle']);
 
 //cron commands
 Route::get('/processsegmentcontact',[Test::class,'processsegmentcontact']);
