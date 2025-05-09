@@ -157,338 +157,20 @@ class ProcessCampaignJob implements ShouldQueue
 
             $eventProperties = json_decode($eventProperties, true);
 
-            
-            $parentTriggred = 0;
-            if($eventParentId > 0){
-                // check for if the parent event is triggered or not
-                
-                $parentEventObj = campaign_events_model::select("triggered")
-                ->where("campaignId", $campaignID)
-                ->where("id", $eventParentId)
-                ->first();
-                
-                if($parentEventObj && $parentEventObj->triggered == 1){
-                    $parentTriggred = 1;
-                }
+            $actionEventData = array();
+            $actionEventData["today"] = $currentDateTime;
+            $actionEventData["campaignId"] = $eventCampId;
+            $actionEventData["eventId"] = $eventId;
+            $actionEventData["parentId"] = $eventParentId;
+            $actionEventData["eventType"] = $eventEventType;
+            $actionEventData["event"] = $eventType;
+            $actionEventData["eventProperties"] = $eventProperties;
+            $actionEventData["decisionPath"] = $eventDecisionPath;
+            $actionEventData["contactsObj"] = $contactsObj;
 
-            }
-            
-            if(($eventParentId > 0 && $parentTriggred > 0) || ($eventParentId == 0 && $parentTriggred == 0)){
-                // trigger current event
-                //== new logic
-
-
-
-                //==========Dinesh
-                //email.click, email.open, email.reply (decisions)
-                //email.send (action)
-                /*
-                actions
-                lead.deletecontact lead.changelist lead.changetags email.send lead.updatelead campaign.addremovelead
-                
-                decisions
-                email.click email.open email.reply
-                
-                conditions
-                lead.field_value lead.segments lead.tags
-                */
-                
-                if($eventEventType == "action"){
-
-                    if($eventType == "email.send"){
-                        //send-email event
-                        //make an email queue for each contact in campaign
-
-                        //get subject and html
-                        $emailTemplateId = $eventProperties["email"][0];
-                        
-                        $templateObj = emailsbuilder_model::select("subject","custom_html")->where("id", $emailTemplateId)->first();
-                        $subject = $templateObj->subject;
-                        $custom_html = $templateObj->custom_html;
-
-                        // create batch rows
-                        $batchRows = array();
-                        foreach($contactsObj as $contactRw){
-                            $cntId = $contactRw->id;
-                            $cntFNm = $contactRw->firstname;
-                            $cntLNm = $contactRw->lastname;
-                            $cntEml = $contactRw->email;
-
-                            $batchRows[] = array(
-                                //'id'
-                                'campaignId' => $eventCampId,
-                                'segmentId' => 0,
-                                'eventId' => $eventId,
-                                'contactId' => $cntId,
-                                'contactName' => ucwords($cntFNm.' '.$cntLNm),
-                                'contactEmail' => $cntEml,
-                                'subject' => $subject,
-                                'html' => $custom_html,
-                                'emailSent' => 0,
-                                'emailBrevoEvents' => '',
-                                'brevoTransactionId' => '',
-                                'date_added' => date("Y-m-d H:i:s"),
-                                'date_modified' => date("Y-m-d H:i:s")
-                            );
-                        
-                        }
-
-                        $insert = campaign_emails_queue_model::insert($batchRows);
-                        
-                        Log::warning("{$insert} Email is queued for the campaign: {$this->CAMPAIGNID}");
-
-                        return $insert;
-
-                    }elseif($eventType == "lead.deletecontact"){
-                        //delete contact
-                        
-
-
-                    }elseif($eventType == "lead.changelist"){
-                        //add/remove contact to/from specific segment
-                    }elseif($eventType == "lead.changetags"){
-                        //add/remove contact tags
-                    }elseif($eventType == "lead.updatelead"){
-                        //modify contact event
-                    }elseif($eventType == "campaign.addremovelead"){
-                        //add/remove contact to/from specific campaign
-                    }
-                    
-                }elseif($eventEventType == "condition"){
-                    
-                    if($eventType == "lead.field_value"){
-                        //delete contact
-                    }elseif($eventType == "lead.segments"){
-                        //add/remove contact to/from specific segment
-                    }elseif($eventType == "lead.tags"){
-                        //add/remove contact tags
-                    }
-
-                }elseif($eventEventType == "decision"){
-                    /*if($eventDecisionPath == 'yes'){
-
-                    }elseif($eventDecisionPath == 'no'){
-
-                    }*/  
-                    
-                    $emailRelatedType = 0;
-                    if($eventType == "email.click"){
-                        //if email click
-                        //make an entry in campaignCheckEmailsEvent
-                        $emailRelatedType = 1;
-                    }elseif($eventType == "email.open"){
-                        //if email open
-                        //make an entry in campaignCheckEmailsEvent
-                        $emailRelatedType = 1;
-                    }elseif($eventType == "email.reply"){
-                        //if email reply
-                        //make an entry in campaignCheckEmailsEvent
-                        $emailRelatedType = 1;
-                    }
-
-                    if($emailRelatedType == 1){
-                        //get parent-event where type=email.send eventType=action
-                        if($eventParentId > 0){
-                            $currentEvtPrntId = $eventParentId;
-                            $eventFind = 0;
-                            do {
-                            
-                            //check if parent-event where type=email.send eventType=action
-                            $parentEventObj2 = campaign_events_model::select("id", "parentId", "campaignId", "type", "eventType")
-                            ->where("campaignId", $campaignID)
-                            ->where("id", $currentEvtPrntId)
-                            ->first();
-                              
-                            if($parentEventObj2){
-                                $tmpEvtId = $parentEventObj2->id;
-                                $tmpPrntId = $parentEventObj2->parentId;
-                                $tmpCmpId = $parentEventObj2->campaignId;
-                                $tmpTyp = $parentEventObj2->type;
-                                $tmpEvntTyp = $parentEventObj2->eventType;
-                                
-                                if($tmpTyp == "email.send" && $tmpEvntTyp == "action"){
-                                    if($eventFind == 0){
-                                        $eventFind = 1;
-                                        
-                                        /* Think on alternate logic
-                                        //make an entry in campaignCheckEmailsEvent
-                                        $cmpChkEmlEvntObj = new campaign_check_emails_event_model();
-                                        $cmpChkEmlEvntObj->campaignId = $tmpCmpId;
-                                        $cmpChkEmlEvntObj->eventId = $eventId;
-                                        $cmpChkEmlEvntObj->parentEventId = $tmpPrntId;
-                                        $cmpChkEmlEvntObj->triggered = 0;
-                                        //$cmpChkEmlEvntObj->trigger_date = null;
-                                        $cmpChkEmlEvntObj->date_added = $currentDateTime;
-                                        $cmpChkEmlEvntObj->date_modified = $currentDateTime;
-
-                                        $cmpChkEmlEvntObj->save();
-                                        */
-                                         
-                                        $sentEmailObj = campaign_emails_queue_model::where("eventId",$tmpPrntId)
-                                        ->where("campaignId", $tmpCmpId)
-                                        ->where("emailSent", 1)
-                                        ->first();
-
-                                        if($sentEmailObj){
-                                            
-                                    $EO_campaignId = $sentEmailObj->campaignId;
-                                    $EO_segmentId = $sentEmailObj->segmentId;
-                                    $EO_eventId = $sentEmailObj->eventId;
-                                    $EO_contactId = $sentEmailObj->contactId;
-                                    $EO_contactName = $sentEmailObj->contactName;
-                                    $EO_contactEmail = $sentEmailObj->contactEmail;
-                                    $EO_subject = $sentEmailObj->subject;
-                                    $EO_html = $sentEmailObj->html;
-                                    $EO_emailSent = $sentEmailObj->emailSent;
-                                    $EO_emailBrevoEvents = $sentEmailObj->emailBrevoEvents;
-                                    $EO_brevoTransactionId =  $sentEmailObj->brevoTransactionId;
-                                    $EO_date_added = $sentEmailObj->date_added;
-                                    $EO_date_modified = $sentEmailObj->date_modified;
-                                        
-                                
-                                            //to be Continue for 5may2025
-                                            //get and update brevo email status
-                                            /*$EO_brevoTransactionId
-                                            curl --request GET \
-                                            --url 'https://api.brevo.com/v3/smtp/statistics/events?limit=2500&offset=0&messageId=%3C202505031206.36443988330%40smtp-relay.mailin.fr%3E&sort=desc' \
-                                            --header 'accept: application/json' \
-                                            --header 'api-key: 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'*/
-                                            
-                                            $apikey = config('brevo.apikey');
-                                            $messageId = $EO_brevoTransactionId;
-                                            $messageId = urlencode($messageId);
-                                            // Prepare the cURL command
-                                            $cmd = "curl --request GET \
-                                            --url 'https://api.brevo.com/v3/smtp/statistics/events?limit=2500&offset=0&messageId=$messageId&sort=desc' \
-                                            --header 'accept: application/json' \
-                                            --header 'api-key: $apikey'";
-
-                                            // Execute the cURL command
-                                            exec($cmd, $out);
-
-                                            // Output the result for debugging
-                                            if(!empty($out)){
-                                                /* possible events
-                                                1. request
-                                                2. click
-                                                3. deferred
-                                                4. delivered
-                                                5. soft_bounce
-                                                6. hard_bounce
-                                                7. spam
-                                                8. unique_opened
-                                                9. opened
-                                                10. invalid_email
-                                                11. blocked
-                                                12. error
-                                                13. unsubscribed
-                                                14. proxy_open
-                                                15. unique_proxy_open
-                                                */    
-                                                
-
-                                                $smtpEventsObj = json_decode($out[0]);
-                                                $emailEventsArr = $smtpEventsObj->events;
-
-                                                $statusList = array();
-                                                foreach($emailEventsArr as $tmpEvntStsRw){
-                                                  
-                                                    if($tmpEvntStsRw->event == 'opened'){
-                                                        $statusList[] = $tmpEvntStsRw->event;
-                                                        $statusList[] = "email.open";
-                                                    }
-
-                                                    if($tmpEvntStsRw->event == 'click'){
-                                                        $statusList[] = $tmpEvntStsRw->event;
-                                                        $statusList[] = "email.click";
-                                                    }
-                                                    
-
-                                                }
-
-                                                
-                                                //update campaign event triggred to 1
-                                                $updateData = array(
-                                                    "triggered" => 1,
-                                                    "triggered_on" => date("Y-m-d H:i:s")
-                                                );
-
-                                                campaign_events_model::where("id", $eventId)
-                                                ->where("campaignId", $eventCampId)
-                                                ->update($updateData);
-
-                                                //trigger child events where decisionpath yes/no
-                                                if(in_array($eventType, $statusList)){
-                                                    //perform yes action
-
-                                                    //lead.deletecontact
-
-
-                                                    //trigger yes
-                                                    $row = campaign_events_model::where("parentId", $eventId)
-                                                    ->where("campaignId", $eventCampId)
-                                                    ->where("decision_path", "yes")
-                                                    ->first();
-
-                                                    if ($row) {
-                                                        $row->triggered = 1;
-                                                        $row->triggered_on = date("Y-m-d H:i:s");
-                                                        $row->save();
-
-                                                        $lastUpdatedId = $row->id;
-                                                    }
-
-                                                }else{
-                                                    //perform no action
-                                                    
-                                                    //trigger no
-                                                    /*$updateData = array(
-                                                        "triggered" => 1,
-                                                        "triggered_on" => date("Y-m-d H:i:s")
-                                                    );
-    
-                                                    campaign_events_model::where("parentId", $eventId)
-                                                    ->where("campaignId", $eventCampId)
-                                                    ->where("decision_path","no")
-                                                    ->update($updateData);
-                                                    */
-
-                                                    $row = campaign_events_model::where("parentId", $eventId)
-                                                    ->where("campaignId", $eventCampId)
-                                                    ->where("decision_path", "no")
-                                                    ->first();
-
-                                                    if ($row) {
-                                                        $row->triggered = 1;
-                                                        $row->triggered_on = date("Y-m-d H:i:s");
-                                                        $row->save();
-
-                                                        $lastUpdatedId = $row->id;
-                                                    }
-                                                }
-
-                                            }
-
-
-                                        }
-                                    }
-                                    
-                                }else{
-                                    //move to parent's parent-event
-                                    $currentEvtPrntId = $tmpPrntId;
-                                }
-                            }
-    
-                            } while ($eventFind == 1);
-                        }    
-
-                        
-                    }
-                }
-            }else{
-                //log parent event is not triggered yet
-                Log::warning("event's {$eventId} parent event is not triggered for the campaign: {$this->CAMPAIGNID}");
-            }
+            //handle event operations
+            $this->triggerEventOperations($actionEventData);
+        
         }
 
     }
@@ -1137,6 +819,7 @@ class ProcessCampaignJob implements ShouldQueue
 
                                         }else{
                                             //curl error
+                                            Log::warning("curl error {$cmd} for event: {$eventId} campaign: {$campaignId}");
                                         }
                                     
                                     }else{
@@ -1205,9 +888,11 @@ class ProcessCampaignJob implements ShouldQueue
                         }
                     }else{
                         //parent event not triggered yet
+                        Log::warning("parent event is not triggered for event: {$eventId} campaign: {$campaignId}");
                     }
                 }else{
                     //parent event not found
+                    Log::warning("parent event is not found for event: {$eventId} campaign: {$campaignId}");
                 }
 
             }
@@ -1219,28 +904,505 @@ class ProcessCampaignJob implements ShouldQueue
                 //decision event-type is other than 'email.click' and 'email.open'
                 //you can handle with your own way
 
-               if($parentId > 0){
+                if($parentId > 0){
                     //has parent event
 
-                    if($parentEventType == 'action' && $parentType != 'email.send'){
-                        //if parent `eventType` is equals to 'action' and parent `type` is not equals to `email.send` or any other option-value assumed for send-email
+                    //ensure if parent-event is triggered
+                    $parentEventObj = campaign_events_model::where("id",$parentId)->first();
 
+                    if($parentEventObj){
+                        $isParentTriggered = $parentEventObj->triggered;
+                        $parentEventType = $parentEventObj->eventType;
+                        $parentType = $parentEventObj->type;
                         
+                        if($isParentTriggered > 0){
+                            //Parent cant be type of Decision for the child-decision
 
+                            if($parentEventType == 'action'){
+
+                                if($parentType != 'email.send'){
+                                    //if parent `eventType` is equals to 'action' and parent `type` is not equals to `email.send` or any other option-value assumed for send-email
+            
+                                     //add your logic....
+            
+                                }
+
+                            }
+                            
+                            if($parentEventType == 'codition'){
+
+                            }
+                            
+                        }
                     }
 
-               }else{
+
+                }else{
                     //dont have parent event
+                    //add your logic...
+
                }
             
             }
         }
 
+        //============ Condition
         if($eventType == "condition"){
+            
+            if($parentId > 0){
+                //ensure if parent-event is triggered
+                $parentEventObj = campaign_events_model::where("id",$parentId)->first();
+
+                if($parentEventObj){
+                    $isParentTriggered = $parentEventObj->triggered;
+                    $parentEventType = $parentEventObj->eventType;
+                    $parentType = $parentEventObj->type;
+                    
+                    if($isParentTriggered > 0){
+                        //logic according to parent
+                    }
+                }
+            }else{
+                if($event == 'lead.field_value'){
+                    //{"field":["tags"],"operator":"=","value":"tag1"}
+
+                    $checkValueContacts = array();
+                    
+                    //contacts with matched/unmatched conditions
+                    $yesContacts = array();
+                    $noContacts = array();
+                    
+                    foreach($contactsObj as $contactRw){
+                        $cntId = $contactRw->id;
+                        $checkValueContacts[] = $cntId;
+                    }
+                    $tmpCheckValueContacts = $checkValueContacts;
+                    
+                    $contactField = $eventProperties["field"][0];
+                    $contactOperator = $eventProperties["operator"];
+                    $contactValue = $eventProperties["value"];
+
+                    $operators = array("=", "!=", "gt", "gte", "lt", "lte", "empty","!empty", "like", "!like", "regexp", "!regexp", "startsWith", "endsWith", "contains");
+
+                    $supportedOperators = [
+                        '=', '!=', 'gt', 'gte', 'lt', 'lte',
+                        'empty', '!empty',
+                        'like', '!like',
+                        'regexp', '!regexp',
+                        'startsWith', 'endsWith', 'contains'
+                    ];
+                    
+                    $stopQuery = 0;
+                    if (!in_array($contactOperator, $supportedOperators)) {
+                        // Stop execution if unsupported operator
+                        $stopQuery = 1;
+                        Log::warning("Unsupported operator: {$contactOperator} for event: {$eventId} campaign: {$campaignId}");
+                    }
+                    
+                    if($stopQuery == 0){
+                        // Begin building query only if operator is supported
+                        $query = contacts_model::whereIn("id", $checkValueContacts);
+                        
+                        switch ($contactOperator) {
+                            case '=':
+                                $query->whereRaw("LOWER($contactField) = ?", [strtolower($contactValue)]);
+                                break;
+                            case '!=':
+                                $query->whereRaw("LOWER($contactField) != ?", [strtolower($contactValue)]);
+                                break;
+                            case 'gt':
+                                $query->whereRaw("LOWER($contactField) > ?", [strtolower($contactValue)]);
+                                break;
+                            case 'gte':
+                                $query->whereRaw("LOWER($contactField) >= ?", [strtolower($contactValue)]);
+                                break;
+                            case 'lt':
+                                $query->whereRaw("LOWER($contactField) < ?", [strtolower($contactValue)]);
+                                break;
+                            case 'lte':
+                                $query->whereRaw("LOWER($contactField) <= ?", [strtolower($contactValue)]);
+                                break;
+                            case 'empty':
+                                $query->where(function ($q) use ($contactField) {
+                                    $q->whereNull($contactField)->orWhere($contactField, '');
+                                });
+                                break;
+                            case '!empty':
+                                $query->where(function ($q) use ($contactField) {
+                                    $q->whereNotNull($contactField)->where($contactField, '!=', '');
+                                });
+                                break;
+                            case 'like':
+                            case 'contains':
+                                $query->whereRaw("LOWER($contactField) LIKE ?", ['%' . strtolower($contactValue) . '%']);
+                                break;
+                            case '!like':
+                                $query->whereRaw("LOWER($contactField) NOT LIKE ?", ['%' . strtolower($contactValue) . '%']);
+                                break;
+                            case 'regexp':
+                                $query->whereRaw("LOWER($contactField) REGEXP ?", [strtolower($contactValue)]);
+                                break;
+                            case '!regexp':
+                                $query->whereRaw("LOWER($contactField) NOT REGEXP ?", [strtolower($contactValue)]);
+                                break;
+                            case 'startsWith':
+                                $query->whereRaw("LOWER($contactField) LIKE ?", [strtolower($contactValue) . '%']);
+                                break;
+                            case 'endsWith':
+                                $query->whereRaw("LOWER($contactField) LIKE ?", ['%' . strtolower($contactValue)]);
+                                break;
+                        }
+                        
+                        // Final result
+                        $resContactsObj = $query->get();
+                        if($resContactsObj && !empty($resContactsObj)){
+                            foreach($resContactsObj as $resContactsRw){
+                                $resTmpContactId = $resContactsRw->id;
+
+                                if(in_array($resTmpContactId, $tmpCheckValueContacts)){
+                                    //if contact matches the condition then
+
+                                    //if required segment is assigned to the contact then add contact to condition-matched 'yesContacts' array and remove matched-contact from `tmpCheckValueContacts`
+
+                                    $yesContacts[] = $resTmpContactId;
+
+                                    //remove matched entry from mainarray
+                                    $key = array_search($resTmpContactId, $tmpCheckValueContacts);
+                                    if ($key !== false) {
+
+                                        //remove matched entry from array
+                                        unset($tmpCheckValueContacts[$key]);
+                                        // Reindex array if needed
+                                        $tmpCheckValueContacts = array_values($tmpCheckValueContacts);
+                                    }
+
+
+                                    //batch rows for `campaign_actions_report_model`
+                                    $reportBatchRows[] = array(
+                                        "campaign_id" => $campaignId,
+                                        "event_id" => $eventId,
+                                        "event_type" => $eventType,
+                                        "event" => $event,
+                                        "properties" => json_encode($eventProperties),
+                                        "decision_path" => 'yes',
+                                        "contact_id" => $resTmpContactId,
+                                        "handled" => 1, //1 if contact falls in Yes, if contact falls in No and will process later on next attempt
+                                        "date_added" => $today,
+                                        "date_modified" => $today
+                                    );
+                                                    
+                                }else{
+                                    //result contact-id not exists in  $checkSegmentContacts 
+                                    $noContacts[] = $resTmpContactId;
+                                }
+
+                            }
+
+                            //put all unmatched contacts to `noContacts` array
+                            $noContacts = array_merge($noContacts, $tmpCheckValueContacts);
+                            if(!empty($noContacts)){
+                                foreach($noContacts as $noContact){
+                                    //batch rows for `campaign_actions_report_model`
+                                    $reportBatchRows[] = array(
+                                        "campaign_id" => $campaignId,
+                                        "event_id" => $eventId,
+                                        "event_type" => $eventType,
+                                        "event" => $event,
+                                        "properties" => json_encode($eventProperties),
+                                        "decision_path" => 'no',
+                                        "contact_id" => $noContact,
+                                        "handled" => 0, //1 if contact falls in Yes, if contact falls in No and will process later on next attempt
+                                        "date_added" => $today,
+                                        "date_modified" => $today
+                                    );
+                                }
+                            }
+                        }
+                        
+                        //update event triggered
+                        $updateEventTriggerData = array(
+                            "triggered" => 1,
+                            "triggered_on" => $today
+                        );
+
+                        campaign_events_model::where("id", $eventId)
+                        ->where("campaignId", $campaignId)
+                        ->update($updateEventTriggerData);
+
+                        //last action triggered
+                        $tmpEvtOutPut = new temp_events_output_model();
+                        //$tmpEvtOutPut->id
+                        $tmpEvtOutPut->campaign_id = $campaignId;  
+                        $tmpEvtOutPut->event_id = $eventId;
+                        $tmpEvtOutPut->event_type = $eventType;
+                        $tmpEvtOutPut->type = $event;
+                        $tmpEvtOutPut->yes = json_encode($yesContacts);
+                        $tmpEvtOutPut->no = json_encode($noContacts);
+                        $tmpEvtOutPut->date_added = $today;
+                        $tmpEvtOutPut->date_modified = $today;
+                        $tmpEvtOutPutId = $tmpEvtOutPut->save();
+                        
+                        //keep data for action reports
+                        //make entry to keep affected contacts
+                        $reportBatchInsert = campaign_actions_report_model::insert($reportBatchRows);
+
+                        Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
+
+                    }
+                    
+                }
+    
+                if($event == 'lead.segments'){
+                    //{"segments":["1"]}
+                    $containSegments = $eventProperties["segments"];
+
+                    $checkSegmentContacts = array();
+                    
+                    //contacts with matched/unmatched conditions
+                    $yesContacts = array();
+                    $noContacts = array();
+                    
+                    foreach($contactsObj as $contactRw){
+                        $cntId = $contactRw->id;
+                        $checkSegmentContacts[] = $cntId;
+                    }
+
+                    $tmpCheckSegmentContacts = $checkSegmentContacts;
+
+                    if(!empty($containSegments)){
+                        $resSegmentsObj = segment_contacts_model::whereIn("segment_id",$containSegments)
+                        ->whereIn("contact_id",$checkSegmentContacts)
+                        ->get();
+
+                        if($resSegmentsObj && !empty($resSegmentsObj)){
+                            foreach($resSegmentsObj as $resSegmentsRw){
+                                $resTmpSegmentId = $resSegmentsRw->segment_id;
+                                $resTmpContactId = $resSegmentsRw->contact_id;
+
+                                if(in_array($resTmpContactId, $tmpCheckSegmentContacts)){
+                                    //if contact matches the condition then
+
+                                    //if required segment is assigned to the contact then add contact to condition-matched 'yesContacts' array and remove matched-contact from `tmpCheckSegmentContacts`
+
+                                    $yesContacts[] = $resTmpContactId;
+
+                                    //remove matched entry from mainarray
+                                    $key = array_search($resTmpContactId, $tmpCheckSegmentContacts);
+                                    if ($key !== false) {
+
+                                        //remove matched entry from array
+                                        unset($tmpCheckSegmentContacts[$key]);
+                                        // Reindex array if needed
+                                        $tmpCheckSegmentContacts = array_values($tmpCheckSegmentContacts);
+                                    }
+
+
+                                    //batch rows for `campaign_actions_report_model`
+                                    $reportBatchRows[] = array(
+                                        "campaign_id" => $campaignId,
+                                        "event_id" => $eventId,
+                                        "event_type" => $eventType,
+                                        "event" => $event,
+                                        "properties" => json_encode($eventProperties),
+                                        "decision_path" => 'yes',
+                                        "contact_id" => $resTmpContactId,
+                                        "handled" => 1, //1 if contact falls in Yes, if contact falls in No and will process later on next attempt
+                                        "date_added" => $today,
+                                        "date_modified" => $today
+                                    );
+                                                    
+                                }else{
+                                    //result contact-id not exists in  $checkSegmentContacts 
+                                    $noContacts[] = $resTmpContactId;
+                                }
+
+                            }
+
+                            //put all unmatched contacts to `noContacts` array
+                            $noContacts = array_merge($noContacts, $tmpCheckSegmentContacts);
+                            if(!empty($noContacts)){
+                                foreach($noContacts as $noContact){
+                                    //batch rows for `campaign_actions_report_model`
+                                    $reportBatchRows[] = array(
+                                        "campaign_id" => $campaignId,
+                                        "event_id" => $eventId,
+                                        "event_type" => $eventType,
+                                        "event" => $event,
+                                        "properties" => json_encode($eventProperties),
+                                        "decision_path" => 'no',
+                                        "contact_id" => $noContact,
+                                        "handled" => 0, //1 if contact falls in Yes, if contact falls in No and will process later on next attempt
+                                        "date_added" => $today,
+                                        "date_modified" => $today
+                                    );
+                                }
+                            }
+                        }
+                    
+                        //update event triggered
+                        $updateEventTriggerData = array(
+                            "triggered" => 1,
+                            "triggered_on" => $today
+                        );
+
+                        campaign_events_model::where("id", $eventId)
+                        ->where("campaignId", $campaignId)
+                        ->update($updateEventTriggerData);
+
+                        //last action triggered
+                        $tmpEvtOutPut = new temp_events_output_model();
+                        //$tmpEvtOutPut->id
+                        $tmpEvtOutPut->campaign_id = $campaignId;  
+                        $tmpEvtOutPut->event_id = $eventId;
+                        $tmpEvtOutPut->event_type = $eventType;
+                        $tmpEvtOutPut->type = $event;
+                        $tmpEvtOutPut->yes = json_encode($yesContacts);
+                        $tmpEvtOutPut->no = json_encode($noContacts);
+                        $tmpEvtOutPut->date_added = $today;
+                        $tmpEvtOutPut->date_modified = $today;
+                        $tmpEvtOutPutId = $tmpEvtOutPut->save();
+                        
+                        //keep data for action reports
+                        //make entry to keep affected contacts
+                        $reportBatchInsert = campaign_actions_report_model::insert($reportBatchRows);
+
+                        Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
+                    
+                    
+                    }else{
+                        //empty $eventProperties["segments"]
+                        Log::warning("eventProperties['segments'] are empty for event: {$eventId} campaign: {$campaignId}");
+                    }
+
+                }
+    
+                if($event == 'lead.tags'){
+                    //{"tags":["1","2"]}
+                    $containTags = $eventProperties["tags"];
+                    
+                    $checkTagContacts = array();
+                    
+                    //contacts with matched/unmatched conditions
+                    $yesContacts = array();
+                    $noContacts = array();
+                    
+                    foreach($contactsObj as $contactRw){
+                        $cntId = $contactRw->id;
+                        $checkTagContacts[] = $cntId;
+                    }
+
+                    $tmpCheckTagContacts = $checkTagContacts;
+
+                    if(!empty($containTags)){
+                        $resTagsObj = tags_contacts_model::whereIn("tag_id",$containTags)
+                        ->whereIn("contact_id",$checkTagContacts)
+                        ->get();
+
+                        if($resTagsObj && !empty($resTagsObj)){
+                            foreach($resTagsObj as $resTagsRw){
+                                $resTmpTagId = $resTagsRw->tag_id;
+                                $resTmpContactId = $resTagsRw->contact_id;
+
+                                if(in_array($resTmpContactId, $tmpCheckTagContacts)){
+                                    //if contact matches the condition then
+
+                                    //if required tag is assigned to the contact then add contact to condition-matched 'yesContacts' array and remove matched-contact from `tmpCheckTagContacts`
+
+                                    $yesContacts[] = $resTmpContactId;
+
+                                    //remove matched entry from mainarray
+                                    $key = array_search($resTmpContactId, $tmpCheckTagContacts);
+                                    if ($key !== false) {
+
+                                        //remove matched entry from array
+                                        unset($tmpCheckTagContacts[$key]);
+                                        // Reindex array if needed
+                                        $tmpCheckTagContacts = array_values($tmpCheckTagContacts);
+                                    }
+
+
+                                    //batch rows for `campaign_actions_report_model`
+                                    $reportBatchRows[] = array(
+                                        "campaign_id" => $campaignId,
+                                        "event_id" => $eventId,
+                                        "event_type" => $eventType,
+                                        "event" => $event,
+                                        "properties" => json_encode($eventProperties),
+                                        "decision_path" => 'yes',
+                                        "contact_id" => $resTmpContactId,
+                                        "handled" => 1, //1 if contact falls in Yes, if contact falls in No and will process later on next attempt
+                                        "date_added" => $today,
+                                        "date_modified" => $today
+                                    );
+                                                    
+                                }else{
+                                    //result contact-id not exists in  $checkTagContacts 
+                                    $noContacts[] = $resTmpContactId;
+                                }
+
+                            }
+
+                            //put all unmatched contacts to `noContacts` array
+                            $noContacts = array_merge($noContacts, $tmpCheckTagContacts);
+                            if(!empty($noContacts)){
+                                foreach($noContacts as $noContact){
+                                    //batch rows for `campaign_actions_report_model`
+                                    $reportBatchRows[] = array(
+                                        "campaign_id" => $campaignId,
+                                        "event_id" => $eventId,
+                                        "event_type" => $eventType,
+                                        "event" => $event,
+                                        "properties" => json_encode($eventProperties),
+                                        "decision_path" => 'no',
+                                        "contact_id" => $noContact,
+                                        "handled" => 0, //1 if contact falls in Yes, if contact falls in No and will process later on next attempt
+                                        "date_added" => $today,
+                                        "date_modified" => $today
+                                    );
+                                }
+                            }
+                        }
+                    
+                        //update event triggered
+                        $updateEventTriggerData = array(
+                            "triggered" => 1,
+                            "triggered_on" => $today
+                        );
+
+                        campaign_events_model::where("id", $eventId)
+                        ->where("campaignId", $campaignId)
+                        ->update($updateEventTriggerData);
+
+                        //last action triggered
+                        $tmpEvtOutPut = new temp_events_output_model();
+                        //$tmpEvtOutPut->id
+                        $tmpEvtOutPut->campaign_id = $campaignId;  
+                        $tmpEvtOutPut->event_id = $eventId;
+                        $tmpEvtOutPut->event_type = $eventType;
+                        $tmpEvtOutPut->type = $event;
+                        $tmpEvtOutPut->yes = json_encode($yesContacts);
+                        $tmpEvtOutPut->no = json_encode($noContacts);
+                        $tmpEvtOutPut->date_added = $today;
+                        $tmpEvtOutPut->date_modified = $today;
+                        $tmpEvtOutPutId = $tmpEvtOutPut->save();
+                        
+                        //keep data for action reports
+                        //make entry to keep affected contacts
+                        $reportBatchInsert = campaign_actions_report_model::insert($reportBatchRows);
+
+                        Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
+                    
+                    
+                    }else{
+                        //empty $eventProperties["tags"]
+                        Log::warning("eventProperties['tags'] are empty for event: {$eventId} campaign: {$campaignId}");
+                    }
+
+                }
+            }
             
         }
 
-        
     }
 
 //============ maybe no need of this
