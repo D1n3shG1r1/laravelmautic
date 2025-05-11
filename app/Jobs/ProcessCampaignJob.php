@@ -199,6 +199,8 @@ class ProcessCampaignJob implements ShouldQueue
         $triggerCount = $triggerPrevCount + 1;
 
         $processContactsList = array();
+        $parentEventType = '';
+        $parentType = '';
         if($parentId > 0){
             //has parent
 
@@ -234,7 +236,7 @@ class ProcessCampaignJob implements ShouldQueue
                         //case-2 if parent-event-type is condition or decision
                         
                         if($triggerPrevCount > 0){
-                            //echo 'if:'. json_encode($actionEventData);
+                            
                             //when the event is triggered again
                             //get the contacts of parent event from temp_events_output_model where `no` is not empty or null
                             //`no` is not empty or null means in previous try contact was not met the condition
@@ -250,7 +252,7 @@ class ProcessCampaignJob implements ShouldQueue
                             }
 
                         }else{
-                            //echo 'else:'. json_encode($actionEventData);
+                            
                             //when the event is triggered 1st time
                             //check current event decision-path
                             if($decisionPath == 'yes'){
@@ -276,7 +278,7 @@ class ProcessCampaignJob implements ShouldQueue
                                 ->first();
 
                                 if($parentContactsObj && !empty($parentContactsObj)){
-                                    $processContactsList = json_decode($parentContactsObj->no, true);
+                                    $processContactsList = json_decode($parentContactsObj->yes, true);
                                 }
 
                             }
@@ -359,14 +361,16 @@ class ProcessCampaignJob implements ShouldQueue
             
         }
         
-        //echo json_encode($actionEventData);
-        /*echo "eventType:$eventType ,event: $event ,parentEventType: $parentEventType ,parentType: $parentType ,parentId:$parentId ,decisionPath: $decisionPath";*/
-
         //trigger the event based on above $processContactsList object
         if(!empty($processContactsList)){
             //trigger logic
 
             $processContactsObj = contacts_model::whereIn("id", $processContactsList)->get();
+            if($processContactsObj){
+                $processContactsObj = $processContactsObj->toArray();
+            }else{
+                $processContactsObj = array();
+            }
             
 
             //============ Action
@@ -393,14 +397,15 @@ class ProcessCampaignJob implements ShouldQueue
                     
                     if(!empty($prevSentContIds)){
                         foreach($processContactsObj as $k=>$proContRw){
-                            $elmCntId = $proContRw->id;
+                            $elmCntId = $proContRw["id"];
                             if(in_array($elmCntId, $prevSentContIds)){
                                 unset($processContactsObj[$k]);
                             }
                         }
                     }
-
+                    
                     if(!empty($processContactsObj)){
+                       
                         //make an email queue for each contact in campaign
 
                         //get subject and html
@@ -417,10 +422,10 @@ class ProcessCampaignJob implements ShouldQueue
                         $reportBatchUpdateRows = array();
 
                         foreach($processContactsObj as $contactRw){
-                            $cntId = $contactRw->id;
-                            $cntFNm = $contactRw->firstname;
-                            $cntLNm = $contactRw->lastname;
-                            $cntEml = $contactRw->email;
+                            $cntId = $contactRw["id"];
+                            $cntFNm = $contactRw["firstname"];
+                            $cntLNm = $contactRw["lastname"];
+                            $cntEml = $contactRw["email"];
 
                             $sendEmailContacts[] = $cntId;
                             
@@ -526,7 +531,7 @@ class ProcessCampaignJob implements ShouldQueue
                     $reportBatchUpdateRows = array();
                     $deleteContactIds = array();
                     foreach($processContactsObj as $contactRw){
-                        $cntId = $contactRw->id;
+                        $cntId = $contactRw["id"];
                         $deleteContactIds[] = $cntId;
 
 
@@ -634,7 +639,7 @@ class ProcessCampaignJob implements ShouldQueue
                     $reportBatchRows = array();
                     $reportBatchUpdateRows = array();
                     foreach($processContactsObj as $contactRw){
-                        $cntId = $contactRw->id;
+                        $cntId = $contactRw["id"];
                         $addRemoveContactIds[] = $cntId;
 
                         //batch rows for `campaign_actions_report_model`
@@ -797,7 +802,7 @@ class ProcessCampaignJob implements ShouldQueue
                     $reportBatchUpdateRows = array();
                     $reportBatchRows = array();
                     foreach($processContactsObj as $contactRw){
-                        $cntId = $contactRw->id;
+                        $cntId = $contactRw["id"];
                         $addRemoveContactIds[] = $cntId;
 
                         //batch rows for `campaign_actions_report_model`
@@ -944,7 +949,7 @@ class ProcessCampaignJob implements ShouldQueue
                     $reportBatchRows = array();
                     $reportBatchUpdateRows = array();
                     foreach($processContactsObj as $contactRw){
-                        $cntId = $contactRw->id;
+                        $cntId = $contactRw["id"];
                         $modifyContactIds[] = $cntId;
 
                         //batch rows for `campaign_actions_report_model`
@@ -1098,7 +1103,7 @@ class ProcessCampaignJob implements ShouldQueue
                             foreach($sentEmailObj as $sentEmailRw){
                                 
                                 //check sent email brevo-events for each contact in the campaign/segment
-
+                                
                                 $EO_queueId = $sentEmailRw->id;
                                 $EO_campaignId = $sentEmailRw->campaignId;
                                 $EO_eventId = $sentEmailRw->eventId;
@@ -1121,9 +1126,8 @@ class ProcessCampaignJob implements ShouldQueue
                                     --header 'api-key: $apikey'";
 
                                     // Execute the cURL command
+                                    $out = array();
                                     exec($cmd, $out);
-
-                                    //echo 'curl:'.$out[0];
 
                                     // Output the result for debugging
                                     if(!empty($out)){
@@ -1131,7 +1135,7 @@ class ProcessCampaignJob implements ShouldQueue
                                         $response = json_decode($out[0]);
 
                                         if(property_exists($response, 'code') && ($response->code == 'bad_request' || $response->code == 'unauthorized')){ 
-                                            //echo 'code:'.$response->code.', message:'.$response->message;
+                                            
                                             Log::warning("Brevo error: code:{$response->code}', message:{$response->message} for CampaignID: {$EO_campaignId}, QueueID: {$EO_queueId} while tracking brevo email events") ;
                                             
                                         }else{
@@ -1153,6 +1157,7 @@ class ProcessCampaignJob implements ShouldQueue
                                             15. unique_proxy_open
                                             */
 
+                                            $smtpEventsJson = $out[0];
                                             $smtpEventsObj = json_decode($out[0]);
                                             
                                             if($smtpEventsObj && !empty($smtpEventsObj)){
@@ -1239,6 +1244,12 @@ class ProcessCampaignJob implements ShouldQueue
                                                         );
                                                     }
                                                 }
+
+                                                //update email brevo-events to `campaign_emails_queue_model`
+                                                campaign_emails_queue_model::where("id", $EO_queueId)
+                                                ->where("brevoTransactionId", $EO_brevoTransactionId)
+                                                ->update(array("emailBrevoEvents" => $smtpEventsJson,"date_modified" => $today));
+                        
                                             }
                                             
                                         }
@@ -1292,7 +1303,7 @@ class ProcessCampaignJob implements ShouldQueue
                             //no email is sent to any contact
                             $noContacts = array();
                             foreach($processContactsObj as $contactRw){
-                                $cntId = $contactRw->id;
+                                $cntId = $contactRw["id"];
                                 $noContacts[] = $cntId;
                             }
                         }
@@ -1357,7 +1368,7 @@ class ProcessCampaignJob implements ShouldQueue
                     $noContacts = array();
                     
                     foreach($processContactsObj as $contactRw){
-                        $cntId = $contactRw->id;
+                        $cntId = $contactRw["id"];
                         $checkValueContacts[] = $cntId;
                     }
                     $tmpCheckValueContacts = $checkValueContacts;
@@ -1595,7 +1606,7 @@ class ProcessCampaignJob implements ShouldQueue
                     $noContacts = array();
                     
                     foreach($processContactsObj as $contactRw){
-                        $cntId = $contactRw->id;
+                        $cntId = $contactRw["id"];
                         $checkSegmentContacts[] = $cntId;
                     }
 
@@ -1767,7 +1778,7 @@ class ProcessCampaignJob implements ShouldQueue
                     $noContacts = array();
                     
                     foreach($processContactsObj as $contactRw){
-                        $cntId = $contactRw->id;
+                        $cntId = $contactRw["id"];
                         $checkTagContacts[] = $cntId;
                     }
 
