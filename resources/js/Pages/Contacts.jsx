@@ -91,7 +91,10 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
             if(C == 100 && error == 0){
                 //signup successfull
                 showToastMsg(error, msg);
-                window.location.href = params.contactsUrl;
+                
+                document.getElementById("cont_rw_"+currentId).remove();
+
+                //window.location.href = params.contactsUrl;
 
             }else{
                showToastMsg(error, msg);
@@ -157,7 +160,7 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                                                     </tr>
                                                 ) : (
                                                     contacts.map(contact => (
-                                                        <tr key={contact.id}>
+                                                        <tr id={"cont_rw_"+contact.id} key={contact.id}>
                                                             <td>
                                                                 {contact.title} {contact.firstname} {contact.lastname}
                                                             </td>

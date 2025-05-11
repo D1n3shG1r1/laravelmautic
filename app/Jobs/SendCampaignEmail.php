@@ -136,6 +136,7 @@ class SendCampaignEmail implements ShouldQueue
                 //update campaign event triggred to 1
                 $updateData = array(
                     "triggered" => 1,
+                    "trigger_count" => 1,
                     "triggered_on" => date("Y-m-d H:i:s")
                 );
 

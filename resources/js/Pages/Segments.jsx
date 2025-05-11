@@ -141,7 +141,7 @@ const Segments = ({ pageTitle, csrfToken, params }) => {
                                             <tbody>
                                                 {segments.length === 0 ? (
                                                     <tr>
-                                                        <td colSpan="3" style={{ textAlign: "center" }}>
+                                                        <td colSpan="6" style={{ textAlign: "center" }}>
                                                             No segments available.
                                                         </td>
                                                     </tr>

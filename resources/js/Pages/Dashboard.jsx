@@ -6,7 +6,12 @@ import Checkbox from '@/Components/Checkbox';
 import NavLink from '@/Components/NavLink';
 import PrimaryButton from '@/Components/PrimaryButton';
 
-const dashBoard = ({pageTitle,csrfToken,params}) => {
+const dashBoard = ({pageTitle,csrfToken,Params}) => {
+    const contactsCount = Params.contactsCount;
+    const segmentsCount = Params.segmentsCount;
+    const campaignsCount = Params.campaignsCount;
+    const tagsCount = Params.tagsCount;
+    
     const user = {};
     return (
         <Layout pageTitle={pageTitle}>
@@ -29,9 +34,9 @@ const dashBoard = ({pageTitle,csrfToken,params}) => {
                             </div>
                             <div className="counter_no">
                                 <div>
-                                <p className="total_no">152</p>
+                                <p className="total_no">{contactsCount}</p>
                                 <p className="head_couter">Contacts</p>
-                                </div>
+                                </div>   
                             </div>
                         </div>
                     </div>
@@ -44,7 +49,7 @@ const dashBoard = ({pageTitle,csrfToken,params}) => {
                             </div>
                             <div className="counter_no">
                                 <div>
-                                <p className="total_no">545</p>
+                                <p className="total_no">{segmentsCount}</p>
                                 <p className="head_couter">Segments</p>
                                 </div>
                             </div>
@@ -59,7 +64,7 @@ const dashBoard = ({pageTitle,csrfToken,params}) => {
                             </div>
                             <div className="counter_no">
                                 <div>
-                                <p className="total_no" title="Pending Applications">45</p>
+                                <p className="total_no" title="Pending Applications">{campaignsCount}</p>
                                 <p className="head_couter" title="Pending Applications">Campaigns</p>
                                 </div>
                             </div>
@@ -74,7 +79,7 @@ const dashBoard = ({pageTitle,csrfToken,params}) => {
                             </div>
                             <div className="counter_no">
                                 <div>
-                                <p className="total_no">41</p>
+                                <p className="total_no">{tagsCount}</p>
                                 <p className="head_couter">Tags</p>
                                 </div>
                             </div>

@@ -21,6 +21,11 @@ use App\Models\segment_contacts_model;
 use App\Models\tags_model;
 use App\Models\tags_contacts_model;
 use App\Models\emailsbuilder_model;
+use App\Models\campaign_actions_report_model;
+use App\Models\campaign_check_emails_event_model;
+use App\Models\temp_events_output_model;
+use App\Models\campaign_emails_queue_model;
+
 use App\Models\role_model;
 use Facade\FlareClient\View;
 use Inertia\Inertia;
@@ -640,6 +645,57 @@ class Campaign extends Controller
         
         return response()->json($response); die;  
 
+    }
+
+    function delete(Request $request){
+        if($this->USERID > 0){
+        
+            $id = $request->input("id");
+            
+            //delete associated segments
+            campaign_segments_model::where("campaign_id", $id)->delete();
+            
+            //delete associated events
+            campaign_events_model::where("campaignId", $id)->delete();
+            
+            //delete associated action-reports
+            campaign_actions_report_model::where("campaign_id", $id)->delete();
+            
+            //delete associated check-email-events
+            campaign_check_emails_event_model::where("campaignId", $id)->delete();
+            
+            //delete associated event-outputs
+            temp_events_output_model::where("campaign_id", $id)->delete();
+            
+            //delete associated email-queues
+            campaign_emails_queue_model::where("campaignId", $id)->delete();
+
+            $deleted = campaigns_model::where("id", $id)->delete();
+
+            if($deleted){
+                $response = [
+                    'C' => 100,
+                    'M' => $this->ERRORS[124],
+                    'R' => [],
+                ];
+            }else{
+                $response = [
+                    'C' => 101,
+                    'M' => $this->ERRORS[125],
+                    'R' => [],
+                ];
+            }
+        
+        }else{
+            //session expired
+            $response = [
+                'C' => 1004,
+                'M' => $this->ERRORS[1004],
+                'R' => [],
+            ];
+        }
+
+        return response()->json($response); die;
     }
 
     // --- old code ok report

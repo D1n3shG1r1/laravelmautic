@@ -240,4 +240,20 @@ class Register extends Controller
         
         return response()->json($response); die;
     }
+
+    function signout(Request $request){
+        
+        //remove all sessions
+        $this->removeSession('userId');
+        $this->removeSession('roleId');
+        $this->removeSession('isAdmin');
+        $this->removeSession('roleName');
+        $this->removeSession('companyId');
+        $this->removeSession('userEmail');
+        $this->removeSession('firstName');
+        $this->removeSession('lastName');
+
+        //redirect to signin
+        return Redirect::to(url('signin'));
+    }
 }

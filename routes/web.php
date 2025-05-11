@@ -29,6 +29,7 @@ Route::get('/campaignbuilder',[Campaign::class, 'campaignBuilder']);
 Route::get('/campaigns',[Campaign::class, 'campaigns']);
 Route::get('/campaigns/new',[Campaign::class, 'new']);
 Route::post('/campaign/save',[Campaign::class, 'save']);
+Route::post('/campaign/delete',[Campaign::class, 'delete']);
 Route::post('/newevent',[Campaign::class, 'getEventHtml']);
 Route::post('/savenewevent',[Campaign::class, 'saveEvent']);
 Route::post('/addcampaignsegment',[Campaign::class, 'addCampaignSegment']);
@@ -44,6 +45,8 @@ Route::get('/signin',[Register::class,'signin_get']);
 Route::post('/signin',[Register::class,'signin_post']);
 Route::get('/signup',[Register::class,'signup_get']);
 Route::post('/signup',[Register::class,'signup_post']);
+Route::get('/signout',[Register::class,'signout']);
+
 
 Route::get('/dashboard',[Dashboard::class,'dashboard']);
 

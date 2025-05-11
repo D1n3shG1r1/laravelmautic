@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\contacts_model;
 use App\Models\tags_model;
 use App\Models\tags_contacts_model;
+use App\Models\segment_contacts_model;
 use App\Models\role_model;
 class Contacts extends Controller
 {
@@ -112,7 +113,7 @@ class Contacts extends Controller
                 'title' => 'required|string|min:2|max:50',
                 'firstname' => 'required|string|min:2|max:50',
                 'lastname' => 'required|string|min:2|max:50',
-                'email' => 'required|email|unique:users,email',
+                'email' => 'required|email|unique:contacts,email',
                 'address1' => 'nullable|string|min:2|max:50',
                 'address2' => 'nullable|string|min:2|max:50',
                 'city' => 'nullable|string|min:2|max:50',
@@ -138,6 +139,7 @@ class Contacts extends Controller
                 //check if contact email is already associated
                 
                 $rowObj = contacts_model::where("email",$email)->first();
+                
                 if($rowObj){
                     //conatct email is already associated with us
                     $response = [
@@ -282,7 +284,7 @@ class Contacts extends Controller
                 'title' => 'required|string|min:2|max:50',
                 'firstname' => 'required|string|min:2|max:50',
                 'lastname' => 'required|string|min:2|max:50',
-                'email' => 'required|email|unique:users,email',
+                'email' => 'required|email|unique:contacts,email',
                 'address1' => 'nullable|string|min:2|max:50',
                 'address2' => 'nullable|string|min:2|max:50',
                 'city' => 'nullable|string|min:2|max:50',
@@ -362,6 +364,44 @@ class Contacts extends Controller
     }
     
     function delete(Request $request){
+        
+        if($this->USERID > 0){
+        
+            $id = $request->input("id");
+        
+            //delete contact-tag        
+            tags_contacts_model::where("contact_id", $id)->delete();
+            
+            //delete contact-segment
+            segment_contacts_model::where("contact_id", $id)->delete();
 
+            //delete contact
+            $deleted = contacts_model::where("id", $id)->delete();
+
+            if($deleted){
+                $response = [
+                    'C' => 100,
+                    'M' => $this->ERRORS[121],
+                    'R' => [],
+                ];
+            }else{
+                $response = [
+                    'C' => 101,
+                    'M' => $this->ERRORS[122],
+                    'R' => [],
+                ];
+            }
+        
+        }else{
+            //session expired
+            $response = [
+                'C' => 1004,
+                'M' => $this->ERRORS[1004],
+                'R' => [],
+            ];
+        }
+
+        return response()->json($response); die;
     }
+
 }

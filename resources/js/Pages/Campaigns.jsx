@@ -68,7 +68,7 @@ const Campaigns = ({ pageTitle, csrfToken, params }) => {
     const [currentName, setCurrentName] = useState(null); // State to hold the current ID
   
     const deleteCampaign = (campaign) =>{
-        const name = campaign.title+' '+campaign.firstname+' '+campaign.lastname;
+        const name = campaign.name;
         setCurrentId(campaign.id); // Set the ID when the confirm box is shown
         setCurrentName(name);
         setShowConfirmBox(true); // Show the custom confirmation box
@@ -176,13 +176,13 @@ const Campaigns = ({ pageTitle, csrfToken, params }) => {
                                                                 {campaign.id}
                                                             </td>
                                                             <td>
-                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => editContact(campaign.id)} title="Edit">
+                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => editCampaign(campaign.id)} title="Edit">
                                                                     <i className={`${Styles.filterTrashIcon} fa fa-edit`}></i>
                                                                 </LinkButton>
 
                                                                 <span className={`${Styles.buttonSeprator}`}></span>
 
-                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => deleteContact(contact)} title="Delete">
+                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => deleteCampaign(campaign)} title="Delete">
                                                                     <i className={`${Styles.filterTrashIcon} fa fa-trash-o`}></i>
                                                                 </LinkButton>
                                                             </td>
@@ -234,7 +234,7 @@ const Campaigns = ({ pageTitle, csrfToken, params }) => {
 
             {showConfirmBox && (
             <ConfirmBox
-                message={`Delete the campaign, ${currentName} (${currentId})? It will be removed from all associated records.`}
+                message={`Delete the campaign, ${currentName} (${currentId})? This will remove all associated events and records.`}
                 onConfirm={handleYes}
                 onCancel={handleNo}
             />

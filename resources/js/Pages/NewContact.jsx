@@ -362,12 +362,12 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                     </div>
                 </div>
                 <div className="row column1">
-                    <div className="col-md-3">
+                    {/*<div className="col-md-3">
                         <span className={`${Styles.photoSpan} white_shd`}>
                             <img src=""/>
                         </span>
-                    </div>
-                    <div className="col-md-9">
+                    </div>*/}
+                    <div className="col-md-12">
                         <div className="white_shd full margin_bottom_30">
                             {/*<div className="full graph_head">
                                 <div className="heading1 margin_0">

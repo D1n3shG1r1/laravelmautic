@@ -79,7 +79,8 @@ const Emails = ({ pageTitle, csrfToken, params }) => {
             if(C == 100 && error == 0){
                 //signup successfull
                 showToastMsg(error, msg);
-                window.location.href = params.emailsUrl;
+                document.getElementById("email_rw_"+currentId).remove();
+                //window.location.href = params.emailsUrl;
 
             }else{
                showToastMsg(error, msg);
@@ -138,13 +139,13 @@ const Emails = ({ pageTitle, csrfToken, params }) => {
                                             <tbody>
                                                 {emails.length === 0 ? (
                                                     <tr>
-                                                        <td colSpan="3" style={{ textAlign: "center" }}>
+                                                        <td colSpan="5" style={{ textAlign: "center" }}>
                                                             No emails available.
                                                         </td>
                                                     </tr>
                                                 ) : (
                                                     emails.map(email => (
-                                                        <tr key={email.id}>
+                                                        <tr id={"email_rw_"+email.id} key={email.id}>
                                                             <td>
                                                                 {email.name}
                                                             </td>
@@ -216,7 +217,7 @@ const Emails = ({ pageTitle, csrfToken, params }) => {
             </div>
             {showConfirmBox && (
             <ConfirmBox
-                message={`Delete the email, ${currentName} (${currentId})?`}
+                message={`Delete the email, ${currentName} (${currentId})? It may affect the campaign where it is being used.`}
                 onConfirm={handleYes}
                 onCancel={handleNo}
             />

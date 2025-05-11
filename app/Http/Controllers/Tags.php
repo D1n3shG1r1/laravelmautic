@@ -21,7 +21,52 @@ class Tags extends Controller
         $this->USERID = $this->getSession('userId');
     }
 
-    function tags(Request $request){
+    function tags(Request $request) {
+        if ($this->USERID > 0) {
+            $csrfToken = csrf_token();
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
+    
+            if ($isAdmin > 0) {
+                $tagsObj = tags_model::where("created_by_company", $userCompany)->paginate(10);
+            } else {
+                $tagsObj = tags_model::where("created_by", $this->USERID)->paginate(10);
+            }
+    
+            // Fetch contact counts for each tag in one query to avoid N+1 problem
+            $tagIds = $tagsObj->pluck('id')->toArray();
+            $contactCounts = tags_contacts_model::whereIn('tag_id', $tagIds)
+                ->selectRaw('tag_id, count(*) as contacts')
+                ->groupBy('tag_id')
+                ->pluck('contacts', 'tag_id')
+                ->toArray();
+    
+            // Prepare the tags data with formatted date and contact counts
+            foreach ($tagsObj as &$rw) {
+                $rw->date_added = date("F d, Y", strtotime($rw->date_added)); // format date
+                $rw->contacts = $contactCounts[$rw->id] ?? 0; // add contact count for the tag
+            }
+    
+            // Prepare the response data
+            $data = [
+                "tags" => $tagsObj,
+                "tagsUrl" => url('tags')
+            ];
+    
+            return Inertia::render('Tags', [
+                'pageTitle'  => 'Tags',
+                'csrfToken' => $csrfToken,
+                'params' => $data
+            ]);
+    
+        } else {
+            // redirect to signin
+            return Redirect::to(url('signin'));
+        }
+    }
+
+    
+    function tags2(Request $request){
 
         if($this->USERID > 0){
             $csrfToken = csrf_token();
@@ -33,14 +78,14 @@ class Tags extends Controller
             } else {
                 $tagsObj = tags_model::where("created_by", $this->USERID)->paginate(10)->toArray();
             }
-
+            
             if(!empty($tagsObj["data"])){
 
                 $tagsIds = array();
 
                 foreach($tagsObj["data"] as &$rw){
                     $tagsIds[] = $rw;
-                    $rw["date_added"] = date("F d, Y");
+                    $rw["date_added"] = date("F d, Y", strtotime($rw["date_added"]));
                 }
 
                 foreach($tagsObj["data"] as &$rww){
@@ -51,8 +96,6 @@ class Tags extends Controller
                 }
             }
 
-            //echo "tagsObj:<pre>"; print_r($tagsObj); die;
-            
             $data = array();
             $data["tags"] = $tagsObj;
             $data["tagsUrl"] = url('tags');

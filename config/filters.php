@@ -116,7 +116,7 @@ return [
                 "contains"=>"contains"
             ]
         ],
-        [
+        /*[
             "key"=> "available_lead_phone",
             "id"=> "available_lead_phone",
             "title"=> "Phone",
@@ -139,7 +139,7 @@ return [
                 "ends with"=>"endsWith",
                 "contains"=>"contains"
             ]
-        ], 
+        ],*/ 
         [
             "key"=> "available_lead_address1",
             "id"=> "available_lead_address1",
@@ -267,7 +267,7 @@ return [
                 "equals"=>"=","not equal"=>"!=","empty"=>"empty","not empty"=>"!empty","like"=>"like","not like"=>"!like","including"=>"in","excluding"=>"!in","regexp"=>"regexp","not regexp"=>"!regexp","starts with"=>"startsWith","ends with"=>"endsWith","contains"=>"contains"
             ]
         ],
-        [
+        /*[
             "key"=> "available_lead_attribution",
             "id"=> "available_lead_attribution",
             "title"=> "Attribution",
@@ -322,7 +322,7 @@ return [
                 "ends with"=> "endsWith",
                 "contains"=> "contains"
             ]
-        ],
+        ],*/
         [
             "key"=> "available_lead_date_added",
             "id"=> "available_lead_date_added",
@@ -351,7 +351,7 @@ return [
                 "contains"=> "contains"
             ]
         ],
-        [
+        /*[
             "key"=> "available_lead_date_identified",
             "id"=> "available_lead_date_identified",
             "title"=> "Date Identified",
@@ -677,7 +677,7 @@ return [
             "dataFieldOperators"=>[
                 "equals"=>"=","not equal"=>"!=","empty"=>"empty","not empty"=>"!empty"
             ]
-        ],
+        ],*/
         [
             "key"=> "available_lead_tags",
             "id"=> "available_lead_tags",
@@ -692,7 +692,7 @@ return [
                 "empty"=>"empty","not empty"=>"!empty","including"=>"in","excluding"=>"!in"
             ]
         ],
-        [
+        /*[
             "key"=> "available_lead_twitter",
             "id"=> "available_lead_twitter",
             "title"=> "Twitter",
@@ -733,7 +733,7 @@ return [
             "dataFieldOperators"=>[
                 "equals"=>"=","not equal"=>"!=","empty"=>"empty","not empty"=>"!empty","like"=>"like","not like"=>"!like","including"=>"in","excluding"=>"!in","regexp"=>"regexp","not regexp"=>"!regexp","starts with"=>"startsWith","ends with"=>"endsWith","contains"=>"contains"
             ]
-        ],
+        ],*/
     ]
 ];
 

@@ -569,6 +569,7 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
         className: "option_campaignLeadSource_lists",
         id: "campaignLeadSource_lists"
       },
+      /* you can add more campaign sources according to you
       {
         key: "forms",
         title: "Contacts created from submissions for the selected forms will be automatically added to this campaign.",
@@ -578,6 +579,7 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
         className: "option_campaignLeadSource_forms",
         id: "campaignLeadSource_forms"
       },
+      */
     ];
 
     const actionListDropdownOptions = actions.map((action) => {

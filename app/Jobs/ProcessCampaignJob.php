@@ -64,6 +64,8 @@ class ProcessCampaignJob implements ShouldQueue
         ->where("publish_up", $today)
         ->where("is_published", $published)
         ->first();
+
+        $campaign = campaigns_model::where("id", $this->CAMPAIGNID)->first();
         
         // If the segment does not exist, skip this job
         if (!$campaign) {
@@ -76,8 +78,11 @@ class ProcessCampaignJob implements ShouldQueue
         $publishUp = $campaign->publish_up;
 
         //get campaign events
-        $campaignEventsObj = campaign_events_model::where("campaignId", $campaignID)
+        /*$campaignEventsObj = campaign_events_model::where("campaignId", $campaignID)
         ->where("triggered", 0)
+        ->orderBy("eventOrder", "asc")
+        ->get();*/
+        $campaignEventsObj = campaign_events_model::where("campaignId", $campaignID)
         ->orderBy("eventOrder", "asc")
         ->get();
 
@@ -178,6 +183,7 @@ class ProcessCampaignJob implements ShouldQueue
     }
 
     function triggerEventOperations($actionEventData){
+        
         //"trigger_count" => $triggerCount,
         $today = $actionEventData["today"];
         $campaignId = $actionEventData["campaignId"];
@@ -228,6 +234,7 @@ class ProcessCampaignJob implements ShouldQueue
                         //case-2 if parent-event-type is condition or decision
                         
                         if($triggerPrevCount > 0){
+                            //echo 'if:'. json_encode($actionEventData);
                             //when the event is triggered again
                             //get the contacts of parent event from temp_events_output_model where `no` is not empty or null
                             //`no` is not empty or null means in previous try contact was not met the condition
@@ -243,6 +250,7 @@ class ProcessCampaignJob implements ShouldQueue
                             }
 
                         }else{
+                            //echo 'else:'. json_encode($actionEventData);
                             //when the event is triggered 1st time
                             //check current event decision-path
                             if($decisionPath == 'yes'){
@@ -350,138 +358,169 @@ class ProcessCampaignJob implements ShouldQueue
             }
             
         }
-
+        
+        //echo json_encode($actionEventData);
+        /*echo "eventType:$eventType ,event: $event ,parentEventType: $parentEventType ,parentType: $parentType ,parentId:$parentId ,decisionPath: $decisionPath";*/
 
         //trigger the event based on above $processContactsList object
         if(!empty($processContactsList)){
             //trigger logic
 
             $processContactsObj = contacts_model::whereIn("id", $processContactsList)->get();
-
+            
 
             //============ Action
             if($eventType == "action"){
                 
                 if($event == "email.send"){
                     //send-email event
-                    //make an email queue for each contact in campaign
 
-                    //get subject and html
-                    $emailTemplateId = $eventProperties["email"][0];
+                    //eleminate the contacts where email is already sent
+                       
+                    $emailSentContactsObj = campaign_emails_queue_model::select("contactId")
+                    ->where("campaignId", $campaignId)
+                    ->where("eventId", $eventId)
+                    ->where("emailSent", 1)
+                    ->get();
                     
-                    $templateObj = emailsbuilder_model::select("subject","custom_html")->where("id", $emailTemplateId)->first();
-                    $subject = $templateObj->subject;
-                    $custom_html = $templateObj->custom_html;
+                    $prevSentContIds = array();
 
-                    // create batch rows
-                    $sendEmailContacts = array();
-                    $batchRows = array();
-                    $reportBatchRows = array();
-                    $reportBatchUpdateRows = array();
-
-                    foreach($processContactsObj as $contactRw){
-                        $cntId = $contactRw->id;
-                        $cntFNm = $contactRw->firstname;
-                        $cntLNm = $contactRw->lastname;
-                        $cntEml = $contactRw->email;
-
-                        $sendEmailContacts[] = $cntId;
-
-                        $batchRows[] = array(
-                            //'id'
-                            'campaignId' => $campaignId,
-                            'segmentId' => 0,
-                            'eventId' => $eventId,
-                            'contactId' => $cntId,
-                            'contactName' => ucwords($cntFNm.' '.$cntLNm),
-                            'contactEmail' => $cntEml,
-                            'subject' => $subject,
-                            'html' => $custom_html,
-                            'emailSent' => 0,
-                            'emailBrevoEvents' => '',
-                            'brevoTransactionId' => '',
-                            'date_added' => $today,
-                            'date_modified' => $today
-                        );
+                    if($emailSentContactsObj && !empty($emailSentContactsObj)){
+                        foreach($emailSentContactsObj as $emailSentContRw){
+                            $prevSentContIds[] = $emailSentContRw->contactId;
+                        }
+                    }
                     
-                        //batch rows for `campaign_actions_report_model`
+                    if(!empty($prevSentContIds)){
+                        foreach($processContactsObj as $k=>$proContRw){
+                            $elmCntId = $proContRw->id;
+                            if(in_array($elmCntId, $prevSentContIds)){
+                                unset($processContactsObj[$k]);
+                            }
+                        }
+                    }
+
+                    if(!empty($processContactsObj)){
+                        //make an email queue for each contact in campaign
+
+                        //get subject and html
+                        $emailTemplateId = $eventProperties["email"][0];
+                        
+                        $templateObj = emailsbuilder_model::select("subject","custom_html")->where("id", $emailTemplateId)->first();
+                        $subject = $templateObj->subject;
+                        $custom_html = $templateObj->custom_html;
+
+                        // create batch rows
+                        $sendEmailContacts = array();
+                        $batchRows = array();
+                        $reportBatchRows = array();
+                        $reportBatchUpdateRows = array();
+
+                        foreach($processContactsObj as $contactRw){
+                            $cntId = $contactRw->id;
+                            $cntFNm = $contactRw->firstname;
+                            $cntLNm = $contactRw->lastname;
+                            $cntEml = $contactRw->email;
+
+                            $sendEmailContacts[] = $cntId;
+                            
+                            $batchRows[] = array(
+                                //'id'
+                                'campaignId' => $campaignId,
+                                'segmentId' => 0,
+                                'eventId' => $eventId,
+                                'contactId' => $cntId,
+                                'contactName' => ucwords($cntFNm.' '.$cntLNm),
+                                'contactEmail' => $cntEml,
+                                'subject' => $subject,
+                                'html' => $custom_html,
+                                'emailSent' => 0,
+                                'emailBrevoEvents' => '',
+                                'brevoTransactionId' => '',
+                                'date_added' => $today,
+                                'date_modified' => $today
+                            );
+                        
+                            //batch rows for `campaign_actions_report_model`
+                            if($triggerPrevCount > 0){
+                                //batch update
+                                // Update campaign_actions_report_model
+                                $reportUpdateData = [
+                                    'handled' => 1,
+                                    'decision_path' => 'yes',
+                                    'date_modified' => $today,
+                                ];
+
+                                campaign_actions_report_model::where('event_id', $eventId)
+                                ->where('contact_id', $cntId)
+                                ->update($reportUpdateData);
+
+                            }else{
+                                //batch insert
+                                $reportBatchRows[] = array(
+                                    "campaign_id" => $campaignId,
+                                    "event_id" => $eventId,
+                                    "event_type" => $eventType,
+                                    "event" => $event,
+                                    "properties" => json_encode($eventProperties),
+                                    "decision_path" => 'yes', //$decisionPath, //for email.send event assume `yes`
+                                    "contact_id" => $cntId,
+                                    "handled" => 1, //1 if contact falls in Yes, if contact falls in No and will process later on next attempt
+                                    "date_added" => $today,
+                                    "date_modified" => $today
+                                );
+                            }
+                            
+                        }
+
+                        //send email queue
+                        $insert = campaign_emails_queue_model::insert($batchRows);
+                        
+                        Log::warning("{$insert} Email is queued for the campaign: {$campaignId}");
+
+
+                        //last action triggered
                         if($triggerPrevCount > 0){
-                            //batch update
-                            // Update campaign_actions_report_model
-                            $reportUpdateData = [
-                                'handled' => 1,
-                                'decision_path' => 'yes',
-                                'date_modified' => $today,
-                            ];
-
-                            campaign_actions_report_model::where('event_id', $eventId)
-                            ->where('contact_id', $cntId)
-                            ->update($reportUpdateData);
-
-                        }else{
-                            //batch insert
-                            $reportBatchRows[] = array(
-                                "campaign_id" => $campaignId,
-                                "event_id" => $eventId,
-                                "event_type" => $eventType,
-                                "event" => $event,
-                                "properties" => json_encode($eventProperties),
-                                "decision_path" => 'yes', //$decisionPath, //for email.send event assume `yes`
-                                "contact_id" => $cntId,
-                                "handled" => 1, //1 if contact falls in Yes, if contact falls in No and will process later on next attempt
-                                "date_added" => $today,
+                            //update record for current event
+                            $tmpUpdtData = array(
+                                "yes" => json_encode($sendEmailContacts),
+                                "no" => json_encode(array()), //empty json
                                 "date_modified" => $today
                             );
+                            temp_events_output_model::where("campaign_id", $campaignId)
+                            ->where("event_id", $eventId)
+                            ->update($tmpUpdtData);
+                            
+                        }else{
+                            //insert record
+                            $tmpEvtOutPut = new temp_events_output_model();
+                            //$tmpEvtOutPut->id
+                            $tmpEvtOutPut->campaign_id = $campaignId;  
+                            $tmpEvtOutPut->event_id = $eventId;
+                            $tmpEvtOutPut->event_type = $eventType;
+                            $tmpEvtOutPut->type = $event;
+                            $tmpEvtOutPut->yes = json_encode($sendEmailContacts);
+                            $tmpEvtOutPut->no = json_encode(array()); //empty json
+                            $tmpEvtOutPut->date_added = $today;
+                            $tmpEvtOutPut->date_modified = $today;
+                            $tmpEvtOutPutId = $tmpEvtOutPut->save();
+                        
+                            //keep data for action reports
+                            //make entry to keep affected contacts
+                            $reportBatchInsert = campaign_actions_report_model::insert($reportBatchRows);
+
+                            Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
                         }
+
+                        //update this event triggered to 1 by `SendCampaignEmail` job
                         
+                        return $insert;
                     }
-
-                    //send email queue
-                    $insert = campaign_emails_queue_model::insert($batchRows);
                     
-                    Log::warning("{$insert} Email is queued for the campaign: {$campaignId}");
-
-
-                    //last action triggered
-                    if($triggerPrevCount > 0){
-                        //update record for current event
-                        $tmpUpdtData = array(
-                            "yes" => json_encode($sendEmailContacts),
-                            "no" => json_encode(array()), //empty json
-                            "date_modified" => $today
-                        );
-                        temp_events_output_model::where("campaign_id", $campaignId)
-                        ->where("event_id", $eventId)
-                        ->update($tmpUpdtData);
-                        
-                    }else{
-                        //insert record
-                        $tmpEvtOutPut = new temp_events_output_model();
-                        //$tmpEvtOutPut->id
-                        $tmpEvtOutPut->campaign_id = $campaignId;  
-                        $tmpEvtOutPut->event_id = $eventId;
-                        $tmpEvtOutPut->event_type = $eventType;
-                        $tmpEvtOutPut->type = $event;
-                        $tmpEvtOutPut->yes = json_encode($sendEmailContacts);
-                        $tmpEvtOutPut->no = json_encode(array()); //empty json
-                        $tmpEvtOutPut->date_added = $today;
-                        $tmpEvtOutPut->date_modified = $today;
-                        $tmpEvtOutPutId = $tmpEvtOutPut->save();
-                    
-                        //keep data for action reports
-                        //make entry to keep affected contacts
-                        $reportBatchInsert = campaign_actions_report_model::insert($reportBatchRows);
-                    }
-
-                    Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
-
-                    //update this event triggered to 1 by `SendCampaignEmail` job
-                    
-                    return $insert;
 
                 }
                 
-                if($eventType == "lead.deletecontact"){
+                if($event == "lead.deletecontact"){
                     //delete contact
                     $reportBatchRows = array();
                     $reportBatchUpdateRows = array();
@@ -574,16 +613,18 @@ class ProcessCampaignJob implements ShouldQueue
                             //keep data for action reports
                             //make entry to keep affected contacts
                             $reportBatchInsert = campaign_actions_report_model::insert($reportBatchRows);
+                        
+                            Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
                         }
 
-                        Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
+                        
 
                     }
 
 
                 }
                 
-                if($eventType == "lead.changelist"){
+                if($event == "lead.changelist"){
                     //add/remove contact to/from specific segment
                     
                     $addToSegmentIds = $eventProperties["addToLists"];
@@ -737,11 +778,20 @@ class ProcessCampaignJob implements ShouldQueue
 
                 }
                 
-                if($eventType == "lead.changetags"){
+                if($event == "lead.changetags"){
                     //add/remove contact tags
+                    if(array_key_exists("add_tags", $eventProperties)){
+                        $addToTagsIds = $eventProperties["add_tags"];
+                    }else{
+                        $addToTagsIds = array();
+                    }
+                    
+                    if(array_key_exists("remove_tags", $eventProperties)){
+                        $removeFromTagsIds = $eventProperties["remove_tags"];
+                    }else{
+                        $removeFromTagsIds = array();
+                    }
 
-                    $addToTagsIds = $eventProperties["add_tags"];
-                    $removeFromTagsIds = $eventProperties["remove_tags"];
 
                     $addRemoveContactIds = array();
                     $reportBatchUpdateRows = array();
@@ -801,7 +851,7 @@ class ProcessCampaignJob implements ShouldQueue
                         }
 
                         if(!empty($batchAddRows)){
-                            $saved = segment_contacts_model::insert($batchAddRows);
+                            $saved = tags_contacts_model::insert($batchAddRows);
                         }
 
                     }
@@ -832,7 +882,7 @@ class ProcessCampaignJob implements ShouldQueue
                                 
                                 $affectedContacts[] = $removeRow['contact_id'];
 
-                                segment_contacts_model::where('segment_id', $removeRow['segment_id'])
+                                tags_contacts_model::where('tag_id', $removeRow['tag_id'])
                                 ->where('contact_id', $removeRow['contact_id'])
                                 ->delete();
                             }
@@ -881,12 +931,14 @@ class ProcessCampaignJob implements ShouldQueue
                         //keep data for action reports
                         //make entry to keep affected contacts
                         $reportBatchInsert = campaign_actions_report_model::insert($reportBatchRows);
+                        
+                        Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
                     }
-                    Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
+                    
 
                 }
                 
-                if($eventType == "lead.updatelead"){
+                if($event == "lead.updatelead"){
                     //contact modify event
                     $modifyContactIds = array();
                     $reportBatchRows = array();
@@ -906,7 +958,7 @@ class ProcessCampaignJob implements ShouldQueue
                             ];
 
                             campaign_actions_report_model::where('event_id', $eventId)
-                            ->where('contact_id', $$cntId)
+                            ->where('contact_id', $cntId)
                             ->update($reportUpdateData);
 
                         }else{
@@ -928,20 +980,29 @@ class ProcessCampaignJob implements ShouldQueue
 
                     if(!empty($modifyContactIds)){
                         //$removeFromTagsIds = $eventProperties["remove_tags"];
-                        $contactUpdateData = array(
+                        $contactUpdateData = array();
+                        foreach($eventProperties as $k => $v){
+                            if(trim($v) != '' && trim($v) != null){
+                                $contactUpdateData[$k] = trim($v);
+                            }
+                        }
+
+                        $contactUpdateData["date_modified"] = $today;
+                        
+                        /*$contactUpdateData = array(
                             "title" => $eventProperties["title"],
-                            "firstname" => $eventProperties["remove_tags"],
-                            "lastname" => $eventProperties["remove_tags"],
-                            "email" => $eventProperties["remove_tags"],
-                            "mobile" => $eventProperties["remove_tags"],
-                            "address1" => $eventProperties["remove_tags"],
-                            "address2" => $eventProperties["remove_tags"],
-                            "city" => $eventProperties["remove_tags"],
-                            "state" => $eventProperties["remove_tags"],
-                            "zip" => $eventProperties["remove_tags"],
-                            "country" => $eventProperties["remove_tags"],
+                            "firstname" => $eventProperties["firstname"],
+                            "lastname" => $eventProperties["lastname"],
+                            "email" => $eventProperties["email"],
+                            "mobile" => $eventProperties["mobile"],
+                            "address1" => $eventProperties["address1"],
+                            "address2" => $eventProperties["address2"],
+                            "city" => $eventProperties["city"],
+                            "state" => $eventProperties["state"],
+                            "zip" => $eventProperties["zip"],
+                            "country" => $eventProperties["country"],
                             "date_modified" => $today,
-                        );
+                        );*/
 
                         contacts_model::whereIn("id", $modifyContactIds)->update($contactUpdateData);
 
@@ -986,9 +1047,10 @@ class ProcessCampaignJob implements ShouldQueue
                             //keep data for action reports
                             //make entry to keep affected contacts
                             $reportBatchInsert = campaign_actions_report_model::insert($reportBatchRows);
+
+                            Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
                         }
 
-                        Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
                     }
                 }
                 
@@ -1016,11 +1078,12 @@ class ProcessCampaignJob implements ShouldQueue
                         $reportBatchRows = array(); 
                         $reportBatchUpdateRows = array();
 
-                        /*$query = campaign_emails_queue_model::where("eventId", $parentId)
-                        ->where("campaignId", $campaignId)
-                        ->where("emailSent", 1);*/
                         $query = campaign_emails_queue_model::where("eventId", $parentId)
+                        ->where("campaignId", $campaignId)
+                        ->where("emailSent", 1);
+                        /*$query = campaign_emails_queue_model::where("eventId", $parentId)
                         ->where("campaignId", $campaignId);
+                        */
                         
                         if (!empty($ommitContacts)) {
                             $query->whereNotIn("contactId", $ommitContacts);
@@ -1028,6 +1091,8 @@ class ProcessCampaignJob implements ShouldQueue
 
                         $sentEmailObj = $query->get();
                         
+                        //dd($sentEmailObj);
+
                         if($sentEmailObj){
 
                             foreach($sentEmailObj as $sentEmailRw){
@@ -1057,6 +1122,8 @@ class ProcessCampaignJob implements ShouldQueue
 
                                     // Execute the cURL command
                                     exec($cmd, $out);
+
+                                    //echo 'curl:'.$out[0];
 
                                     // Output the result for debugging
                                     if(!empty($out)){
@@ -1270,9 +1337,9 @@ class ProcessCampaignJob implements ShouldQueue
                             //keep data for action reports
                             //make entry to keep affected contacts
                             $reportBatchInsert = campaign_actions_report_model::insert($reportBatchRows);
+                        
+                            Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
                         }
-
-                        Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
                     }
                 }
             }
@@ -1508,9 +1575,9 @@ class ProcessCampaignJob implements ShouldQueue
                             //keep data for action reports
                             //make entry to keep affected contacts
                             $reportBatchInsert = campaign_actions_report_model::insert($reportBatchRows);
+                        
+                            Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
                         }
-
-                        Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
 
                     }
                     
@@ -1676,9 +1743,9 @@ class ProcessCampaignJob implements ShouldQueue
                             //keep data for action reports
                             //make entry to keep affected contacts
                             $reportBatchInsert = campaign_actions_report_model::insert($reportBatchRows);
+                        
+                            Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
                         }
-
-                        Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
                     
                     
                     }else{
@@ -1848,9 +1915,9 @@ class ProcessCampaignJob implements ShouldQueue
                             //keep data for action reports
                             //make entry to keep affected contacts
                             $reportBatchInsert = campaign_actions_report_model::insert($reportBatchRows);
-                        }
                         
-                        Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
+                            Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
+                        }
                     
                     
                     }else{

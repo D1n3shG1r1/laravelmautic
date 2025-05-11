@@ -46,7 +46,7 @@ class Kernel extends ConsoleKernel
         //$schedule->command('process:campaigns')->daily();
 
         //## 3
-        //$schedule->command('campaign:send-emails')->daily();
+        //$schedule->command('process:send-campaign-emails')->daily();
 
     }
 

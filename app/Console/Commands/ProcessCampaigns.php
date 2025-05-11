@@ -20,7 +20,8 @@ class ProcessCampaigns extends Command
         $today = date("Y-m-d");
         $published = 1; 
 
-        $campaignsCount = campaigns_model::where("publish_up", $today)
+        $campaignsCount = campaigns_model::where("publish_up", "<=", $today)
+        ->where("publish_down", ">=", $today)
         ->where("is_published", $published)
         ->count();
 
@@ -30,7 +31,8 @@ class ProcessCampaigns extends Command
         $this->warn("No campaigns matched today's date and published status.");
     }
         
-        campaigns_model::where("publish_up", $today)
+        campaigns_model::where("publish_up", "<=", $today)
+        ->where("publish_down", ">=", $today)
         ->where("is_published", $published)
         ->chunk(100, function ($campaigns) {
             //dd($campaigns);

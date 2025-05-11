@@ -294,5 +294,32 @@ class Emailsbuilder extends Controller
 
     function delete(Request $request){
         //110
+        if($this->USERID > 0){
+        
+            $id = $request->input("id");
+            $deleted = emailsbuilder_model::where("id", $id)->delete();
+            if($deleted){
+                $response = [
+                    'C' => 100,
+                    'M' => $this->ERRORS[110],
+                    'R' => [],
+                ];
+            }else{
+                $response = [
+                    'C' => 101,
+                    'M' => $this->ERRORS[123],
+                    'R' => [],
+                ];
+            }
+        }else{
+            //session expired
+            $response = [
+                'C' => 1004,
+                'M' => $this->ERRORS[1004],
+                'R' => [],
+            ];
+        }
+
+        return response()->json($response); die;
     }
 }

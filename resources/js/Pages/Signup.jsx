@@ -178,7 +178,6 @@ const SignUpHtml = ({pageTitle,csrfToken,params}) => {
                         <div className="logo_login">
                             <div className="center">
                                 <img width="210" src="images/sciplogo.png" alt="#" />
-                                Mautic
                             </div>
                         </div>
                         <div className="login_form">

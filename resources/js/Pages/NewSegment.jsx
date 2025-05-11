@@ -108,6 +108,8 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
       // Increment filterIdx state to track the panel index
       setFilterIdx(prevIdx => prevIdx + 1);
       filtersCount = filtersCount + 1;
+
+      document.getElementById("filterList").value = "";
     };
     
 

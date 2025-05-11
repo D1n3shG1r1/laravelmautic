@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\contacts_model;
 use App\Models\segments_model;
 use App\Models\segment_contacts_model;
+use App\Models\campaign_segments_model;
 use App\Models\role_model;
 
 class Segments extends Controller
@@ -325,8 +326,15 @@ class Segments extends Controller
 
             $id = $request->input("id");
 
+            //delete segment
             segments_model::where("created_by_company", $userCompany)->where("id", $id)->delete();
+            
+            //delete segement from associated contacts
             segment_contacts_model::where("segment_id", $id)->delete();
+            
+            //delete segement from associated campaigns
+            campaign_segments_model::where("segment_id", $id)->delete();
+            
             
             $response = [
                 'C' => 100,
