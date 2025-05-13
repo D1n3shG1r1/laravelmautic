@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-
-const NodeEndpoints = ({ nodeType, endpointType }) => {
+import Styles from "../../css/Modules/Campaigns.module.css";
+const NodeEndpoints = ({ nodeType, endpointType, parentEventType, parentEventTypeValue }) => {
     const [hovered, setHovered] = useState(false);
 
     const endpointStyles = {
@@ -64,6 +64,79 @@ const NodeEndpoints = ({ nodeType, endpointType }) => {
             element.classList.add("hide");                
         });
 
+        const parentDataType = parentNode.getAttribute("data-type");
+        //parentEventType
+        //parentEventTypeValue
+        if(parentDataType == "source"){
+            //show only two events action condition    
+            const CampaignEventPanelGroupsElm = document.getElementById("CampaignEventPanelGroups");
+            CampaignEventPanelGroupsElm.classList.add(Styles.twoEventsWidth);
+            
+            const ActionGroupSelectorElm = document.getElementById("ActionGroupSelector");
+            ActionGroupSelectorElm.classList.add(Styles.eventsWidth);
+
+            const ConditionGroupSelectorElm = document.getElementById("ConditionGroupSelector");
+            ConditionGroupSelectorElm.classList.add(Styles.eventsWidth);
+
+            //const DecisionGroupSelectorElm = document.getElementById("DecisionGroupSelector");
+            //DecisionGroupSelectorElm.classList.add('hide');
+
+        }else if(parentDataType == "action"){
+            if(parentEventTypeValue == "email.send"){
+                //decision box will appear only if parent action-event is send-email    
+                const CampaignEventPanelGroupsElm = document.getElementById("CampaignEventPanelGroups");
+                CampaignEventPanelGroupsElm.classList.remove(Styles.twoEventsWidth);
+
+                const ActionGroupSelectorElm = document.getElementById("ActionGroupSelector");
+                ActionGroupSelectorElm.classList.remove(Styles.eventsWidth);
+
+                const ConditionGroupSelectorElm = document.getElementById("ConditionGroupSelector");
+                ConditionGroupSelectorElm.classList.remove(Styles.eventsWidth);
+                
+                const DecisionGroupSelectorElm = document.getElementById("DecisionGroupSelector");
+                DecisionGroupSelectorElm.classList.remove('hide');    
+            }else{
+                 //decision box will hide if parent action-event is other than `send-email`
+                const CampaignEventPanelGroupsElm = document.getElementById("CampaignEventPanelGroups");
+                CampaignEventPanelGroupsElm.classList.add(Styles.twoEventsWidth);
+                
+                const ActionGroupSelectorElm = document.getElementById("ActionGroupSelector");
+                ActionGroupSelectorElm.classList.add(Styles.eventsWidth);
+
+                const ConditionGroupSelectorElm = document.getElementById("ConditionGroupSelector");
+                ConditionGroupSelectorElm.classList.add(Styles.eventsWidth);
+                
+                const DecisionGroupSelectorElm = document.getElementById("DecisionGroupSelector");
+                DecisionGroupSelectorElm.classList.add('hide'); 
+            }
+        }else if(parentDataType == "condition"){
+            //decision box will appear only if parent is condition    
+            const CampaignEventPanelGroupsElm = document.getElementById("CampaignEventPanelGroups");
+            CampaignEventPanelGroupsElm.classList.remove(Styles.twoEventsWidth);
+            
+            const ActionGroupSelectorElm = document.getElementById("ActionGroupSelector");
+            ActionGroupSelectorElm.classList.remove(Styles.eventsWidth);
+
+            const ConditionGroupSelectorElm = document.getElementById("ConditionGroupSelector");
+            ConditionGroupSelectorElm.classList.remove(Styles.eventsWidth);
+            
+            const DecisionGroupSelectorElm = document.getElementById("DecisionGroupSelector");
+            DecisionGroupSelectorElm.classList.remove('hide'); 
+        }else{
+            //decision box will hide 
+           const CampaignEventPanelGroupsElm = document.getElementById("CampaignEventPanelGroups");
+           CampaignEventPanelGroupsElm.classList.add(Styles.twoEventsWidth);
+           
+           const ActionGroupSelectorElm = document.getElementById("ActionGroupSelector");
+           ActionGroupSelectorElm.classList.add(Styles.eventsWidth);
+
+           const ConditionGroupSelectorElm = document.getElementById("ConditionGroupSelector");
+           ConditionGroupSelectorElm.classList.add(Styles.eventsWidth);
+           
+           const DecisionGroupSelectorElm = document.getElementById("DecisionGroupSelector");
+           DecisionGroupSelectorElm.classList.add('hide'); 
+       }
+        
         const CampaignEventPanelElm = document.getElementById("CampaignEventPanel");
         CampaignEventPanelElm.classList.remove('hide');
         //CampaignEventPanelElm.style.left = parentLeft + "" + "px";

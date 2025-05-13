@@ -2,18 +2,19 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import NodeEndpoints from '@/Components/NodeEndpoints';
 //import CreateNode from '@/Components/CreateNode';
-const DecisionModalContent = (inputData) => {
+const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
   
-  const anchor = inputData.inputData.anchor;
-  const type = inputData.inputData.type;
-  const eventType = inputData.inputData.eventType;
-  const anchorEventType = inputData.inputData.anchorEventType;
-  const parentEventId = inputData.inputData.parentEventId;
-  const eventOrder = inputData.inputData.eventOrder;
-  const campaignId = inputData.inputData.campaignId;
-  const tempEventId = inputData.inputData.tempEventId;
-  const csrftoken = inputData.inputData.csrftoken;
-
+  const jsPlumbInstanceReff = jsPlumbInstanceRef;
+  const anchor = inputData.anchor;
+  const type = inputData.type;
+  const eventType = inputData.eventType;
+  const anchorEventType = inputData.anchorEventType;
+  const parentEventId = inputData.parentEventId;
+  const eventOrder = inputData.eventOrder;
+  const campaignId = inputData.campaignId;
+  const tempEventId = inputData.tempEventId;
+  const csrftoken = inputData.csrftoken;
+ 
   useEffect(() => {
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
     const tooltips = [...tooltipTriggerList].map((tooltip) => new bootstrap.Tooltip(tooltip));
@@ -45,6 +46,8 @@ const DecisionModalContent = (inputData) => {
     /*Create other Nodes */
     const type = propJson.type;
     const id = propJson.id;
+    const parentEventType = propJson.parentEventType;
+    const parentEventTypeValue = propJson.parentEventTypeValue;
     const parentNodeType = propJson.parentNodeType;
     const parentNodeAnchor = propJson.parentNodeAnchor;
     const parentNodeId = propJson.parentNodeId;
@@ -118,10 +121,10 @@ const DecisionModalContent = (inputData) => {
 
     //add circles/buttons/endpoints
     document.getElementById("campaign-builder").appendChild(node);
-    if (type === 'source') {
-      const endpointLeft = <NodeEndpoints nodeType={type} endpointType="left" />;
-      const endpointRight = <NodeEndpoints nodeType={type} endpointType="right" />;
-      const endpointBottomCenter = <NodeEndpoints nodeType={type} endpointType="bottom-center" />;
+    if (type === 'source') { 
+      const endpointLeft = <NodeEndpoints nodeType={type} endpointType="left" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue} />;
+      const endpointRight = <NodeEndpoints nodeType={type} endpointType="right" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue}/>;
+      const endpointBottomCenter = <NodeEndpoints nodeType={type} endpointType="bottom-center" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue}/>;
   
       // Assuming `node` is a DOM element where you want to append these components
       const rootLeft = ReactDOM.createRoot(document.getElementById(id+'_endpointLeftHolder'));
@@ -133,9 +136,9 @@ const DecisionModalContent = (inputData) => {
       rootBottomCenter.render(endpointBottomCenter);
   
   }else if (type === 'decision' || type === 'condition') {
-      const endpointTopCenter = <NodeEndpoints nodeType={type} endpointType="top-center" />;
-      const endpointBottomLeft = <NodeEndpoints nodeType={type} endpointType="bottom-left" />;
-      const endpointBottomRight = <NodeEndpoints nodeType={type} endpointType="bottom-right" />;
+      const endpointTopCenter = <NodeEndpoints nodeType={type} endpointType="top-center" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue}/>;
+      const endpointBottomLeft = <NodeEndpoints nodeType={type} endpointType="bottom-left" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue}/>;
+      const endpointBottomRight = <NodeEndpoints nodeType={type} endpointType="bottom-right" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue}/>;
   
       const rootTopCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointTopCenterHolder'));
       const rootBottomLeft = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomLeftHolder'));
@@ -146,8 +149,8 @@ const DecisionModalContent = (inputData) => {
       rootBottomRight.render(endpointBottomRight);
   }else if(type == 'action'){
         
-      const endpointTopCenter = <NodeEndpoints nodeType={type} endpointType="top-center" />
-      const endpointBottomCenter = <NodeEndpoints nodeType={type} endpointType="bottom-center" />
+      const endpointTopCenter = <NodeEndpoints nodeType={type} endpointType="top-center" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue}/>
+      const endpointBottomCenter = <NodeEndpoints nodeType={type} endpointType="bottom-center" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue}/>
 
       const rootTopCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointTopCenterHolder'));
       const rootBottomCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomCenterHolder'));
@@ -160,27 +163,9 @@ const DecisionModalContent = (inputData) => {
     // document.getElementById("campaign-builder").appendChild(node);
 
     // Make the node draggable and connectable
-    // Initialize jsPlumb instance
-    const instance = jsPlumb.getInstance({
-        //container: document.getElementById("campaign-builder"),
-        container: document.getElementById("CampaignCanvas"),
-    });
-
-    instance.draggable(node);
+    jsPlumbInstanceReff.current.draggable(node);
     
     //endpoint connecting line
-    /*instance.addEndpoint(node, {
-        source: parentNodeId,
-        target: id,
-        anchor: "Continuous",
-        isSource: true,
-        isTarget: true,
-        endpoint: ["Dot", { radius: 6 }],
-        paintStyle: { fill: "#4caf50" },
-        connector: ["Bezier", { curviness: 50 }],
-        connectorStyle: { stroke: "#4caf50", strokeWidth: 2 },
-    });*/
-
     // Bottom-Left of source (with 10px margin left)
     
     if(parentNodeType == 'source'){
@@ -213,9 +198,7 @@ const DecisionModalContent = (inputData) => {
     var anchTrgYofst = 0;
 
     if(type != 'source'){
-        
-
-        instance.connect(node, {
+      jsPlumbInstanceReff.current.connect(node, {
             source: parentNodeId,
             target: id,
             isSource: true,
@@ -318,9 +301,12 @@ const DecisionModalContent = (inputData) => {
                 var resp_campaignevent = resp_eventData.campaignevent;
                 
                 var resp_eventType = resp_campaignevent.eventType;
+                var resp_eventTypeType = resp_campaignevent.type;
                 var resp_eventOrder = resp_campaignevent.eventOrder;
                 var resp_parentEventId = resp_campaignevent.parentEventId;
-                
+                var parentEventType = resp_campaignevent.parentEventType;
+                var parentEventTypeValue = resp_campaignevent.parentEventTypeValue;
+
                 var resp_parentNodeType = resp_campaignevent.anchorEventType;
                 var resp_parentNodeAnchor = resp_campaignevent.anchor;
                 if(resp_parentNodeType == "source"){
@@ -353,6 +339,8 @@ const DecisionModalContent = (inputData) => {
                     "id":nodeId,
                     "parentNodeId":resp_parentEventId,
                     "parentNodeType":resp_parentNodeType,
+                    "parentEventType":parentEventType,
+                    "parentEventTypeValue":parentEventTypeValue,
                     "parentNodeAnchor":resp_parentNodeAnchor,
                     "eventOrder":eventOrder,
                     "content":nodeContent,

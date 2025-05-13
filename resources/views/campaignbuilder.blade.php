@@ -509,8 +509,8 @@
 
         // Initialize jsPlumb instance
         instance = jsPlumb.getInstance({
-            //container: document.getElementById("campaign-builder"),
-            container: document.getElementById("CampaignCanvas"),
+            container: document.getElementById("campaign-builder"),
+            //container: document.getElementById("CampaignCanvas"),
         });
 
         document.body.addEventListener('click', function(event) {

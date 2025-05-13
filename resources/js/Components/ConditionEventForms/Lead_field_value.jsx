@@ -7,17 +7,19 @@ import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 
-const DecisionModalContent = (inputData) => {
+const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
   
-  const anchor = inputData.inputData.anchor;
-  const type = inputData.inputData.type;
-  const eventType = inputData.inputData.eventType;
-  const anchorEventType = inputData.inputData.anchorEventType;
-  const parentEventId = inputData.inputData.parentEventId;
-  const eventOrder = inputData.inputData.eventOrder;
-  const campaignId = inputData.inputData.campaignId;
-  const tempEventId = inputData.inputData.tempEventId;
-  const csrftoken = inputData.inputData.csrftoken;
+  const jsPlumbInstanceReff = jsPlumbInstanceRef;
+  const anchor = inputData.anchor;
+  const type = inputData.type;
+  const eventType = inputData.eventType;
+  const anchorEventType = inputData.anchorEventType;
+  const parentEventId = inputData.parentEventId;
+  const eventOrder = inputData.eventOrder;
+  const campaignId = inputData.campaignId;
+  const tempEventId = inputData.tempEventId;
+  const csrftoken = inputData.csrftoken;
+
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -72,206 +74,200 @@ const handleInputChange = (e) => {
     });
 };
 
-  const createNode = (propJson, x, y) => {
-    /*Create other Nodes */
-    const type = propJson.type;
-    const id = propJson.id;
-    const parentNodeType = propJson.parentNodeType;
-    const parentNodeAnchor = propJson.parentNodeAnchor;
-    const parentNodeId = propJson.parentNodeId;
-    const eventOrder = propJson.eventOrder;
-    const content = propJson.content;
-    const dataConnected = propJson.dataConnected;
-    
-    var classType = 'list-campaign-leadsource';
-    if(type == 'decision'){
-        classType = 'list-campaign-decision';
-    }else if(type == 'action'){
-        classType = 'list-campaign-action';
-    }else if(type == 'condition'){
-        classType = 'list-campaign-condition';
-    }else{
-        classType = 'list-campaign-leadsource';
-    }
-    
-    //create node div
-    const node = document.createElement("div");
-    node.id = id;
-    node.className = "eventNode workflow-node draggable list-campaign-source jtk-endpoint-anchor-leadsource CampaignEvent_lists jtk-managed jtk-endpoint-anchor-leadsourceleft jtk-endpoint-anchor-leadsourceright jtk-draggable";
-    node.setAttribute("data-type", type);
-    node.setAttribute("data-parent-type", parentNodeType);
-    node.setAttribute("data-parent-node", parentNodeId);
-    node.setAttribute("data-event-order", eventOrder);
-    
-    node.innerHTML = content;
-    node.style.position = "absolute";
-    node.style.left = `${x}px`;
-    node.style.top = `${y}px`;
-
-    if(classType != ''){
-        node.classList.add(classType);
-    }
-
-    if (type === 'source') {
-      const endpointBottomCenterHolder = document.createElement("div");
-      endpointBottomCenterHolder.id = id+'_endpointBottomCenterHolder';
-      node.appendChild(endpointBottomCenterHolder);
-
-      const endpointLeftHolder = document.createElement("div");
-      endpointLeftHolder.id = id+'_endpointLeftHolder';
-      node.appendChild(endpointLeftHolder);
-
-      const endpointRightHolder = document.createElement("div");
-      endpointRightHolder.id = id+'_endpointRightHolder';
-      node.appendChild(endpointRightHolder);        
-      
-    }else if(type === 'decision' || type === 'condition'){
-      const endpointTopCenterHolder = document.createElement("div");
-      endpointTopCenterHolder.id = id+'_endpointTopCenterHolder';
-      node.appendChild(endpointTopCenterHolder);
-
-      const endpointBottomLeftHolder = document.createElement("div");
-      endpointBottomLeftHolder.id = id+'_endpointBottomLeftHolder';
-      node.appendChild(endpointBottomLeftHolder);
-
-      const endpointBottomRightHolder = document.createElement("div");
-      endpointBottomRightHolder.id = id+'_endpointBottomRightHolder';
-      node.appendChild(endpointBottomRightHolder);        
-    }else if(type === 'action'){
-      const endpointTopCenterHolder = document.createElement("div");
-      endpointTopCenterHolder.id = id+'_endpointTopCenterHolder';
-      node.appendChild(endpointTopCenterHolder);
-
-      const endpointBottomCenterHolder = document.createElement("div");
-      endpointBottomCenterHolder.id = id+'_endpointBottomCenterHolder';
-      node.appendChild(endpointBottomCenterHolder);
-    }
-
-    //add circles/buttons/endpoints
-    document.getElementById("campaign-builder").appendChild(node);
-    if (type === 'source') {
-      const endpointLeft = <NodeEndpoints nodeType={type} endpointType="left" />;
-      const endpointRight = <NodeEndpoints nodeType={type} endpointType="right" />;
-      const endpointBottomCenter = <NodeEndpoints nodeType={type} endpointType="bottom-center" />;
+const createNode = (propJson, x, y) => {
+  /*Create other Nodes */
+  const type = propJson.type;
+  const id = propJson.id;
+  const parentEventType = propJson.parentEventType;
+  const parentEventTypeValue = propJson.parentEventTypeValue;
+  const parentNodeType = propJson.parentNodeType;
+  const parentNodeAnchor = propJson.parentNodeAnchor;
+  const parentNodeId = propJson.parentNodeId;
+  const eventOrder = propJson.eventOrder;
+  const content = propJson.content;
+  const dataConnected = propJson.dataConnected;
   
-      // Assuming `node` is a DOM element where you want to append these components
-      const rootLeft = ReactDOM.createRoot(document.getElementById(id+'_endpointLeftHolder'));
-      const rootRight = ReactDOM.createRoot(document.getElementById(id+'_endpointRightHolder'));
-      const rootBottomCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomCenterHolder'));
-  
-      rootLeft.render(endpointLeft);
-      rootRight.render(endpointRight);
-      rootBottomCenter.render(endpointBottomCenter);
-  
-  }else if (type === 'decision' || type === 'condition') {
-      const endpointTopCenter = <NodeEndpoints nodeType={type} endpointType="top-center" />;
-      const endpointBottomLeft = <NodeEndpoints nodeType={type} endpointType="bottom-left" />;
-      const endpointBottomRight = <NodeEndpoints nodeType={type} endpointType="bottom-right" />;
-  
-      const rootTopCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointTopCenterHolder'));
-      const rootBottomLeft = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomLeftHolder'));
-      const rootBottomRight = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomRightHolder'));
-    
-      rootTopCenter.render(endpointTopCenter);
-      rootBottomLeft.render(endpointBottomLeft);
-      rootBottomRight.render(endpointBottomRight);
+  var classType = 'list-campaign-leadsource';
+  if(type == 'decision'){
+      classType = 'list-campaign-decision';
   }else if(type == 'action'){
-        
-      const endpointTopCenter = <NodeEndpoints nodeType={type} endpointType="top-center" />
-      const endpointBottomCenter = <NodeEndpoints nodeType={type} endpointType="bottom-center" />
-
-      const rootTopCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointTopCenterHolder'));
-      const rootBottomCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomCenterHolder'));
-        
-      rootTopCenter.render(endpointTopCenter);
-      rootBottomCenter.render(endpointBottomCenter);
-        
+      classType = 'list-campaign-action';
+  }else if(type == 'condition'){
+      classType = 'list-campaign-condition';
+  }else{
+      classType = 'list-campaign-leadsource';
   }
+  
+  //create node div
+  const node = document.createElement("div");
+  node.id = id;
+  node.className = "workflow-node draggable list-campaign-source jtk-endpoint-anchor-leadsource CampaignEvent_lists jtk-managed jtk-endpoint-anchor-leadsourceleft jtk-endpoint-anchor-leadsourceright jtk-draggable";
+  node.setAttribute("data-type", type);
+  node.setAttribute("data-parent-type", parentNodeType);
+  node.setAttribute("data-parent-node", parentNodeId);
+  node.setAttribute("data-event-order", eventOrder);
+  
+  node.innerHTML = content;
+  node.style.position = "absolute";
+  node.style.left = `${x}px`;
+  node.style.top = `${y}px`;
+
+  if(classType != ''){
+      node.classList.add(classType);
+  }
+
+  if (type === 'source') {
+    const endpointBottomCenterHolder = document.createElement("div");
+    endpointBottomCenterHolder.id = id+'_endpointBottomCenterHolder';
+    node.appendChild(endpointBottomCenterHolder);
+
+    const endpointLeftHolder = document.createElement("div");
+    endpointLeftHolder.id = id+'_endpointLeftHolder';
+    node.appendChild(endpointLeftHolder);
+
+    const endpointRightHolder = document.createElement("div");
+    endpointRightHolder.id = id+'_endpointRightHolder';
+    node.appendChild(endpointRightHolder);        
     
-    // document.getElementById("campaign-builder").appendChild(node);
+  }else if(type === 'decision' || type === 'condition'){
+    const endpointTopCenterHolder = document.createElement("div");
+    endpointTopCenterHolder.id = id+'_endpointTopCenterHolder';
+    node.appendChild(endpointTopCenterHolder);
 
-    // Make the node draggable and connectable
-    // Initialize jsPlumb instance
-    const instance = jsPlumb.getInstance({
-        //container: document.getElementById("campaign-builder"),
-        container: document.getElementById("CampaignCanvas"),
-    });
+    const endpointBottomLeftHolder = document.createElement("div");
+    endpointBottomLeftHolder.id = id+'_endpointBottomLeftHolder';
+    node.appendChild(endpointBottomLeftHolder);
 
-    instance.draggable(node);
-    
-    //endpoint connecting line
-    // Bottom-Left of source (with 10px margin left)
-    
-    if(parentNodeType == 'source'){
-        //source
-        var anchSrcX = 0.56;
-    }if(parentNodeType == 'action'){
-        //action
-        var anchSrcX = 0.56;
-    }else{
-        //decision or condition
-        if(parentNodeAnchor == "yes"){
-            var anchSrcX = 0.23; //left anchor
-        }else if(parentNodeAnchor == "no"){
-            var anchSrcX = 0.88; //right anchor
-        }
-    }
+    const endpointBottomRightHolder = document.createElement("div");
+    endpointBottomRightHolder.id = id+'_endpointBottomRightHolder';
+    node.appendChild(endpointBottomRightHolder);        
+  }else if(type === 'action'){
+    const endpointTopCenterHolder = document.createElement("div");
+    endpointTopCenterHolder.id = id+'_endpointTopCenterHolder';
+    node.appendChild(endpointTopCenterHolder);
 
-    var anchSrcY = 1;
-    var anchSrcXornt = -1;
-    var anchSrcYornt = 0;
-    var anchSrcXofst = -10;
-    var anchSrcYofst = 0;
+    const endpointBottomCenterHolder = document.createElement("div");
+    endpointBottomCenterHolder.id = id+'_endpointBottomCenterHolder';
+    node.appendChild(endpointBottomCenterHolder);
+  }
 
-    // Bottom-Right of target (with 10px margin right)
-    var anchTrgX = 0.46;
-    var anchTrgY = 0.03;
-    var anchTrgXornt = 1;
-    var anchTrgYornt = 0;
-    var anchTrgXofst = 10;
-    var anchTrgYofst = 0;
+  //add circles/buttons/endpoints
+  document.getElementById("campaign-builder").appendChild(node);
+  if (type === 'source') { 
+    const endpointLeft = <NodeEndpoints nodeType={type} endpointType="left" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue} />;
+    const endpointRight = <NodeEndpoints nodeType={type} endpointType="right" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue}/>;
+    const endpointBottomCenter = <NodeEndpoints nodeType={type} endpointType="bottom-center" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue}/>;
 
-    if(type != 'source'){
-        
+    // Assuming `node` is a DOM element where you want to append these components
+    const rootLeft = ReactDOM.createRoot(document.getElementById(id+'_endpointLeftHolder'));
+    const rootRight = ReactDOM.createRoot(document.getElementById(id+'_endpointRightHolder'));
+    const rootBottomCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomCenterHolder'));
 
-        instance.connect(node, {
-            source: parentNodeId,
-            target: id,
-            isSource: true,
-            isTarget: true,
-            anchor: "Continuous",
-            anchors: [
-                [anchSrcX, anchSrcY, anchSrcXornt, anchSrcYornt, anchSrcXofst, anchSrcYofst], 
-                [anchTrgX, anchTrgY, anchTrgXornt, anchTrgYornt, anchTrgXofst, anchTrgYofst],
-            ],
-            endpoint: ["Dot", { radius: 6 }],
-            /*paintStyle: { fill: "#4caf50" },
-            connector: ["Bezier", { curviness: 50 }],*/
-            connectorStyle: { stroke: "#4caf50", strokeWidth: 2 },
+    rootLeft.render(endpointLeft);
+    rootRight.render(endpointRight);
+    rootBottomCenter.render(endpointBottomCenter);
 
-            Connector: ["Bezier", { curviness: 50 }], // Smooth curved lines
-            PaintStyle: { stroke: "#bbb", strokeWidth: 2 }, // Line color and thickness
-            HoverPaintStyle: { stroke: "#999", strokeWidth: 3 }, // Line hover style
-            EndpointStyle: { fill: "#bbb", radius: 5 }, // Circle at endpoints
+}else if (type === 'decision' || type === 'condition') {
+    const endpointTopCenter = <NodeEndpoints nodeType={type} endpointType="top-center" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue}/>;
+    const endpointBottomLeft = <NodeEndpoints nodeType={type} endpointType="bottom-left" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue}/>;
+    const endpointBottomRight = <NodeEndpoints nodeType={type} endpointType="bottom-right" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue}/>;
 
-            overlays: [
-                [
-                    "Arrow",
-                    {
-                    width: 10,
-                    length: 10,
-                    location: 0.5, // Arrowhead at the end
-                    foldback: 0.8, // Arrowhead style
-                    id: "arrow",
-                    direction: 1, // Points forward
-                    paintStyle: { fill: "#bbb" }, // Arrowhead color
-                    },
-                ],
-            ],
-        });
-    }
+    const rootTopCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointTopCenterHolder'));
+    const rootBottomLeft = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomLeftHolder'));
+    const rootBottomRight = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomRightHolder'));
+  
+    rootTopCenter.render(endpointTopCenter);
+    rootBottomLeft.render(endpointBottomLeft);
+    rootBottomRight.render(endpointBottomRight);
+}else if(type == 'action'){
+      
+    const endpointTopCenter = <NodeEndpoints nodeType={type} endpointType="top-center" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue}/>
+    const endpointBottomCenter = <NodeEndpoints nodeType={type} endpointType="bottom-center" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue}/>
 
-  };
+    const rootTopCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointTopCenterHolder'));
+    const rootBottomCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomCenterHolder'));
+      
+    rootTopCenter.render(endpointTopCenter);
+    rootBottomCenter.render(endpointBottomCenter);
+      
+}
+  
+  // document.getElementById("campaign-builder").appendChild(node);
+
+  // Make the node draggable and connectable
+  jsPlumbInstanceReff.current.draggable(node);
+  
+  //endpoint connecting line
+  // Bottom-Left of source (with 10px margin left)
+  
+  if(parentNodeType == 'source'){
+      //source
+      var anchSrcX = 0.56;
+  }if(parentNodeType == 'action'){
+      //action
+      var anchSrcX = 0.56;
+  }else{
+      //decision or condition
+      if(parentNodeAnchor == "yes"){
+          var anchSrcX = 0.23; //left anchor
+      }else if(parentNodeAnchor == "no"){
+          var anchSrcX = 0.88; //right anchor
+      }
+  }
+
+  var anchSrcY = 1;
+  var anchSrcXornt = -1;
+  var anchSrcYornt = 0;
+  var anchSrcXofst = -10;
+  var anchSrcYofst = 0;
+
+  // Bottom-Right of target (with 10px margin right)
+  var anchTrgX = 0.46;
+  var anchTrgY = 0.03;
+  var anchTrgXornt = 1;
+  var anchTrgYornt = 0;
+  var anchTrgXofst = 10;
+  var anchTrgYofst = 0;
+
+  if(type != 'source'){
+    jsPlumbInstanceReff.current.connect(node, {
+          source: parentNodeId,
+          target: id,
+          isSource: true,
+          isTarget: true,
+          anchor: "Continuous",
+          anchors: [
+              [anchSrcX, anchSrcY, anchSrcXornt, anchSrcYornt, anchSrcXofst, anchSrcYofst], 
+              [anchTrgX, anchTrgY, anchTrgXornt, anchTrgYornt, anchTrgXofst, anchTrgYofst],
+          ],
+          endpoint: ["Dot", { radius: 6 }],
+          /*paintStyle: { fill: "#4caf50" },
+          connector: ["Bezier", { curviness: 50 }],*/
+          connectorStyle: { stroke: "#4caf50", strokeWidth: 2 },
+
+          Connector: ["Bezier", { curviness: 50 }], // Smooth curved lines
+          PaintStyle: { stroke: "#bbb", strokeWidth: 2 }, // Line color and thickness
+          HoverPaintStyle: { stroke: "#999", strokeWidth: 3 }, // Line hover style
+          EndpointStyle: { fill: "#bbb", radius: 5 }, // Circle at endpoints
+
+          overlays: [
+              [
+                  "Arrow",
+                  {
+                  width: 10,
+                  length: 10,
+                  location: 0.5, // Arrowhead at the end
+                  foldback: 0.8, // Arrowhead style
+                  id: "arrow",
+                  direction: 1, // Points forward
+                  paintStyle: { fill: "#bbb" }, // Arrowhead color
+                  },
+              ],
+          ],
+      });
+  }
+
+};
 
   
   const saveEvent = (event) =>{
@@ -323,8 +319,11 @@ const handleInputChange = (e) => {
                 var resp_campaignevent = resp_eventData.campaignevent;
                 
                 var resp_eventType = resp_campaignevent.eventType;
+                var resp_eventTypeType = resp_campaignevent.type;
                 var resp_eventOrder = resp_campaignevent.eventOrder;
                 var resp_parentEventId = resp_campaignevent.parentEventId;
+                var parentEventType = resp_campaignevent.parentEventType;
+                var parentEventTypeValue = resp_campaignevent.parentEventTypeValue;
                 
                 var resp_parentNodeType = resp_campaignevent.anchorEventType;
                 var resp_parentNodeAnchor = resp_campaignevent.anchor;
@@ -358,6 +357,8 @@ const handleInputChange = (e) => {
                     "id":nodeId,
                     "parentNodeId":resp_parentEventId,
                     "parentNodeType":resp_parentNodeType,
+                    "parentEventType":parentEventType,
+                    "parentEventTypeValue":parentEventTypeValue,
                     "parentNodeAnchor":resp_parentNodeAnchor,
                     "eventOrder":eventOrder,
                     "content":nodeContent,

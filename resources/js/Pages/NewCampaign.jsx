@@ -12,13 +12,14 @@ import ReactDOM from 'react-dom/client';
 import DropdownWithChosen from "@/Components/DropdownWithChosen";
 //import { renderComponent } from '@/Components/Utils/renderComponent'; // Import the utility function
 import NodeEndpoints from '@/Components/NodeEndpoints';
-//import CreateNode from '@/Components/CreateNode';
 import DecisionEventHtml from '@/Components/DecisionEventHtml';
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Styles from "../../css/Modules/Campaigns.module.css";
 
 const newcampaign = ({pageTitle,csrfToken,params}) => {
     
+    const jsPlumbInstanceRef = useRef(null);
+
     const CSRFTOKEN = csrfToken;
     const CAMPAIGN_ID = params.campaignId;
     const segments = params.segments;
@@ -188,15 +189,16 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
       };
 
     /*campaign Builder Code*/
-
     useEffect(() => {
         if (window.jQuery) {
           console.log(params);
-          /*// Initialize jsPlumb instance
-          instance = jsPlumb.getInstance({
-              //container: document.getElementById("campaign-builder"),
-              container: document.getElementById("CampaignCanvas"),
-          });*/
+          // Initialize jsPlumb instance
+          const instance = jsPlumb.getInstance({
+              container: document.getElementById("campaign-builder"),
+              //container: document.getElementById("CampaignCanvas"),
+          });
+
+          jsPlumbInstanceRef.current = instance;
   
           // Initialize the Select2 plugin
           $('#contactSegments').select2({
@@ -208,6 +210,7 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
     
           // Cleanup function to destroy chosen instances
           return () => {
+            instance.reset();
             //$('.campaign-event-selector').chosen('destroy');
             $('#contactSegments').select2('destroy');
           };
@@ -280,14 +283,16 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
           const endpointBottomCenterHolder = document.createElement("div");
           endpointBottomCenterHolder.id = id+'_endpointBottomCenterHolder';
           node.appendChild(endpointBottomCenterHolder);
-  
+          //left right endpoints for source node
+          /*
           const endpointLeftHolder = document.createElement("div");
           endpointLeftHolder.id = id+'_endpointLeftHolder';
           node.appendChild(endpointLeftHolder);
   
           const endpointRightHolder = document.createElement("div");
           endpointRightHolder.id = id+'_endpointRightHolder';
-          node.appendChild(endpointRightHolder);        
+          node.appendChild(endpointRightHolder); 
+          */      
           
         }else if(type === 'decision' || type === 'condition'){
           const endpointTopCenterHolder = document.createElement("div");
@@ -314,17 +319,17 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
         //add circles/buttons/endpoints
         document.getElementById("campaign-builder").appendChild(node);
         if (type === 'source') {
-          const endpointLeft = <NodeEndpoints nodeType={type} endpointType="left" />;
-          const endpointRight = <NodeEndpoints nodeType={type} endpointType="right" />;
+          /*const endpointLeft = <NodeEndpoints nodeType={type} endpointType="left" />;
+          const endpointRight = <NodeEndpoints nodeType={type} endpointType="right" />;*/
           const endpointBottomCenter = <NodeEndpoints nodeType={type} endpointType="bottom-center" />;
       
           // Assuming `node` is a DOM element where you want to append these components
-          const rootLeft = ReactDOM.createRoot(document.getElementById(id+'_endpointLeftHolder'));
-          const rootRight = ReactDOM.createRoot(document.getElementById(id+'_endpointRightHolder'));
+          /*const rootLeft = ReactDOM.createRoot(document.getElementById(id+'_endpointLeftHolder'));
+          const rootRight = ReactDOM.createRoot(document.getElementById(id+'_endpointRightHolder'));*/
           const rootBottomCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomCenterHolder'));
       
-          rootLeft.render(endpointLeft);
-          rootRight.render(endpointRight);
+          /*rootLeft.render(endpointLeft);
+          rootRight.render(endpointRight);*/
           rootBottomCenter.render(endpointBottomCenter);
       
       }else if (type === 'decision' || type === 'condition') {
@@ -355,27 +360,8 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
        // document.getElementById("campaign-builder").appendChild(node);
   
         // Make the node draggable and connectable
-        // Initialize jsPlumb instance
-        const instance = jsPlumb.getInstance({
-            //container: document.getElementById("campaign-builder"),
-            container: document.getElementById("CampaignCanvas"),
-        });
-  
-        instance.draggable(node);
+        jsPlumbInstanceRef.current.draggable(node);
         
-        //endpoint connecting line
-        /*instance.addEndpoint(node, {
-            source: parentNodeId,
-            target: id,
-            anchor: "Continuous",
-            isSource: true,
-            isTarget: true,
-            endpoint: ["Dot", { radius: 6 }],
-            paintStyle: { fill: "#4caf50" },
-            connector: ["Bezier", { curviness: 50 }],
-            connectorStyle: { stroke: "#4caf50", strokeWidth: 2 },
-        });*/
-  
         // Bottom-Left of source (with 10px margin left)
         
         if(parentNodeType == 'source'){
@@ -410,7 +396,7 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
         if(type != 'source'){
             
   
-            instance.connect(node, {
+          jsPlumbInstanceRef.current.connect(node, {
                 source: parentNodeId,
                 target: id,
                 isSource: true,
@@ -445,6 +431,7 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
                     ],
                 ],
             });
+
         }
   
     };
@@ -699,7 +686,7 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
       console.log('inputDatad:');
       console.log(inputData);
 
-      const  DecisionEventHtmlObj = <DecisionEventHtml eventVal={eventVal} inputData={inputData}/>
+      const  DecisionEventHtmlObj = <DecisionEventHtml eventVal={eventVal} inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
       const eventModalBodyContent = ReactDOM.createRoot(document.getElementById('event-modal-body-content'));
       eventModalBodyContent.render(DecisionEventHtmlObj);
       
@@ -954,18 +941,7 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
                   
                   //create node
                   createNode(propJson, x, y);
-                  /*
-                  //const tmpNode = <CreateNode propJson={propJson} x={x} y={y} />
-                  // Create root and render the node component
-                  //const campaignBuilderObj = ReactDOM.createRoot(document.getElementById("campaign-builder"));
-                  //campaignBuilderObj.render(tmpNode); // Render the component inside the #campaign-builder div
                   
-                  //useEffect(() => {
-                    // Dynamically render CreateNode into the #campaign-builder container
-                    var componentType = 'CreateNode'; 
-                    renderComponent(CreateNode, { propJson, x, y }, 'campaign-builder', componentType);
-                  //}, []);
-                  */
                   //close source list modal
                   const action = 'add';
                   const modalId = 'campaignSourceModal';
@@ -1161,9 +1137,10 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
         <div id="builder-errors" className={`alert alert-danger`} role="alert" style={{ display: 'none' }}>test</div>
 
         <div id="CampaignEventPanel" className={`hide`}>
-          <div id="CampaignEventPanelGroups" className={`groups-enabled-3 hide`}>
+          <div id="CampaignEventPanelGroups" className={`groups-enabled-3 hide ${Styles.twoEventsWidth}`}>
             <div className="row">
-              <div className="mr-0 ml-0 pl-xs pr-xs campaign-group-container col-md-4" id="DecisionGroupSelector">
+             
+              <div className="mr-0 ml-0 pl-xs pr-xs campaign-group-container col-md-4 hide" id="DecisionGroupSelector">
                 <div className="panel panel-success mb-0">
                   <div className="panel-heading">
                     <div className="col-xs-8 col-sm-10 np">
@@ -1182,7 +1159,7 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
                   </div>
                 </div>
               </div>
-              <div className="mr-0 ml-0 pl-xs pr-xs campaign-group-container col-md-4" id="ActionGroupSelector">
+              <div className={`mr-0 ml-0 pl-xs pr-xs campaign-group-container col-md-4 ${Styles.eventsWidth}`} id="ActionGroupSelector">
                 <div className="panel panel-primary mb-0">
                   <div className="panel-heading">
                     <div className="col-xs-8 col-sm-10 np">
@@ -1201,7 +1178,7 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
                   </div>
                 </div>
               </div>
-              <div className="mr-0 ml-0 pl-xs pr-xs campaign-group-container col-md-4" id="ConditionGroupSelector">
+              <div className={`mr-0 ml-0 pl-xs pr-xs campaign-group-container col-md-4 ${Styles.eventsWidth}`} id="ConditionGroupSelector">
                 <div className="panel panel-danger mb-0">
                   <div className="panel-heading">
                     <div className="col-xs-8 col-sm-10 np">
@@ -1217,20 +1194,6 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
                   </div>
                   <div className="hidden-xs panel-footer text-center">
                     <button className="conditionSlctBtn btn btn-lg btn-default btn-nospin" data-type="Condition" onClick={(e) => selectEvent(e, 'condition')}>Select</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="row">
-              <div className="mr-0 ml-0 pl-xs pr-xs campaign-group-container col-md-12">
-                <div id="CampaignPasteContainer" className="panel hide">
-                  <div id="CampaignPasteDescription" className="panel-body">
-                    <div><b>Insert cloned event here</b></div>
-                    <div><span className="text-muted">Name: </span><span data-campaign-event-clone="sourceEventName"></span></div>
-                    <div><span className="text-muted">From: </span><span data-campaign-event-clone="sourceCampaignName"></span></div>
-                  </div>
-                  <div className="panel-footer">
-                    <a id="EventInsertButton" data-toggle="ajax" data-target="CampaignEvent_" data-ignore-formexit="true" data-method="POST" data-hide-loadingbar="true" href="/s/campaigns/events/insert?campaignId=mautic_312a76bbb3c6d0553fb080987a6e787182db510d&anchor=leadsource&anchorEventType=source" className="btn btn-lg btn-default">Insert</a>
                   </div>
                 </div>
               </div>

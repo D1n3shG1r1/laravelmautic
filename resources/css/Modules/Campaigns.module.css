@@ -216,3 +216,11 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+.twoEventsWidth{
+    width:333px !important;
+}
+
+.eventsWidth{
+    width:50% !important;
+}

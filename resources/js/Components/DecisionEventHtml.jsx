@@ -43,7 +43,7 @@ import Lead_segments from './ConditionEventForms/Lead_segments';
 import Lead_tags from './ConditionEventForms/Lead_tags';
 
 
-const DecisionEventHtml = ({ eventVal, inputData}) => {
+const DecisionEventHtml = ({ eventVal, inputData, jsPlumbInstanceRef}) => {
   // Function to get dynamic modal content based on eventVal
   //inputData.type;
   const eventType = inputData.eventType;
@@ -52,43 +52,43 @@ const DecisionEventHtml = ({ eventVal, inputData}) => {
     if(eventType == "action"){
       switch (eventVal) {
         case 'lead.adddnc':
-          return <Lead_adddnc inputData={inputData}/>
+          return <Lead_adddnc inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'lead.leadscorecontactscompanies':
-          return <Lead_leadscorecontactscompanies inputData={inputData}/>
+          return <Lead_leadscorecontactscompanies inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'lead.addtocompany':
-          return <Lead_addtocompany inputData={inputData}/>
+          return <Lead_addtocompany inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'lead.changepoints':
-          return <Lead_changepoints inputData={inputData}/>
+          return <Lead_changepoints inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'campaign.addremovelead':
-          return <Campaign_addremovelead inputData={inputData}/>
+          return <Campaign_addremovelead inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'stage.change':
-          return <Stage_change inputData={inputData}/>
+          return <Stage_change inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'lead.deletecontact':
-          return <Lead_deletecontact inputData={inputData}/>
+          return <Lead_deletecontact inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'campaign.jump_to_event':
-          return <Campaign_jump_to_event inputData={inputData}/>
+          return <Campaign_jump_to_event inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'lead.changelist':
-          return <Lead_changelist inputData={inputData}/>
+          return <Lead_changelist inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'lead.changetags':
-          return <Lead_changetags inputData={inputData}/>
+          return <Lead_changetags inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'plugin.leadpush':
-          return <Plugin_leadpush inputData={inputData}/>
+          return <Plugin_leadpush inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'lead.removednc':
-          return <Lead_removednc inputData={inputData}/>
+          return <Lead_removednc inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'campaign.sendwebhook':
-          return <Campaign_sendwebhook inputData={inputData}/>
+          return <Campaign_sendwebhook inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'email.send':
-          return <Email_send inputData={inputData}/>
+          return <Email_send inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'email.send.to.user':
-          return <Email_send_to_user inputData={inputData}/>
+          return <Email_send_to_user inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'message.send':
-          return <Message_send inputData={inputData}/>
+          return <Message_send inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'lead.updatelead':
-          return <Lead_updatelead inputData={inputData}/>
+          return <Lead_updatelead inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'lead.updatecompany':
-          return <Lead_updatecompany inputData={inputData}/>
+          return <Lead_updatecompany inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'lead.changeowner':
-          return <Lead_changeowner inputData={inputData}/>
+          return <Lead_changeowner inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         default:
           return <p>No content available for the selected value.</p>;
       }
@@ -96,32 +96,32 @@ const DecisionEventHtml = ({ eventVal, inputData}) => {
       switch (eventVal) {
           
         case 'email.click':
-          return <Email_click inputData={inputData}/>
+          return <Email_click inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'email.open':
-          return <Email_open inputData={inputData}/>
+          return <Email_open inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'email.reply':
-          return <Email_reply inputData={inputData}/>
+          return <Email_reply inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         /*case 'page.devicehit':
-          return <Page_devicehit inputData={inputData}/>
+          return <Page_devicehit inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'asset.download':
-          return <Asset_download inputData={inputData}/>
+          return <Asset_download inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'dwc.decision':
-          return <Dwc_decision inputData={inputData}/>
+          return <Dwc_decision inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'page.pagehit':
-          return <Page_pagehit inputData={inputData}/>
+          return <Page_pagehit inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'form.submit':
-          return <Form_submit inputData={inputData}/>*/
+          return <Form_submit inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>*/
         default:
           return <p>No content available for the selected value.</p>;
       }
     }else if(eventType == "condition"){
       switch (eventVal) {
         case 'lead.field_value':
-          return <Lead_field_value inputData={inputData}/>
+          return <Lead_field_value inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         case 'lead.segments':
-          return <Lead_segments inputData={inputData}/>
+          return <Lead_segments inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
           case 'lead.tags':
-          return <Lead_tags inputData={inputData}/>
+          return <Lead_tags inputData={inputData} jsPlumbInstanceRef={jsPlumbInstanceRef}/>
         default:
           return <p>No content available for the selected value.</p>;
       }
