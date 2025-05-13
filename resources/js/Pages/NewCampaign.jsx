@@ -120,7 +120,8 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
         const activateat = document.getElementById("activateat").value;
         const deactivateat = document.getElementById("deactivateat").value;
         const eventNodes = document.getElementsByClassName("eventNode").length;
-        
+        var nodeStyles = [];
+
         if(!isRealVal(campaignname)){
           var err = 1;
           var msg = "Campaign Name is required.";
@@ -147,8 +148,22 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
           var msg = "At least one event is required. Use the Launch Campaign Builder button to add one.";
           showToastMsg(err, msg);
           return false;
-        }
+        
+        }else{
+          const eventNodesElms = document.getElementsByClassName("eventNode");
           
+          
+          $.each(eventNodesElms, function(k,elm){
+              //dataVals.push(v);
+              var nodeId = $(elm).attr("id");
+              var styleAttr = $(elm).attr("style");
+              var nodeIdParts = nodeId.split("-");
+              var eventId = nodeIdParts[1];
+              nodeStyles.push({"eventId":eventId, "style":styleAttr});
+
+          });
+        }
+        
           setIsLoading(true);
           var url = "campaign/save";
           var postJson = {
@@ -158,7 +173,8 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
               "description":campaigndescription,
               "active":active,
               "activateat":activateat,
-              "deactivateat":deactivateat
+              "deactivateat":deactivateat,
+              "nodeStyles":nodeStyles
           }
 
           console.log(postJson);

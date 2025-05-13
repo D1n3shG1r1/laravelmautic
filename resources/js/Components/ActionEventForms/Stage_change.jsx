@@ -78,7 +78,7 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
     //create node div
     const node = document.createElement("div");
     node.id = id;
-    node.className = "workflow-node draggable list-campaign-source jtk-endpoint-anchor-leadsource CampaignEvent_lists jtk-managed jtk-endpoint-anchor-leadsourceleft jtk-endpoint-anchor-leadsourceright jtk-draggable";
+    node.className = "eventNode workflow-node draggable list-campaign-source jtk-endpoint-anchor-leadsource CampaignEvent_lists jtk-managed jtk-endpoint-anchor-leadsourceleft jtk-endpoint-anchor-leadsourceright jtk-draggable";
     node.setAttribute("data-type", type);
     node.setAttribute("data-parent-type", parentNodeType);
     node.setAttribute("data-parent-node", parentNodeId);

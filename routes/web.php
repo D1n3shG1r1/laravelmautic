@@ -26,10 +26,9 @@ Route::get('/campaignbuilderidx',[Campaign::class, 'index']);
 Route::get('/campaignbuilder',[Campaign::class, 'campaignBuilder']);
 //Test Routes for Campaign Builder
 
-Route::get('/campaigns',[Campaign::class, 'campaigns']);
-/* under process
+//Route::get('/campaigns',[Campaign::class, 'campaigns']);
 Route::get('/campaign/edit/{id}',[Campaign::class, 'campaign']);
-*/
+
 Route::get('/campaign/edit/{id}',[Campaign::class, 'new']);
 Route::get('/campaigns/new',[Campaign::class, 'new']);
 Route::post('/campaign/save',[Campaign::class, 'save']);

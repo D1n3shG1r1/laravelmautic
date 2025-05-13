@@ -173,6 +173,7 @@ class Campaign extends Controller
             }
             $activateat = $request->input("activateat");
             $deactivateat = $request->input("deactivateat");
+            $nodeStyles = $request->input("nodeStyles");
             
             $campaignObj = new campaigns_model();
             
@@ -205,6 +206,15 @@ class Campaign extends Controller
 
                 //update campaignId in campaign-segments
                 campaign_segments_model::where("campaign_id", $tempId)->update(array("campaign_id" => $campaignId));
+
+                //update event node xy-positions
+                foreach($nodeStyles as $nodeStyle){
+                    $eventId = $nodeStyle["eventId"];
+                    $style = $nodeStyle["style"];
+                
+                    campaign_events_model::where("id", $eventId)
+                    ->where("campaignId", $campaignId)->update(array("xy_positions" => $style));
+                }
 
                 $postBackData['success'] = 1;
 
