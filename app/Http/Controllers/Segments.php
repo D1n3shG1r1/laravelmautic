@@ -10,6 +10,7 @@ use App\Models\contacts_model;
 use App\Models\segments_model;
 use App\Models\segment_contacts_model;
 use App\Models\campaign_segments_model;
+use App\Models\campaigns_model;
 use App\Models\role_model;
 
 class Segments extends Controller
@@ -68,6 +69,98 @@ class Segments extends Controller
             return Redirect::to(url('signin'));
         }
 
+    }
+
+    function segmentView($id){
+        if($this->USERID > 0){
+            $csrfToken = csrf_token();
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
+
+            if ($isAdmin > 0) {
+                $segmentObj = segments_model::where("created_by_company", $userCompany)->where("id", $id)->first();
+            } else {
+                $segmentObj = segments_model::where("created_by", $this->USERID)->where("id", $id)->first();
+            }
+
+            if($segmentObj){
+                
+                $contacts = array();
+                
+                $segmentContactsObj = segment_contacts_model::select("contact_id", "date_added")
+                ->where("segment_id", $id)
+                ->get();
+
+                if($segmentContactsObj){
+                    $contactIdsArr = array();
+                    foreach($segmentContactsObj as $segmentContactrw){
+                        $tmpContId = $segmentContactrw->contact_id;
+                        $contactIdsArr[] = $tmpContId;
+                    }
+
+                    $contactsObj = contacts_model::select("id", "title", "firstname", "lastname", "email")
+                    ->whereIn("id", $contactIdsArr)
+                    ->get();
+                    if($contactsObj){
+                        $contacts = $contactsObj->toArray();
+                    }
+                }
+
+                $segmentObj->date_added = date('M d, y', strtotime($segmentObj->date_added));
+
+                if($segmentObj->date_modified){
+                    $segmentObj->date_modified = date('M d, y', strtotime($segmentObj->date_modified));
+                }else{
+                    $segmentObj->date_modified = '';
+                }
+
+                if(!$segmentObj->modified_by_user){
+                    $segmentObj->modified_by_user = '';
+                }
+
+                //get associated campaigns
+                $segCampobj = campaign_segments_model::where("segment_id", $id)
+                ->get();
+                
+                $campaigns = collect();
+
+                if($segCampobj){
+                    $campaignIdsArr = array();
+                    foreach($segCampobj as $segCampRw){
+                        $campaignIdsArr[] = $segCampRw->campaign_id;
+                    }
+                    
+                    if(!empty($campaignIdsArr)){
+                        $campaigns = campaigns_model::select("id", "name")
+                        ->whereIn("id", $campaignIdsArr)
+                        ->get();
+                    }
+                }
+
+                $data = array();
+                $data["segmentsUrl"] = url('segments');
+                $data["contacts"] = $contacts;
+                $data["segment"] = $segmentObj;
+                $data["campaigns"] = $campaigns;
+
+                //dd($data); 
+                //id date_added created_by created_by_user date_modified modified_by_user name description
+
+                return Inertia::render('ViewSegment', [
+                    'pageTitle'  => 'View Segment',
+                    'csrfToken' => $csrfToken,
+                    'params' => $data
+                ]);
+                
+            }else{
+                // Return a 404 response
+                abort(404, 'Page not found');
+            }
+
+        }else{
+            //redirect to signin
+            return Redirect::to(url('signin'));
+        }
     }
 
     function segment($id){
@@ -157,6 +250,8 @@ class Segments extends Controller
             $publicname = $name;
             //$alias = strtolower($unserializeFormData["alias"]);
             //$publicname = strtolower($unserializeFormData["publicname"]);
+            $objective = $unserializeFormData["objective"];
+            $purpose = $unserializeFormData["purpose"];
             $description = $unserializeFormData["description"];
             $filters = $unserializeFormData["filters"];
 
@@ -202,6 +297,8 @@ class Segments extends Controller
                 $segmentObj->created_by_company = $userCompany;
     
                 $segmentObj->name = $name;
+                $segmentObj->purpose = $purpose;
+                $segmentObj->objective = $objective;
                 $segmentObj->description = $description;
                 $segmentObj->alias = $alias;
                 $segmentObj->public_name = $publicname;
@@ -250,6 +347,8 @@ class Segments extends Controller
             $publicname = $name;
             //$alias = strtolower($unserializeFormData["alias"]);
             //$publicname = strtolower($unserializeFormData["publicname"]);
+            $objective = $unserializeFormData["objective"];
+            $purpose = $unserializeFormData["purpose"];
             $description = $unserializeFormData["description"];
             $filters = $unserializeFormData["filters"];
 
@@ -287,6 +386,8 @@ class Segments extends Controller
                 
                 $updateData = array(
                     "name" => $name,
+                    "purpose" => $purpose,
+                    "objective" => $objective,
                     "alias" => $alias,  
                     "public_name" => $publicname,
                     "description" => $description,

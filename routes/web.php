@@ -26,8 +26,8 @@ Route::get('/campaignbuilderidx',[Campaign::class, 'index']);
 Route::get('/campaignbuilder',[Campaign::class, 'campaignBuilder']);
 //Test Routes for Campaign Builder
 
-//Route::get('/campaigns',[Campaign::class, 'campaigns']);
-Route::get('/campaign/edit/{id}',[Campaign::class, 'campaign']);
+Route::get('/campaigns',[Campaign::class, 'campaigns']);
+//Route::get('/campaign/edit/{id}',[Campaign::class, 'campaign']);
 
 Route::get('/campaign/edit/{id}',[Campaign::class, 'new']);
 Route::get('/campaigns/new',[Campaign::class, 'new']);
@@ -63,6 +63,7 @@ Route::post('/contact/delete',[Contacts::class,'delete']);
 Route::get('/segments',[Segments::class,'segments']);
 Route::get('/segments/new',[Segments::class,'new']);
 Route::post('/segment/save',[Segments::class,'save']);
+Route::get('segment/view/{id}',[Segments::class,'segmentView']);
 Route::get('/segment/edit/{id}',[Segments::class,'segment']);
 Route::post('/segment/update',[Segments::class,'update']);
 Route::post('/segment/delete',[Segments::class,'delete']);

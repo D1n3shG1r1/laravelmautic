@@ -11,13 +11,30 @@ import Styles from "../../css/Modules/Emails.module.css";
 
 const EmailComponent = ({pageTitle, csrfToken, params}) => {
   const themes = params.themes;
-  
+  const segments = params.segments;
+
   useEffect(() => {
+    if (window.jQuery) {
     // Initialize Bootstrap tooltips
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
     tooltipTriggerList.forEach((tooltip) => new bootstrap.Tooltip(tooltip));
-  }, []);
 
+
+    // Initialize the Select2 plugin
+    $('#contactsegment').select2({
+      placeholder: "Select contact segments",
+      allowClear: true,
+      width: '100%', // Makes it responsive
+      dropdownParent: $('#campaignSourceModal'), // Ensures dropdown is within the modal
+    });
+
+    // Cleanup function to destroy chosen instances
+    return () => {
+      $('#contactsegment').select2('destroy');
+    };
+    }
+  }, []);
+  
   const modalRef = useRef(null);
   const modalInstanceRef = useRef(null); // Store the modal instance
 
@@ -236,7 +253,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
         var msg = resp.M.message;
         var R = resp.R;
 
-        /*if(C == 100 && error == 0){
+        if(C == 100 && error == 0){
             showToastMsg(error, msg);
             window.location.href = params.emailsUrl;
 
@@ -246,7 +263,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                 msg = JSON.stringify(R); 
             }
             showToastMsg(error, msg);
-        }*/
+        }
 
         setIsLoading(false);
     });
@@ -555,24 +572,30 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                         <TextInput type="text" className="form-control" name="internalname" id="internalname" placeholder="Internal Name" value={formValues.internalname} onChange={handleInputChange} />
                       </div>
                   </div>
-                  {/* use this later
+                  
                   {isListEmail === 'list' && (
                     <div className="row mb-3">
                       <div className="col-md-12">
                         <InputLabel className={`form-label ${Styles.required}`} value="Contact Segment" />
-                        <TextInput 
-                          type="text" 
-                          className="form-control" 
-                          name="contactsegment" 
-                          id="contactsegment" 
-                          placeholder="Contact Segment" 
-                          value={formValues.name} 
-                          onChange={handleInputChange} 
-                        />
+                        
+                        <div id="campaignSourceModal">
+                          <select name="contactsegment" 
+                          id="contactsegment" multiple="multiple" className="form-select" style={{ width: '100%' }}>
+                            {segments.map((segment) => (
+                              <option
+                              key={`seg_${segment.id}`}
+                              id={`campaignSegment_${segment.id}`}
+                              title={`${segment.name}(${segment.contacts})`}
+                              value={segment.id}>
+                                  {`${segment.name}(${segment.contacts})`}
+                              </option>
+                              ))}
+                            </select>
+                        </div>
                       </div>
                     </div>
                   )}
-                  */}
+                  
                   
 
                   <div className="row mb-3">
@@ -626,11 +649,11 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
           <div className="row">
             <div className="col-md-6">
               <div className={`${Styles.panel} ${Styles.panelSuccess}`}>
-                <div className={`row ${Styles.panelHeading} ${Styles.panelSuccessHeading}`}>
+                <div className={`${Styles.panelHeading} ${Styles.panelSuccessHeading}`}>
                   <div className="col-xs-8 col-sm-10 np">
-                    <h3 className={`${Styles.panelTitle}`}>Template Email</h3>
+                    <h3 className={`${Styles.panelTitle}`}>Campaigns</h3>
                   </div>
-                  <div className={`${Styles.textRight} col-xs-4 col-sm-2 pl-0 pr-0 pt-10 pb-10`}>
+                  <div className={`${Styles.textRight} col-xs-4 col-sm-2 pl-0 pr-0`}>
                     <i className="fa fa-envelope-o hidden-xs fa-lg"></i>
                     <button
                       className={`${Styles.textPrimary} ${Styles.visibleXS} ${Styles.pullRight} btn btn-sm btn-default btn-nospin`}
@@ -649,17 +672,17 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                   </ul>
                 </div>
                 <div className={`${Styles.textCenter} ${Styles.panelFooter} hidden-xs`}>
-                <PrimaryButton className={`btn ${Styles.textSuccess}`} onClick={() => selectEmailType("template")}>Select</PrimaryButton>
+                <button className={`btn ${Styles.textSuccess}`} onClick={() => selectEmailType("template")}>Select</button>
                 </div>
               </div>
             </div>
             <div className="col-md-6">
               <div className={`${Styles.panel} ${Styles.panelPrimary}`}>
-                <div className={`row ${Styles.panelHeading} ${Styles.panelPrimaryHeading}`}>
+                <div className={`${Styles.panelHeading} ${Styles.panelPrimaryHeading}`}>
                   <div className="col-xs-8 col-sm-10 np">
-                    <h3 className={`${Styles.panelTitle}`}>Segment Email</h3>
+                    <h3 className={`${Styles.panelTitle}`}>Newsletters</h3>
                   </div>
-                  <div className={`${Styles.textRight} col-xs-4 col-sm-2 pl-0 pr-0 pt-10 pb-10`}>
+                  <div className={`${Styles.textRight} col-xs-4 col-sm-2 pl-0 pr-0`}>
                     <i className="hidden-xs fa fa-pie-chart fa-lg"></i>
                     <button
                       className={`${Styles.textPrimary} ${Styles.visibleXS} ${Styles.pullRight} btn btn-sm btn-default btn-nospin`}
@@ -678,7 +701,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                   </ul>
                 </div>
                 <div className={`${Styles.textCenter} ${Styles.panelFooter} hidden-xs`}>
-                <PrimaryButton className={`btn ${Styles.textPrimary}`} onClick={() => selectEmailType("list")}>Select</PrimaryButton>
+                <button className={`btn ${Styles.textPrimary}`} onClick={() => selectEmailType("list")} disabled>Select</button>
                 </div>
               </div>
             </div>

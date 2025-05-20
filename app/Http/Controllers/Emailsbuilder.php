@@ -7,10 +7,9 @@ use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
 use App\Models\emailsbuilder_model;
-
+use App\Models\segments_model;
+use App\Models\segment_contacts_model;
 //use App\Models\contacts_model;
-//use App\Models\segments_model;
-//use App\Models\segment_contacts_model;
 //use App\Models\role_model;
 
 class Emailsbuilder extends Controller
@@ -58,7 +57,9 @@ class Emailsbuilder extends Controller
 
         if ($this->USERID > 0) {
             $csrfToken = csrf_token();
-
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
+            
             $themesData = [];
             $themesNames = ["blank", "brienz", "confirm_me"];
             
@@ -82,9 +83,50 @@ class Emailsbuilder extends Controller
                 }
             }
             
+
+            if ($isAdmin > 0) {
+                $segmentsObj = segments_model::select("id","name")->where("created_by_company", $userCompany)->get();
+            } else {
+                $segmentsObj = segments_model::select("id","name")->where("created_by", $this->USERID)->get();
+            }
+            
+            if($segmentsObj){
+                $segmentIdsArr = array();
+                foreach($segmentsObj as $segment){
+                    $segmentIdsArr[] =  $segment["id"];
+                }
+
+                $segmentContactsObj = segment_contacts_model::select('segment_id', 'contact_id')->whereIn('segment_id', $segmentIdsArr)->get();
+
+                $segementContactArr = array();
+                if($segmentContactsObj){
+                    foreach($segmentContactsObj as $segmentContactRw){
+                        $segementContactArr[$segmentContactRw["segment_id"]][] = $segmentContactRw["contact_id"]; 
+                    }
+                }
+
+                foreach($segmentsObj as &$segmentRw){
+                    //$segmentIdsArr[] =  $segment["id"];
+                
+                    if(!array_key_exists($segmentRw["id"], $segementContactArr)){
+                        $contactsCount = 0;
+                    }else{
+                        $contactsCount = count($segementContactArr[$segmentRw["id"]]);
+                    }
+                    
+                    $segmentRw['contacts'] = $contactsCount;
+                }
+
+                $segments = $segmentsObj;
+            }else{
+                $segments = array();
+            }
+
+
             $data = [];
             $data["emailsUrl"] = url('emails');
             $data["themes"] = $themesData;
+            $data["segments"] = $segments;
 
             return Inertia::render('NewEmail', [
                 'pageTitle' => 'New Email',

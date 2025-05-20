@@ -145,6 +145,7 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                                                 <tr>
                                                     <th>Name</th>
                                                     <th>Email</th>
+                                                    <th>Tags</th>
                                                     <th>Date created</th>
                                                     <th>Created by</th>
                                                     <th>ID</th>
@@ -154,7 +155,7 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                                             <tbody>
                                                 {contacts.length === 0 ? (
                                                     <tr>
-                                                        <td colSpan="6" style={{ textAlign: "center" }}>
+                                                        <td colSpan="7" style={{ textAlign: "center" }}>
                                                             No contacts available.
                                                         </td>
                                                     </tr>
@@ -166,6 +167,11 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                                                             </td>
                                                             <td>
                                                                 {contact.email}
+                                                            </td>
+                                                            <td style={{ lineHeight: "30px" }}>
+                                                            {contact.tags.map((tag, index) => (
+                                                                <span key={index} className={`${Styles.tagspan}`}>{tag.tag}</span>
+                                                            ))}
                                                             </td>
                                                             <td>
                                                                 {contact.date_added}

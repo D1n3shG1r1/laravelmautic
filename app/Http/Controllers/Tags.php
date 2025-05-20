@@ -28,9 +28,13 @@ class Tags extends Controller
             $isAdmin = $this->getSession('isAdmin');
     
             if ($isAdmin > 0) {
-                $tagsObj = tags_model::where("created_by_company", $userCompany)->paginate(10);
+                $tagsObj = tags_model::where("created_by_company", $userCompany)
+                ->orderBy("date_added", "desc")
+                ->paginate(10);
             } else {
-                $tagsObj = tags_model::where("created_by", $this->USERID)->paginate(10);
+                $tagsObj = tags_model::where("created_by", $this->USERID)
+                ->orderBy("date_added", "desc")
+                ->paginate(10);
             }
     
             // Fetch contact counts for each tag in one query to avoid N+1 problem
@@ -140,7 +144,7 @@ class Tags extends Controller
             $firstName = $this->getSession('firstName');
             $lastName = $this->getSession('lastName');
             $fullName = $firstName." ".$lastName; 
-            $today = date("Y-m-d");
+            $today = date("Y-m-d H:i:s");
             
             $formData = $request->input("formData");
             

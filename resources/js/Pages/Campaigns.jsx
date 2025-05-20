@@ -176,11 +176,11 @@ const Campaigns = ({ pageTitle, csrfToken, params }) => {
                                                                 {campaign.id}
                                                             </td>
                                                             <td>
-                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => editCampaign(campaign.id)} title="Edit">
+                                                                {/*<LinkButton type="button" className={`btn p-0`} onClick={() => editCampaign(campaign.id)} title="Edit">
                                                                     <i className={`${Styles.filterTrashIcon} fa fa-edit`}></i>
                                                                 </LinkButton>
 
-                                                                <span className={`${Styles.buttonSeprator}`}></span>
+                                                                <span className={`${Styles.buttonSeprator}`}></span>*/}
 
                                                                 <LinkButton type="button" className={`btn p-0`} onClick={() => deleteCampaign(campaign)} title="Delete">
                                                                     <i className={`${Styles.filterTrashIcon} fa fa-trash-o`}></i>

@@ -74,6 +74,12 @@
     border-top-right-radius: 2px;
     margin-left: unset;
     margin-right: unset;
+    display: flex;
+}
+
+.panelHeading:before, .panelHeading:after {
+    display: table;
+    content: " ";
 }
 
 .panelSuccessHeading {

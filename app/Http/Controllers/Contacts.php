@@ -19,6 +19,7 @@ use App\Models\tags_model;
 use App\Models\tags_contacts_model;
 use App\Models\segment_contacts_model;
 use App\Models\role_model;
+use Illuminate\Support\Facades\DB;
 class Contacts extends Controller
 {
     var $ERRORS = [];
@@ -29,32 +30,57 @@ class Contacts extends Controller
         $this->USERID = $this->getSession('userId');
     }
 
-    function contacts(Request $request){
-        if($this->USERID > 0){
-            $csrfToken = csrf_token();
-            $userCompany = $this->getSession('companyId');
-            $isAdmin = $this->getSession('isAdmin');
-
-            if ($isAdmin > 0) {
-                $contactsObj = contacts_model::where("created_by_company", $userCompany)->paginate(10)->toArray();
-            } else {
-                $contactsObj = contacts_model::where("created_by", $this->USERID)->paginate(10)->toArray();
-            }
-            
-            $data = array();
-            $data["contactsUrl"] = url('contacts');
-            $data["contacts"] = $contactsObj;
-
-            return Inertia::render('Contacts', [
-                'pageTitle'  => 'Contacts',
-                'csrfToken' => $csrfToken,
-                'params' => $data
-            ]);
-
-        }else{
-            //redirect to signin
+    function contacts(Request $request) {
+        if ($this->USERID <= 0) {
             return Redirect::to(url('signin'));
         }
+    
+        $csrfToken = csrf_token();
+        $userCompany = $this->getSession('companyId');
+        $isAdmin = $this->getSession('isAdmin');
+    
+        // Build base query
+        $query = contacts_model::select("id", "title", "firstname", "lastname", "email", "date_added", "created_by_user");
+    
+        // Apply user/company filter
+        if ($isAdmin > 0) {
+            $query->where("created_by_company", $userCompany);
+        } else {
+            $query->where("created_by", $this->USERID);
+        }
+    
+        // Paginate contacts
+        $contactsPaginator = $query->paginate(10);
+        $contacts = $contactsPaginator->items();
+        $contactIds = array_column($contacts, 'id');
+    
+        // Fetch tags for contacts using a single JOIN query
+        $tags = DB::table('tags_contacts')
+            ->join('tags', 'tags.id', '=', 'tags_contacts.tag_id')
+            ->whereIn('tags_contacts.contact_id', $contactIds)
+            ->select('tags_contacts.contact_id', 'tags.id as tag_id', 'tags.tag')
+            ->get()
+            ->groupBy('contact_id');
+    
+        // Format contact data
+        foreach ($contacts as &$contact) {
+            $contact->date_added = date('M d, y', strtotime($contact->date_added));
+            $contact->tags = $tags[$contact->id] ?? [];
+        }
+    
+        // Replace paginator items with formatted ones
+        $contactsPaginator->setCollection(collect($contacts));
+    
+        $data = [
+            "contactsUrl" => url('contacts'),
+            "contacts" => $contactsPaginator,
+        ];
+    
+        return Inertia::render('Contacts', [
+            'pageTitle' => 'Contacts',
+            'csrfToken' => $csrfToken,
+            'params' => $data,
+        ]);
     }
 
     function new(Request $request){
@@ -92,7 +118,7 @@ class Contacts extends Controller
             $firstName = $this->getSession('firstName');
             $lastName = $this->getSession('lastName');
             $fullName = $firstName." ".$lastName; 
-            $today = date("Y-m-d");
+            $today = date("Y-m-d H:i:s");
 
             $title = $request->input("title");
             $firstname = $request->input("firstname");
@@ -105,6 +131,7 @@ class Contacts extends Controller
             $zip = $request->input("zipcode");
             $country = $request->input("country");
             $mobile = $request->input("mobile");
+            $company = $request->input("company");
             $tags = $request->input("tags");
             
 
@@ -121,6 +148,7 @@ class Contacts extends Controller
                 'zip' => 'nullable|string|min:2|max:50',
                 'country' => 'nullable|string|min:2|max:50',
                 'mobile' => 'nullable|string|min:10|max:15',
+                'company' => 'nullable|string|min:2|max:50',
             ];
 
             // Create the validator instance
@@ -161,6 +189,7 @@ class Contacts extends Controller
                     $contactObj->zipcode = $zip;
                     $contactObj->country = $country;
                     $contactObj->mobile = $mobile;
+                    $contactObj->company = $company;
                     $contactObj->is_published = 1;
                     $contactObj->date_added = $today;
                     $contactObj->created_by = $this->USERID;
@@ -172,16 +201,59 @@ class Contacts extends Controller
                     
                     if($saved){
                         if(!empty($tags)){
+                                
+                            // Separate numeric IDs and text tags
+                            $existingTags = array_filter($tags, 'is_numeric'); // IDs that are already in the database
+                            $newTags = array_filter($tags, function($value) { return !is_numeric($value); }); // New tags
                             
+                            // Save new tags in the database
+                            $newTagIds = [];
+                            
+                            foreach ($newTags as $newTag) {
+                                // Check if the tag already exists in DB (optional: if you want to avoid duplicates)
+                                
+                                /*if($isAdmin == 1){
+                                    // Admin tags are created under 'created_by_company' with a company ID
+                                    $tag = tags_model::where("created_by_company", $userCompany)
+                                    ->firstOrCreate(['tag' => $newTag]);
+                                }else{
+                                    // Non-admin tags are created under 'created_by' with a user ID
+                                    $tag = tags_model::where("created_by", $this->USERID)
+                                    ->firstOrCreate(['tag' => $newTag]);
+                                }*/
+                                
+                                $tagObj = new tags_model();
+                                //$tagObj->id
+                                $tagObj->tag = strtolower($newTag);
+                                $tagObj->description = strtolower($newTag);
+                                $tagObj->date_added = $today;
+                                $tagObj->created_by = $this->USERID;
+                                $tagObj->created_by_user = $fullName;
+                                $tagObj->created_by_company = $userCompany;
+                                $tagObj->date_modified = $today;
+                                $tagObj->modified_by = $this->USERID;
+                                $tagObj->modified_by_user = $fullName;
+                                $tagObj->save();
+                                //$tagObj->id;
+                                // Collect the newly created or existing tag IDs
+                                $newTagIds[] = $tagObj->id;
+                                
+                            }
+
+                            // Now we merge the existing tags and newly created tags IDs
+                            $finalTags = array_merge($existingTags, $newTagIds);
+
                             $batchRows = [];
-                            foreach($tags as $tag){
+                            foreach($finalTags as $finalTag){
                                 $batchRows[] = [  
-                                    "tag_id" => $tag,
+                                    "tag_id" => $finalTag,
                                     "contact_id" => $conatctId,
                                 ];
                             }
 
                             $tagsSaved = tags_contacts_model::insert($batchRows);
+
+                            
                         }
                     }
 
@@ -260,10 +332,11 @@ class Contacts extends Controller
         if($this->USERID > 0){
             
             $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
             $firstName = $this->getSession('firstName');
             $lastName = $this->getSession('lastName');
             $fullName = $firstName." ".$lastName; 
-            $today = date("Y-m-d");
+            $today = date("Y-m-d H:i:s");
 
             $id = $request->input("id");
             $title = $request->input("title");
@@ -277,6 +350,7 @@ class Contacts extends Controller
             $zip = $request->input("zipcode");
             $country = $request->input("country");
             $mobile = $request->input("mobile");
+            $company = $request->input("company");
             $tags = $request->input("tags");
 
             // Define the validation rules
@@ -284,7 +358,7 @@ class Contacts extends Controller
                 'title' => 'required|string|min:2|max:50',
                 'firstname' => 'required|string|min:2|max:50',
                 'lastname' => 'required|string|min:2|max:50',
-                'email' => 'required|email|unique:contacts,email',
+                'email' => 'required|email|unique:contacts,email,'.$id,
                 'address1' => 'nullable|string|min:2|max:50',
                 'address2' => 'nullable|string|min:2|max:50',
                 'city' => 'nullable|string|min:2|max:50',
@@ -292,6 +366,7 @@ class Contacts extends Controller
                 'zip' => 'nullable|string|min:2|max:50',
                 'country' => 'nullable|string|min:2|max:50',
                 'mobile' => 'nullable|string|min:10|max:15',
+                'company' => 'nullable|string|min:2|max:50',
             ];
 
             // Create the validator instance
@@ -320,6 +395,7 @@ class Contacts extends Controller
                     "zipcode" => $zip,
                     "country" => $country,
                     "mobile" => $mobile,
+                    "company" => $company,
                     "date_modified" => $today,
                     "modified_by" => $this->USERID,
                     "modified_by_user" => $fullName
@@ -331,16 +407,60 @@ class Contacts extends Controller
                 // delete old entries and insert new one
                 $deleted = tags_contacts_model:: where("contact_id", $id)->delete();
                 if(!empty($tags)){
-                            
+                    
+                    // Separate numeric IDs and text tags
+                    $existingTags = array_filter($tags, 'is_numeric'); // IDs that are already in the database
+                    $newTags = array_filter($tags, function($value) { return !is_numeric($value); }); // New tags
+                    
+                    // Save new tags in the database
+                    $newTagIds = [];
+                    
+                    foreach ($newTags as $newTag) {
+                        // Check if the tag already exists in DB (optional: if you want to avoid duplicates)
+                          
+                        /*if($isAdmin == 1){
+                            // Admin tags are created under 'created_by_company' with a company ID
+                            $tag = tags_model::where("created_by_company", $userCompany)
+                            ->firstOrCreate(['tag' => $newTag]);
+                        }else{
+                            // Non-admin tags are created under 'created_by' with a user ID
+                            $tag = tags_model::where("created_by", $this->USERID)
+                            ->firstOrCreate(['tag' => $newTag]);
+                        }*/
+                        
+                        $tagObj = new tags_model();
+                        //$tagObj->id
+                        $tagObj->tag = strtolower($newTag);
+                        $tagObj->description = strtolower($newTag);
+                        $tagObj->date_added = $today;
+                        $tagObj->created_by = $this->USERID;
+                        $tagObj->created_by_user = $fullName;
+                        $tagObj->created_by_company = $userCompany;
+                        $tagObj->date_modified = $today;
+                        $tagObj->modified_by = $this->USERID;
+                        $tagObj->modified_by_user = $fullName;
+                        $tagObj->save();
+                        //$tagObj->id;
+                        // Collect the newly created or existing tag IDs
+                        $newTagIds[] = $tagObj->id;
+                        
+                    }
+
+                    // Now we merge the existing tags and newly created tags IDs
+                    $finalTags = array_merge($existingTags, $newTagIds);
+
                     $batchRows = [];
-                    foreach($tags as $tag){
+                    foreach($finalTags as $finalTag){
                         $batchRows[] = [  
-                            "tag_id" => $tag,
+                            "tag_id" => $finalTag,
                             "contact_id" => $id,
                         ];
                     }
 
                     $tagsSaved = tags_contacts_model::insert($batchRows);
+
+                }else{
+                    $finalTags = [];
                 }
 
 

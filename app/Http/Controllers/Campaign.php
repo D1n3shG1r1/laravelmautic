@@ -63,8 +63,20 @@ class Campaign extends Controller
 
             if ($isAdmin > 0) {
                 $campaignsObj = campaigns_model::where("created_by_company", $userCompany)->paginate(10)->toArray();
+                
+                if(!empty($campaignsObj["data"])){
+                    foreach($campaignsObj["data"] as &$obj){
+                        $obj["date_added"] = date('M d, y', strtotime($obj["date_added"]));
+                    }
+                }
             } else {
                 $campaignsObj = campaigns_model::where("created_by", $this->USERID)->paginate(10)->toArray();
+
+                if(!empty($campaignsObj["data"])){
+                    foreach($campaignsObj["data"] as &$obj){
+                        $obj["date_added"] = date('M d, y', strtotime($obj["date_added"]));
+                    }
+                }
             }
             
             $data = array();
@@ -513,9 +525,13 @@ class Campaign extends Controller
             $isAdmin = $this->getSession('isAdmin');
 
             if ($isAdmin > 0) {
-                $emailsObj = emailsbuilder_model::select("id","name")->where("created_by_company", $userCompany)->get();
+                $emailsObj = emailsbuilder_model::select("id","name")->where("created_by_company", $userCompany)
+                ->where("email_type","template")
+                ->get();
             } else {
-                $emailsObj = emailsbuilder_model::select("id","name")->where("created_by", $this->USERID)->get();
+                $emailsObj = emailsbuilder_model::select("id","name")->where("created_by", $this->USERID)
+                ->where("email_type","template")
+                ->get();
             }
 
             if($emailsObj){

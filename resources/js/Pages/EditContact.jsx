@@ -6,6 +6,8 @@ import Checkbox from '@/Components/Checkbox';
 import NavLink from '@/Components/NavLink';
 import PrimaryButton from '@/Components/PrimaryButton';
 import DropdownWithChosen from "@/Components/DropdownWithChosen";
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css'; // Make sure to import the styles
 import Styles from "../../css/Modules/Contacts.module.css"; // Import styles from the CSS module
 
 const newcontact = ({pageTitle,csrfToken,params}) => {
@@ -21,15 +23,19 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
 
     // State to hold the selected tag ids
     const [selectedTags, setSelectedTags] = useState(contactTags);
+    
+    const [phoneNumber, setPhoneNumber] = useState('');
 
     useEffect(() => {
         //if (window.jQuery) {
         // Initialize Select2 for the tags select input
         $('#contactTags').select2({
-            placeholder: "Select contact tags",
+            placeholder: "Select tags or type to create new",
             allowClear: true,
             width: '100%', // Makes it responsive
             dropdownParent: $('#tagsContainer'),
+            tags: true, // 👈 Allows new tag creation
+            tokenSeparators: [','], // optional: comma-separated entries
         });
 
         // After Select2 is initialized, set the pre-selected values
@@ -41,6 +47,9 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
             setSelectedTags(selectedValues); // Update state
             console.log('Selected Tags:', selectedValues); // Log the selected values for debugging
         });
+
+        $(".PhoneInput .PhoneInputInput").addClass("borderNone");
+        setPhoneNumber(contact.mobile);
 
         // Cleanup Select2 and event listener when the component unmounts
         return () => {
@@ -112,6 +121,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         const zip = document.getElementById("zip").value;
         const country = document.getElementById("country").value;
         const mobile = document.getElementById("mobile").value;
+        const company = document.getElementById("company").value;
         const contactTags = selectedTags;
         /*
         const company = document.getElementById("company").value;
@@ -201,7 +211,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
 
             if(!validCharacters.test(address1)){
                 var err = 1;
-                var msg = "Address Line can only contain letters and spaces.";
+                var msg = "Address Line can only contain letters, numbers and spaces.";
                 showToastMsg(err, msg);
                 return false;
             }
@@ -218,7 +228,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
 
             if(!validCharacters.test(address2)){
                 var err = 1;
-                var msg = "Address Line can only contain letters and spaces.";
+                var msg = "Address Line can only contain letters, numbers and spaces.";
                 showToastMsg(err, msg);
                 return false;
             }
@@ -235,7 +245,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
 
             if(!validCharacters.test(city)){
                 var err = 1;
-                var msg = "City can only contain letters and spaces.";
+                var msg = "City can only contain letters, numbers and spaces.";
                 showToastMsg(err, msg);
                 return false;
             }
@@ -252,7 +262,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
 
             if(!validCharacters.test(state)){
                 var err = 1;
-                var msg = "State can only contain letters and spaces.";
+                var msg = "State can only contain letters, numbers and spaces.";
                 showToastMsg(err, msg);
                 return false;
             }
@@ -262,14 +272,14 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         if(isRealVal(zip)){
             if(zip.length < minLength || zip.length > maxLength){
                 var err = 1;
-                var msg = "Zip must be between 2 and 50 characters long.";
+                var msg = "Pin must be between 2 and 50 characters long.";
                 showToastMsg(err, msg);
                 return false;
             }
 
             if(!validCharacters.test(zip)){
                 var err = 1;
-                var msg = "Zip can only contain letters and spaces.";
+                var msg = "Pin can only contain letters, numbers and spaces.";
                 showToastMsg(err, msg);
                 return false;
             }
@@ -286,7 +296,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
 
             if(!validCharacters.test(country)){
                 var err = 1;
-                var msg = "Country can only contain letters and spaces.";
+                var msg = "Country can only contain letters, numbers and spaces.";
                 showToastMsg(err, msg);
                 return false;
             }
@@ -298,6 +308,23 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
             var msg = "Enter valid mobile number.";
             showToastMsg(err, msg);
             return false;
+        }
+
+        if(isRealVal(company)){
+            if(company.length < minLength || company.length > maxLength){
+                var err = 1;
+                var msg = "Company must be between 2 and 50 characters long.";
+                showToastMsg(err, msg);
+                return false;
+            }
+
+            if(!validCharacters.test(company)){
+                var err = 1;
+                var msg = "Company can only contain letters, numbers and spaces.";
+                showToastMsg(err, msg);
+                return false;
+            }
+
         }
 
         setIsLoading(true);
@@ -317,6 +344,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
             "zipcode":zip,
             "country":country,
             "mobile":mobile,
+            "company":company,
             "tags":contactTags
         };
         
@@ -461,7 +489,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                                                 </div>
                                                 <div className="row mb-3">
                                                     <div className="col-md-6">
-                                                        <TextInput type="text" className="form-control" name="zip" id="zip" placeholder="Zip" value={formValues.zip} onChange={handleInputChange}/>
+                                                        <TextInput type="text" className="form-control" name="zip" id="zip" placeholder="Pin" value={formValues.zip} onChange={handleInputChange}/>
                                                     </div>
                                                     <div className="col-md-6">
                                                         <TextInput type="text" className="form-control" name="country" id="country" placeholder="Country" value={formValues.country} onChange={handleInputChange}/>
@@ -473,14 +501,39 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                                                 <div className="row">
                                                     <div className="col-md-6">
                                                         <InputLabel className="form-label" value="Mobile"/>
+                                                        {/*
                                                         <TextInput type="text" className="form-control" name="mobile" id="mobile" placeholder="Mobile" value={formValues.mobile} onChange={handleInputChange}/>
+                                                        */}
+                                                        <PhoneInput
+                                                            id="mobile"
+                                                            className="form-control" name="mobile"
+                                                            placeholder="Mobile"
+                                                            international
+                                                            defaultCountry="IN"
+                                                            value={phoneNumber}
+                                                            onChange={setPhoneNumber}
+                                                        />
                                                     </div>
-                                                    <div id="tagsContainer" className="col-md-6">
+
+
+                                                    <div className="col-md-6">
+                                                        <InputLabel className="form-label" value="Company"/>
+
+                                                        <TextInput type="text" className="form-control" name="company" id="company" placeholder="Company" value={formValues.company} onChange={handleInputChange}/>
+
+                                                    </div>
+                                                    </div>
+                                                    </div>
+
+                                                    <div className="form-group mb-3">
+                                                    <div className="row">
+                                                    <div id="tagsContainer" className="col-md-12">
                                                         <InputLabel className="form-label" value="Tags"/>
                                                         <select id="contactTags" multiple="multiple" className="form-select"
                                                         style={{ width: '100%' }}
-                                                        value={selectedTags}
-                                                        onChange={(e) => setSelectedTags([...e.target.selectedOptions].map(option => option.value))}
+                                                        
+                                                        /*value={selectedTags}
+                                                        onChange={(e) => setSelectedTags([...e.target.selectedOptions].map(option => option.value))}*/
                 
                                                         >
                                                         {tags.map((tag) => (
@@ -495,6 +548,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                                                         </select>
                                                     </div>
                                                 </div>
+
                                             </div>
                                             {/* Other Optional Fields
                                             <div className="form-group mb-3">

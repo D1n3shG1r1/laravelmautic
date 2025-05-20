@@ -53,6 +53,9 @@ const Segments = ({ pageTitle, csrfToken, params }) => {
         window.location.href = window.url('segment/edit/'+id);
     };
 
+    const viewSegment = (id) =>{
+        window.location.href = window.url('segment/view/'+id);
+    };
     
     const [showConfirmBox, setShowConfirmBox] = useState(false);
     const [currentId, setCurrentId] = useState(null); // State to hold the current ID
@@ -164,6 +167,12 @@ const Segments = ({ pageTitle, csrfToken, params }) => {
                                                                 {segment.id}
                                                             </td>
                                                             <td>
+                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => viewSegment(segment.id)} title="View">
+                                                                    <i className={`${Styles.filterTrashIcon} fa fa-eye`}></i>
+                                                                </LinkButton>
+
+                                                                <span className={`${Styles.buttonSeprator}`}></span>
+                                                                
                                                                 <LinkButton type="button" className={`btn p-0`} onClick={() => editSegment(segment.id)} title="Edit">
                                                                     <i className={`${Styles.filterTrashIcon} fa fa-edit`}></i>
                                                                 </LinkButton>

@@ -71,7 +71,7 @@ const Layout = ({ pageTitle, children }) => {
                             </div>
                         </div>
                         <div className="sidebar_blog_2">
-                            <h4>General</h4>
+                            <h4>Admin</h4>
                             <ul className="list-unstyled components">
                                 <li><a href={dashboardUrl}><i className="fa fa-line-chart orange_color"></i> <span>Dashboard</span></a></li>
                                 <li><a href={contactsUrl}><i className="fa fa-user orange_color"></i> <span>Contacts</span></a></li>

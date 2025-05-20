@@ -34,6 +34,7 @@
         "grapesjs-preset-webpage": "^1.0.3",
         "jsplumb": "^2.15.6",
         "react-helmet": "^6.1.0",
+        "react-phone-number-input": "^3.4.12",
         "react-router-dom": "^7.1.3"
     }
 }

@@ -204,10 +204,14 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
         
       };
 
+    const cancelCampain = () => {
+      window.location.href = window.url('campaigns');  
+    }
+    
     /*campaign Builder Code*/
     useEffect(() => {
         if (window.jQuery) {
-          console.log(params);
+          //console.log(params);
           // Initialize jsPlumb instance
           const instance = jsPlumb.getInstance({
               container: document.getElementById("campaign-builder"),
@@ -1067,7 +1071,7 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
                                     
                                     <PrimaryButton type="button" isLoading={isLoading} className="btn btn-primary" onClick={() => saveCampaign()}><i className="bi bi-floppy2-fill"></i> Save</PrimaryButton>
                                     
-                                    <PrimaryButton type="button" className="btn btn-primary" onClick={() => cancel()}><i className="bi bi-x"></i> Cancel</PrimaryButton>
+                                    <PrimaryButton type="button" className="btn btn-primary" onClick={() => cancelCampain()}><i className="bi bi-x"></i> Cancel</PrimaryButton>
                                 </div>
                             </div>
                         </div>
