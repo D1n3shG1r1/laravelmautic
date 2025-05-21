@@ -24,51 +24,169 @@ class Segments extends Controller
     }
 
     function segments(Request $request){
-        
-        if($this->USERID > 0){
+        /*http://local.laravelmautic.com/segments?filterby=contacts&filters%5B0%5D%5Bglue%5D=and&filters%5B0%5D%5Boperator%5D=%3D&filters%5B0%5D%5Bproperties%5D%5Bfilter%5D=mr&filters%5B0%5D%5Bfield%5D=title&filters%5B0%5D%5Btype%5D=lookup&filters%5B0%5D%5Bobject%5D=contact&filters%5B1%5D%5Bglue%5D=or&filters%5B1%5D%5Boperator%5D=%3D&filters%5B1%5D%5Bproperties%5D%5Bfilter%5D=dinesh%40example.com&filters%5B1%5D%5Bfield%5D=email&filters%5B1%5D%5Btype%5D=email&filters%5B1%5D%5Bobject%5D=contact
+        */
+        //dd($request);
+    
+        // Ensure the user is authenticated and valid
+        if ($this->USERID > 0) {
             $csrfToken = csrf_token();
             $userCompany = $this->getSession('companyId');
             $isAdmin = $this->getSession('isAdmin');
 
-            if ($isAdmin > 0) {
-                $segmentsObj = segments_model::where("created_by_company", $userCompany)->paginate(10)->toArray();
+            // Prepare filters for contacts
+            $contactFilters = config("filters.contactFilters");
+
+            // Check if 'filterby' is 'contacts' and filters are provided
+            if ($request->input('filterby') == 'contacts' && !empty($request->input('filters'))) {
+                // Get filters from the request
+                $filters = $request->input('filters');
+                $contactIdsArr = [];
+
+                // Start the contacts query
+                $contactsQuery = contacts_model::query();
+                $contactsQuery->select('id');
+
+                // Add conditions based on whether the user is an admin or not
+                if ($isAdmin > 0) {
+                    $contactsQuery->where("created_by_company", $userCompany);
+                } else {
+                    $contactsQuery->where("created_by", $this->USERID);
+                }
+
+                // Loop through each filter and apply the necessary conditions to the query
+                foreach ($filters as $i => $filterRw) {
+                    $glue = $filterRw['glue']; // 'and' or 'or'
+                    $operator = $filterRw['operator']; // '=', 'like', etc.
+                    $filter = $filterRw['properties']['filter']; // Filter value
+                    $field = $filterRw['field']; // Field name, e.g., 'email'
+
+                    // Apply the first filter using `where`
+                    if ($i == 0) {
+                        $contactsQuery->where($field, $operator, $filter);
+                    } else {
+                        // For subsequent filters, use 'orWhere' or 'where' based on 'glue'
+                        if ($glue == 'or') {
+                            $contactsQuery->orWhere($field, $operator, $filter);
+                        } else {
+                            $contactsQuery->where($field, $operator, $filter);
+                        }
+                    }
+                }
+
+                // Paginate the contacts based on the filters
+                $contacts = $contactsQuery->paginate(10);
+
+                // If contacts are found, process them
+                if ($contacts->isNotEmpty()) {
+                    // Populate the contact IDs array
+                    foreach ($contacts as $contact) {
+                        $contactIdsArr[] = $contact->id;
+                    }
+
+                    // Get segment contacts based on the filtered contact IDs
+                    $segmentContactsObj = segment_contacts_model::whereIn('contact_id', $contactIdsArr)->get();
+
+                    // Initialize the segment IDs array
+                    $segmentIds = [];
+
+                    if ($segmentContactsObj->isNotEmpty()) {
+                        // Populate segment IDs
+                        foreach ($segmentContactsObj as $segmentContact) {
+                            $segmentIds[] = $segmentContact->segment_id;
+                        }
+
+                        // Get the segments using pagination (10 per page)
+                        $segmentsObj = segments_model::whereIn('id', $segmentIds)->paginate(10);
+
+                        // Check if there are any segments
+                        if ($segmentsObj->isNotEmpty()) {
+                            // Count contacts for each segment and format the date
+                            foreach ($segmentsObj as &$segment) {
+                                $count = segment_contacts_model::where("segment_id", $segment->id)->count();
+                                $segment->contacts_count = $count;  // Add contacts count to each segment
+                                //$segment->date_added = $segment->date_added->format('F d, Y');  // Format the date
+                            }
+                        }
+
+                        // Prepare the data to send to the view
+                        $data = [
+                            "segments" => $segmentsObj,
+                            "contactFilters" => json_encode($contactFilters),
+                            "segmentsUrl" => url('segments')
+                        ];
+
+                        // Return the view
+                        return Inertia::render('Segments', [
+                            'pageTitle' => 'Segments',
+                            'csrfToken' => $csrfToken,
+                            'params' => $data
+                        ]);
+                    } else {
+                        // No segment contacts found
+                        $data = [
+                            "segments" => [],
+                            "contactFilters" => json_encode($contactFilters),
+                            "segmentsUrl" => url('segments')
+                        ];
+
+                        // Return the view
+                        return Inertia::render('Segments', [
+                            'pageTitle' => 'Segments',
+                            'csrfToken' => $csrfToken,
+                            'params' => $data
+                        ]);
+                    }
+                } else {
+                    // No contacts found based on the filters
+                    $data = [
+                        "segments" => [],
+                        "contactFilters" => json_encode($contactFilters),
+                        "segmentsUrl" => url('segments')
+                    ];
+
+                    // Return the view
+                    return Inertia::render('Segments', [
+                        'pageTitle' => 'Segments',
+                        'csrfToken' => $csrfToken,
+                        'params' => $data
+                    ]);
+                }
             } else {
-                $segmentsObj = segments_model::where("created_by", $this->USERID)->paginate(10)->toArray();
-            }
-            
-            if(!empty($segmentsObj["data"])){
+                // When no filters are applied, display segments for the user
+                $segmentsObj = $isAdmin > 0
+                    ? segments_model::where("created_by_company", $userCompany)->paginate(10)
+                    : segments_model::where("created_by", $this->USERID)->paginate(10);
 
-                $segmentIds = array();
-
-                foreach($segmentsObj["data"] as &$rw){
-                    $segmentIds[] = $rw;
-                    $rw["date_added"] = date("F d, Y");
+                
+                // Check if there are any segments
+                if ($segmentsObj->isNotEmpty()) {
+                    // Count contacts for each segment and format the date
+                    foreach ($segmentsObj as &$segment) {
+                        $count = segment_contacts_model::where("segment_id", $segment->id)->count();
+                        $segment->contacts_count = $count;  // Add contacts count to each segment
+                        //$segment->date_added = $segment->date_added->format('F d, Y');  // Format the date
+                    }
                 }
 
-                foreach($segmentsObj["data"] as &$rww){
-                    // Count contacts for each segment
-                    $count = segment_contacts_model::where("segment_id", $rww["id"])->count();
-        
-                    $rww["contacts"] = $count;
-                }
+                // Prepare the data to send to the view
+                $data = [
+                    "segments" => $segmentsObj,
+                    "contactFilters" => json_encode($contactFilters),
+                    "segmentsUrl" => url('segments')
+                ];
+
+                // Return the view
+                return Inertia::render('Segments', [
+                    'pageTitle' => 'Segments',
+                    'csrfToken' => $csrfToken,
+                    'params' => $data
+                ]);
             }
-
-            //echo "segmentsObj:<pre>"; print_r($segmentsObj); die;
-            
-            $data = array();
-            $data["segments"] = $segmentsObj;
-            $data["segmentsUrl"] = url('segments');
-            return Inertia::render('Segments', [
-                'pageTitle'  => 'Segments',
-                'csrfToken' => $csrfToken,
-                'params' => $data
-            ]);
-
-        }else{
-            //redirect to signin
+        } else {
+            // Redirect to signin if the user is not authenticated
             return Redirect::to(url('signin'));
         }
-
     }
 
     function segmentView($id){

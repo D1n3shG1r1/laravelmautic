@@ -135,7 +135,7 @@ const SegmentFilterPanel = ({ panelparams, totalPanels, removePanel}) => {
                         <div className="col-xs-10 col-sm-5 padding-none">
                             <div className="properties-form">
                                 <div id={`leadlist_filters_${idx}_properties`}>
-                                    <div className="row">
+                                    <div className="rrow">
                                         <div className="form-group col-xs-12">
                                             {renderInput()}
                                         </div>

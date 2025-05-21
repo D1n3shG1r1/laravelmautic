@@ -54,7 +54,7 @@ class Dashboard extends Controller
                 
                 // Calculate the difference in days
                 $daysDifference = $startDate->diffInDays($today);
-
+                
                 $contacts = contacts_model::where("created_by_company", $userCompany)
                 ->whereDate('date_added', '>=', $startDate->format('Y-m-d')) // Compare date part only
                 ->whereDate('date_added', '<=', $endDate->format('Y-m-d')) // Compare date part only
@@ -82,7 +82,7 @@ class Dashboard extends Controller
                 
                 // Calculate the difference in days
                 $daysDifference = $startDate->diffInDays($today);
-
+                
                 $contacts = contacts_model::where("created_by", $this->USERID)
                 ->whereDate('date_added', '>=', $startDate->format('Y-m-d')) // Compare date part only
                 ->whereDate('date_added', '<=', $endDate->format('Y-m-d')) // Compare date part only
@@ -99,11 +99,16 @@ class Dashboard extends Controller
             $dateLabels = [];
             $datewiseRecords = array();
             for($i = 0; $i < $daysDifference; $i++){
-                $dateStr = $startDate->addDay()->format('M d, y');
+                if($i == 0){
+                    $dateStr = $startDate->format('M d, y');
+                }else{
+                    $dateStr = $startDate->addDay()->format('M d, y');
+                }
+                
                 $dateLabels[] = $dateStr;
                 $datewiseRecords[$dateStr] = 0;
             }
-            
+
             if($contacts){
                 foreach($contacts as $cont){
                     $dtKey = date("M d, y", strtotime($cont->date_added));

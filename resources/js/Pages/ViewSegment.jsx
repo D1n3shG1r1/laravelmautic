@@ -74,7 +74,7 @@ const Segments = ({ pageTitle, csrfToken, params }) => {
                                                 </tr>
                                                 <tr>
                                                     <th>Last modified</th>
-                                                    <td>Email</td>
+                                                    <td>{segment.date_modified}</td>
                                                 </tr>
                                                 <tr>
                                                     <th>ID</th>
