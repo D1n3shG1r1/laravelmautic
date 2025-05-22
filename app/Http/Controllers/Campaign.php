@@ -729,6 +729,94 @@ class Campaign extends Controller
         }
     }
 
+    function view($id){
+        if($this->USERID > 0){
+            $campaignId = $id;
+            $csrfToken = csrf_token();
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
+            
+            if ($isAdmin > 0) {
+                $campaignObj = campaigns_model::where("created_by_company", $userCompany)->where("id", $id)->first();
+            } else {
+                $campaignObj = campaigns_model::where("created_by", $this->USERID)->where("id", $id)->first();
+            }
+
+            if($campaignObj){
+
+                //get campaign events
+                $eventsObj = campaign_events_model::select("id", "campaignId", "parentId", "name", "description", "type", "eventType", "eventOrder", "xy_positions", "properties", "triggered", "triggered_on", "trigger_date", "decision_path", "channel", "channel_id", "trigger_count")
+                ->where('campaignId', $campaignId)
+                ->orderBy("eventOrder","asc")
+                ->get();
+                
+                //get events triggered data
+                $eventsReport = campaign_actions_report_model::where("campaign_id", $campaignId)->get();
+
+                $decisions = array();
+                $actions = array();
+                $conditions = array();
+                if($eventsObj){
+                    foreach($eventsObj as $eventRw){
+                        if($eventRw->eventType == 'decision'){
+                            $decisions[] =  $eventRw;
+                        }
+
+                        if($eventRw->eventType == 'action'){
+                            $actions[] = $eventRw;
+                        }
+
+                        if($eventRw->eventType == 'condition'){
+                            $conditions[] = $eventRw;
+                        }
+                    }
+                }
+
+                //get campaign segments
+                $campSegmentsObj = campaign_segments_model::where("campaign_id")->get();
+
+                $segments = [];
+                $segmentIds = [];
+                if($campSegmentsObj){
+                    foreach($campSegmentsObj as $campSegment){
+                        $segmentIds[] = $campSegment->segment_id;
+                    }
+
+                    if(!empty($segmentIds)){
+                        $segments = segments_model::whereIn("id", $segmentIds)->get();
+                    }
+                }
+
+                
+                $data = array();
+                $data["campaignsUrl"] = url('campaigns');
+                $data["campaignId"] = $campaignId;
+                $data["segments"] = $segments;
+
+                $decisions = config('campaignevents.decisions');
+                $actions = config('campaignevents.actions');
+                $conditions = config('campaignevents.conditions');  
+                $data["decisions"] = $decisions;
+                $data["actions"] = $actions;
+                $data["conditions"] = $conditions;
+
+                //dd($data); die;
+                return Inertia::render('Campaign', [
+                    'pageTitle'  => 'Campaign',
+                    'csrfToken' => $csrfToken,
+                    'params' => $data
+                ]);
+            }else{
+                // Return a 404 response
+                abort(404, 'Page not found');
+            }
+
+        }else{
+            //redirect to signin
+            return Redirect::to(url('signin'));
+        }
+
+    }
     // --- old code ok report
     function index(Request $request){
         

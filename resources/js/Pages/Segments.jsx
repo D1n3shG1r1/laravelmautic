@@ -119,9 +119,6 @@ const Segments = ({ pageTitle, csrfToken, params }) => {
         var filterInputs = document.getElementsByClassName("filter-input");
         var isBlank = false;
         
-        console.log('filterInputs.length');
-        console.log(filterInputs.length);
-
         for (var i = 0; i < filterInputs.length; i++) {
             if (filterInputs[i].value.trim() === "") {
                 isBlank = true;

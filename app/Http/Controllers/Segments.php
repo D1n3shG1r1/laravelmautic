@@ -42,7 +42,7 @@ class Segments extends Controller
                 // Get filters from the request
                 $filters = $request->input('filters');
                 $contactIdsArr = [];
-
+                
                 // Start the contacts query
                 $contactsQuery = contacts_model::query();
                 $contactsQuery->select('id');
@@ -73,7 +73,7 @@ class Segments extends Controller
                         }
                     }
                 }
-
+                
                 // Paginate the contacts based on the filters
                 $contacts = $contactsQuery->paginate(10);
 
@@ -103,9 +103,10 @@ class Segments extends Controller
                         if ($segmentsObj->isNotEmpty()) {
                             // Count contacts for each segment and format the date
                             foreach ($segmentsObj as &$segment) {
+                                
                                 $count = segment_contacts_model::where("segment_id", $segment->id)->count();
-                                $segment->contacts_count = $count;  // Add contacts count to each segment
-                                //$segment->date_added = $segment->date_added->format('F d, Y');  // Format the date
+                                $segment->contacts = $count;  // Add contacts count to each segment
+                                $segment->date_added = date('M d, y', strtotime($segment->date_added));
                             }
                         }
 
@@ -162,13 +163,15 @@ class Segments extends Controller
                 // Check if there are any segments
                 if ($segmentsObj->isNotEmpty()) {
                     // Count contacts for each segment and format the date
+                   
                     foreach ($segmentsObj as &$segment) {
+                        
                         $count = segment_contacts_model::where("segment_id", $segment->id)->count();
-                        $segment->contacts_count = $count;  // Add contacts count to each segment
-                        //$segment->date_added = $segment->date_added->format('F d, Y');  // Format the date
+                        $segment->contacts = $count;  // Add contacts count to each segment
+                        $segment->date_added = date('M d, y', strtotime($segment->date_added));
                     }
                 }
-
+                
                 // Prepare the data to send to the view
                 $data = [
                     "segments" => $segmentsObj,

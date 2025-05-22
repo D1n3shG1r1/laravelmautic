@@ -58,6 +58,9 @@ const Campaigns = ({ pageTitle, csrfToken, params }) => {
         activePageNum = "1";
     }
 
+    const viewCampaign = (id) => {
+        window.location.href = window.url('campaign/view/'+id);
+    }
 
     const editCampaign = (id) =>{
         window.location.href = window.url('campaign/edit/'+id);
@@ -181,6 +184,12 @@ const Campaigns = ({ pageTitle, csrfToken, params }) => {
                                                                 </LinkButton>
 
                                                                 <span className={`${Styles.buttonSeprator}`}></span>*/}
+
+                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => viewCampaign(campaign.id)} title="View">
+                                                                    <i className={`${Styles.filterTrashIcon} fa fa-eye`}></i>
+                                                                </LinkButton>
+
+                                                                <span className={`${Styles.buttonSeprator}`}></span>
 
                                                                 <LinkButton type="button" className={`btn p-0`} onClick={() => deleteCampaign(campaign)} title="Delete">
                                                                     <i className={`${Styles.filterTrashIcon} fa fa-trash-o`}></i>

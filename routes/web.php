@@ -30,6 +30,8 @@ Route::get('/campaigns',[Campaign::class, 'campaigns']);
 //Route::get('/campaign/edit/{id}',[Campaign::class, 'campaign']);
 
 Route::get('/campaign/edit/{id}',[Campaign::class, 'new']);
+Route::get('/campaign/view/{id}',[Campaign::class, 'view']);
+
 Route::get('/campaigns/new',[Campaign::class, 'new']);
 Route::post('/campaign/save',[Campaign::class, 'save']);
 Route::post('/campaign/delete',[Campaign::class, 'delete']);

@@ -298,12 +298,12 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
 
         }
 
-        if(isRealVal(mobile) && !validateMobile(mobile)){
+        /*if(isRealVal(mobile) && !validateMobile(mobile)){
             var err = 1;
             var msg = "Enter valid mobile number.";
             showToastMsg(err, msg);
             return false;
-        }
+        }*/
 
         
         if(isRealVal(company)){

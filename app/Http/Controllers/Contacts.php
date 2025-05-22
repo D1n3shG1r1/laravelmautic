@@ -48,7 +48,8 @@ class Contacts extends Controller
         } else {
             $query->where("created_by", $this->USERID);
         }
-    
+        $query->orderBy("date_added","desc");
+
         // Paginate contacts
         $contactsPaginator = $query->paginate(10);
         $contacts = $contactsPaginator->items();
