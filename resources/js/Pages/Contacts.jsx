@@ -1,9 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Layout from '@/Layouts/Layout';  // Import the layout component
 import NavLink from '@/Components/NavLink';
+import PrimaryButton from "@/Components/PrimaryButton";
 import LinkButton from '@/Components/LinkButton';
 import ConfirmBox from '@/Components/ConfirmBox';
+import TextInput from "@/Components/TextInput";
+import InputLabel from "@/Components/InputLabel";
+import BootstrapModal from "@/Components/BootstrapModal";
 import { Link } from '@inertiajs/react'; // Ensure you're using Inertia's Link
+import * as XLSX from 'xlsx';
 
 import Styles from "../../css/Modules/Contacts.module.css"; // Import styles from the CSS module
 
@@ -11,6 +16,7 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
     
     const contacts = params.contacts.data;
     const links = params.contacts.links;
+    const modalRef = useRef();
 
     useEffect(() => {
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
@@ -19,6 +25,7 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
         return () => {
             tooltips.forEach((tooltip) => tooltip.dispose());
         };
+
     }, []);
 
     let prevLink = links[0]?.url || '';
@@ -57,7 +64,6 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
     if (!activePageNum) {
         activePageNum = "1";
     }
-
 
     const editContact = (id) =>{
         window.location.href = window.url('contact/edit/'+id);
@@ -111,6 +117,116 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
       setShowConfirmBox(false); // Hide the custom confirmation box
     };
 
+    const sampleFile = () => {
+
+    };
+
+    const cancel = () => {
+        //
+    };
+
+    
+    const [importData, setData] = useState([]);
+    const [errors, setErrors] = useState([]);
+    const requiredColumns = ['Title', 'First Name', 'Last Name', 'Email', 'Mobile', 'Address1', 'Address2', 'City', 'State', 'Pincode', 'Country', 'Company'];
+
+    const validateFile = (jsonData) => {
+        const errorMessages = [];
+        
+        // Check for missing required columns
+        const columns = Object.keys(jsonData[0] || {});
+        requiredColumns.forEach(col => {
+            if (!columns.includes(col)) {
+                errorMessages.push(`Missing required column: ${col}`);
+            }
+        });
+    
+        // Check for empty values in each row
+        jsonData.forEach((row, rowIndex) => {
+            requiredColumns.forEach(col => {
+                const value = row[col];
+    
+                // Check if the value exists and is a string before calling .trim()
+                if (!value || (typeof value === 'string' && value.trim() === "")) {
+                    errorMessages.push(`Empty value in "${col}" at row ${rowIndex + 2}`); // Row indexing starts from 1, add 1 for the header row.
+                }
+            });
+        });
+    
+        return errorMessages;
+    };
+
+    const handleFileUpload = (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            const binaryStr = e.target.result;
+            const workbook = XLSX.read(binaryStr, { type: 'binary' });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+            // Validate the JSON data for required columns and empty values
+            const validationErrors = validateFile(jsonData);
+
+            if (validationErrors.length > 0) {
+                setErrors(validationErrors); // Show validation errors
+            } else {
+                setData(jsonData); // Set data if validation passes
+                setErrors([]); // Clear errors
+            }
+        };
+
+        if (file) {
+            reader.readAsBinaryString(file);
+        }
+    };
+
+    /*const handleFileUpload = (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+        const binaryStr = e.target.result;
+        const workbook = XLSX.read(binaryStr, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(sheet);
+        
+        setData(jsonData);
+        };
+
+        if (file) {
+            reader.readAsBinaryString(file);
+        }
+    };*/
+
+    const uploadXls = () => {
+    
+        if(importData.length <= 0){
+            var error = 1;
+            var msg = 'Please select a valid XLSX file to import contacts.'
+            showToastMsg(error, msg);
+        }else{
+
+            const url = "contacts/import";
+            const postJson = {
+                "_token": csrfToken,
+                "importData": importData
+            };
+            
+            httpRequest(url, postJson, function(resp){
+                var C = resp.C;
+                var error = resp.M.error;
+                var msg = resp.M.message;
+                var R = resp.R;
+                
+            });
+        }
+        
+    };
+
     return (
         <Layout pageTitle={pageTitle}>
             <div className="midde_cont">
@@ -122,6 +238,9 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                                     <h2>Contacts</h2>
                                 </div>
                                 <div className={`${Styles.textAlignRight} col-md-6`}>
+                                    <NavLink type="button" className="mr-2 btn cur-p btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importContactsModal" title="Upload xls">
+                                        <i className={`${Styles.newBtnIcon} fa fa-file-excel-o`}></i>Import
+                                    </NavLink>
                                     <NavLink className="btn cur-p btn-outline-primary" href="contacts/new">
                                         <i className={`${Styles.newBtnIcon} fa fa-plus`}></i> New
                                     </NavLink>
@@ -184,13 +303,13 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                                                                 {contact.id}
                                                             </td>
                                                             <td>
-                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => editContact(contact.id)} title="Edit">
+                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => editContact(contact.id)} data-bs-toggle="tooltip" title="Edit">
                                                                     <i className={`${Styles.filterTrashIcon} fa fa-edit`}></i>
                                                                 </LinkButton>
 
                                                                 <span className={`${Styles.buttonSeprator}`}></span>
 
-                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => deleteContact(contact)} title="Delete">
+                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => deleteContact(contact)} data-bs-toggle="tooltip" title="Delete">
                                                                     <i className={`${Styles.filterTrashIcon} fa fa-trash-o`}></i>
                                                                 </LinkButton>
                                                             </td>
@@ -239,6 +358,44 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                     </div>
                 </div>
             </div>
+            
+            <BootstrapModal id="importContactsModal" title="Import Contacts" modalRef={modalRef} onCancel={cancel} showFooter={true} confirmText={'Upload'} onConfirm={uploadXls}>
+                <form>
+                    <div className="form-group">
+                        <div className='row'>
+                            <div className='col-md-12'>
+                                <InputLabel className='mr-2' value="Select a file to upload from your computer"/>
+                                <PrimaryButton type="button" className={`mr-2 btn btn-primary`} onClick={() => sampleFile()} data-bs-toggle="tooltip" title="Download sample file">
+                                    <i className={`${Styles.newBtnIcon} fa fa-download`}></i> Download Sample File
+                                </PrimaryButton>
+                            </div>
+                        </div>
+                        <div className='row'>
+                            <div className='col-md-12'>
+                                <TextInput type="file" accept=".xlsx,.xls" onChange={handleFileUpload}/>
+                            </div>
+                            <div className='row'>
+                                {/* Display validation errors */}
+                                {errors.length > 0 && (
+                                    <div style={{ color: 'red' }} className='col-md-12'>
+                                        <h3>Validation Errors:</h3>
+                                        <ul>
+                                            {errors.map((error, index) => (
+                                                <li key={index}>{error}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div className='row'>
+                            <div className='col-md-12 text-right'>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </BootstrapModal>                                                    
 
             {showConfirmBox && (
             <ConfirmBox

@@ -60,7 +60,7 @@
 
 .campaignBuilder {
     position: absolute;
-    background: #e7dadaf2;
+    background: #fffffff7;
     border: 1px solid #ddd;
     overflow: auto;
     top: 0;
@@ -224,3 +224,41 @@
 .eventsWidth{
     width:50% !important;
 }
+
+.label {
+    display: inline-block;
+    line-height: 1.5;
+    padding: .25em .6em .15em .6em;
+    border-radius: 2px;
+    text-shadow: 0 -1px 0 rgb(0 0 0 / .1);
+    margin-top: 5px;
+    margin-right: 5px;
+    font-size: 75%;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+}
+
+.labelSuccess {
+    background-color: #00B49C;
+}
+
+.labelDanger {
+    background-color: #F86B4F;
+}
+
+.labelWarning {
+    background-color: #FDB933;
+}
+
+.labelDefault {
+    background-color: #a0acb8;
+}
+
+.closeEventPanelGroups{
+    cursor: pointer;
+}
+
+

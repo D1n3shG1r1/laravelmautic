@@ -79,7 +79,7 @@ button .spinner-border {
 }
 
 /*Defining node colors */
-/*
+
 .workflow-node[data-type="source"] {
     border: solid 1px #fdb933;
 }
@@ -95,7 +95,7 @@ button .spinner-border {
 .workflow-node[data-type="condition"] {
     border: solid 1px #ffb79f;
 }
-*/
+
 
 
 .workflow-nodee[data-type="client"] {
@@ -187,9 +187,9 @@ button .spinner-border {
     display: inline-block;
 }
 
-#campaign-builder {
+.campaign-builder {
     position: absolute;
-    background: #efdadaeb;
+    background: #fffffff7;
     border: 1px solid #ddd;
     overflow: auto;
     width: 100%;
@@ -561,4 +561,13 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 
 .borderNone{
     border: none !important;
+}
+
+.deleteEventNode {
+    top: 0px;
+    position: absolute;
+    right: 0px;
+    background-color: #f86b4f;
+    border-radius: 2px;
+    color: #fff;
 }

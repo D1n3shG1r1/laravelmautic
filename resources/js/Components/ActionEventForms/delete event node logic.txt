@@ -1,0 +1,38 @@
+const [deletedNodeId, setDeletedNodeId] = useState(false);
+const DeleteNodeButtonComponent = ({ deleteEventNodeFunc }) => {
+  return (
+      <i
+          className={`hidden-xs bi bi-x fa-lg deleteEventNode`}
+          onClick={deleteEventNodeFunc}
+      ></i>
+  );
+};
+
+const deleteEventNode = (id) => {
+  setDeletedNodeId(id);
+  var idParts = id.split("-");
+  var eventId = idParts[1];
+
+  var url = 'deleteevent';
+  var postJson = {"_token":csrftoken, "eventId":eventId};
+  httpRequest(url, postJson, function(resp){
+      if(resp.C == 100){
+        const nodeToRemove = document.getElementById(id);
+        if (nodeToRemove && nodeToRemove.parentNode) {
+            nodeToRemove.parentNode.removeChild(nodeToRemove);
+        }
+      }
+  });
+};
+
+//create delete button
+const actionHolderElm = document.createElement("div");
+actionHolderElm.id = 'actionHolder-' + id;
+node.appendChild(actionHolderElm);
+
+if (type != 'source') { 
+  const actionHolder = ReactDOM.createRoot(document.getElementById('actionHolder-' + id));
+  const deleteNodeButton = <DeleteNodeButtonComponent deleteEventNodeFunc={() => deleteEventNode(id)} />;
+  actionHolder.render(deleteNodeButton);
+}
+    

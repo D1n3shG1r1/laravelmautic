@@ -119,6 +119,9 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
         const active = toggleValue;
         const activateat = document.getElementById("activateat").value;
         const deactivateat = document.getElementById("deactivateat").value;
+        
+        const sourceNodeStyle = document.getElementById("CampaignEvent_lists").getAttribute("style");
+
         const eventNodes = document.getElementsByClassName("eventNode").length;
         var nodeStyles = [];
 
@@ -150,9 +153,8 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
           return false;
         
         }else{
+
           const eventNodesElms = document.getElementsByClassName("eventNode");
-          
-          
           $.each(eventNodesElms, function(k,elm){
               //dataVals.push(v);
               var nodeId = $(elm).attr("id");
@@ -174,6 +176,7 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
               "active":active,
               "activateat":activateat,
               "deactivateat":deactivateat,
+              "sourceNodeStyle":sourceNodeStyle,
               "nodeStyles":nodeStyles
           }
 
@@ -209,6 +212,7 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
     }
     
     /*campaign Builder Code*/
+
     useEffect(() => {
         if (window.jQuery) {
           //console.log(params);
@@ -257,6 +261,16 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
           document.removeEventListener('click', handleClickOutside);
         };
     }, []);
+
+
+    const closeEventPanelGroups = () => {
+      
+      const CampaignEventPanelElm = document.getElementById("CampaignEventPanel");
+      CampaignEventPanelElm.classList.add("hide");
+
+      const CampaignEventPanelGroupsElm = document.getElementById("CampaignEventPanelGroups");
+      CampaignEventPanelGroupsElm.classList.add("hide");
+    }
 
     /*Create other Nodes */
     const createNode = (propJson, x, y) => {
@@ -455,7 +469,7 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
         }
   
     };
-
+    
     /*Create Add Source Node */
     const createAddSourceNode = () => {
         //show the options to Add-Campaign-Source
@@ -943,7 +957,7 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
                   // create campaign/contact source
                   var nodeType = 'source';
                   var nodeId = 'CampaignEvent_lists'; //'CampaignEvent_new-'+generateSecureUniqueId();
-                  var nodeContent = '<i class="mr-sm fa fa-list"></i> '+truncateSegmentsName;
+                  var nodeContent = '<i class="mr-sm fa fa-list" style="color:#fdb933"></i> '+truncateSegmentsName;
                   var dataConnected = '';
                   var eventOrder = 0;
                   const propJson = {
@@ -1155,9 +1169,14 @@ const newcampaign = ({pageTitle,csrfToken,params}) => {
           <button type="button" className="btn btn-primary btn-close-campaign-builder" onClick={() => toggleBuilder(0)}>Close Builder</button>
         </div>
         <div id="builder-errors" className={`alert alert-danger`} role="alert" style={{ display: 'none' }}>test</div>
-
+        
         <div id="CampaignEventPanel" className={`hide`}>
           <div id="CampaignEventPanelGroups" className={`groups-enabled-3 hide ${Styles.twoEventsWidth}`}>
+            <div className="row">
+              <div className="col-md-12 text-right">
+                <i className={`hidden-xs bi bi-x fa-lg ${Styles.closeEventPanelGroups}`} onClick={() => closeEventPanelGroups()}></i>
+              </div>
+            </div>
             <div className="row">
              
               <div className="mr-0 ml-0 pl-xs pr-xs campaign-group-container col-md-4 hide" id="DecisionGroupSelector">

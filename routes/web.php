@@ -37,6 +37,8 @@ Route::post('/campaign/save',[Campaign::class, 'save']);
 Route::post('/campaign/delete',[Campaign::class, 'delete']);
 Route::post('/newevent',[Campaign::class, 'getEventHtml']);
 Route::post('/savenewevent',[Campaign::class, 'saveEvent']);
+Route::post('/deleteevent',[Campaign::class, 'deleteEvent']);
+
 Route::post('/addcampaignsegment',[Campaign::class, 'addCampaignSegment']);
 //Events Data-List Segments, Tags eg.
 Route::post('/campaigns/getEventDropdownSegmentsList',[Campaign::class, 'getEventDropdownSegmentsList']);
@@ -61,6 +63,7 @@ Route::post('/contact/save',[Contacts::class,'save']);
 Route::get('/contact/edit/{id}',[Contacts::class,'contact']);
 Route::post('/contact/update',[Contacts::class,'update']);
 Route::post('/contact/delete',[Contacts::class,'delete']);
+Route::post('/contacts/import',[Contacts::class,'importcontacts']);
 
 Route::get('/segments',[Segments::class,'segments']);
 Route::get('/segments/new',[Segments::class,'new']);

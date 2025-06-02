@@ -34,16 +34,10 @@ use Illuminate\Support\Facades\Validator;
 
 //Manoj Nakra
 //https://us02web.zoom.us/j/8672294022?pwd=RVJxZnA3RktPT1Y3Kzk5bTFoSDFoQT09
-/*
-will use this when work with inertia-react
-return Inertia::render('Admin/Users',
-    [
-        'PageTitle'  => 'Subscribers',
-        'csrfToken' => csrf_token(),
-        'Users' => $users
-    ]
-);
-*/
+
+//Smriti Misra
+//https://zoom.us/j/9215939587?pwd=cXhwTnVLVTJXbFpIY0NqWnIwZWMvQT09
+
 class Campaign extends Controller
 {
     
@@ -183,8 +177,10 @@ class Campaign extends Controller
             }else{
                 $active = 0;
             }
+
             $activateat = $request->input("activateat");
             $deactivateat = $request->input("deactivateat");
+            $sourceNodeStyle = $request->input("sourceNodeStyle");
             $nodeStyles = $request->input("nodeStyles");
             
             $campaignObj = new campaigns_model();
@@ -200,6 +196,7 @@ class Campaign extends Controller
             $campaignObj->publish_down = $deactivateat;
             $campaignObj->allow_restart = 0;
             $campaignObj->version = 1;
+            $campaignObj->canvas_settings = $sourceNodeStyle;
             $campaignObj->save();
             $campaignId = $campaignObj->id;
 
@@ -416,6 +413,36 @@ class Campaign extends Controller
         
         return response()->json($response); die;
 
+    }
+
+    function deleteevent(Request $request){
+        if($this->USERID > 0){
+            $eventId = $request->input("eventId");
+            $deleted = campaign_events_model::where("id", $eventId)
+            ->delete();
+
+            
+            $postBackData = array(
+                'eventId' => $eventId,
+                'success' => $deleted ? 1 : 0
+            );
+
+            $response = array(
+                "C" => $deleted ? 100 : 101,
+                "R" => $postBackData,
+                "M" => $deleted ? "success" : "error"
+            );
+            
+        }else{
+            //session expired
+            $response = [
+                'C' => 1004,
+                'M' => $this->ERRORS[1004],
+                'R' => [],
+            ];
+        }
+        
+        return response()->json($response); die;
     }
     
     function getEventDropdownSegmentsList(Request $request){
@@ -744,6 +771,41 @@ class Campaign extends Controller
 
             if($campaignObj){
 
+                //get campaign segments
+                $campSegmentsObj = campaign_segments_model::where("campaign_id", $campaignId)->get();
+
+                $segments = [];
+                $segmentIds = [];
+                $contacts = [];
+                $contactIds = [];
+                $contactCounts = 0;
+                if($campSegmentsObj){
+                    foreach($campSegmentsObj as $campSegment){
+                        $segmentIds[] = $campSegment->segment_id;
+                    }
+
+                    if(!empty($segmentIds)){
+                        //get segments
+                        $segments = segments_model::whereIn("id", $segmentIds)->get();
+
+                        //get segment's contacts count
+                        $contactCounts = segment_contacts_model::whereIn("segment_id", $segmentIds)
+                        ->count();
+
+
+                        $contactIdsObj = segment_contacts_model::select("contact_id")->whereIn("segment_id", $segmentIds)
+                        ->get();
+
+                        
+                        foreach($contactIdsObj as $contactIdRw){
+                            $contactIds[] = $contactIdRw->contact_id;
+                        }
+
+                        $contacts = contacts_model::whereIn("id", $contactIds)->get();
+                    }
+                }
+                //echo '$contactCounts:'.$contactCounts; die;
+
                 //get campaign events
                 $eventsObj = campaign_events_model::select("id", "campaignId", "parentId", "name", "description", "type", "eventType", "eventOrder", "xy_positions", "properties", "triggered", "triggered_on", "trigger_date", "decision_path", "channel", "channel_id", "trigger_count")
                 ->where('campaignId', $campaignId)
@@ -757,6 +819,26 @@ class Campaign extends Controller
                 $actions = array();
                 $conditions = array();
                 if($eventsObj){
+                    
+                    foreach($eventsObj as &$eventRwTmp){
+                        $eventRwTmp->success = 0;
+                        $eventRwTmp->failed = 0;
+                        $eventRwTmp->completed = 0;
+                        $eventRwTmp->pending = 0;
+
+                        //get parent event details
+                        if($eventRwTmp->parentId > 0){
+                            foreach($eventsObj as $subEventRwTmp){
+                                if($eventRwTmp->parentId == $subEventRwTmp->id){
+                                    $eventRwTmp->parentEventType = $subEventRwTmp->eventType;
+                                }
+                            }
+                            
+                        }else{
+                            $eventRwTmp->parentEventType = 'source';
+                        }
+                    }
+
                     foreach($eventsObj as $eventRw){
                         if($eventRw->eventType == 'decision'){
                             $decisions[] =  $eventRw;
@@ -772,35 +854,212 @@ class Campaign extends Controller
                     }
                 }
 
-                //get campaign segments
-                $campSegmentsObj = campaign_segments_model::where("campaign_id")->get();
+                /*// Calculate the percentages
+                $yesPercentage = ($yesCount / $totalContacts) * 100;
+                $noPercentage = ($noCount / $totalContacts) * 100;
+                $failedPercentage = ($failedCount / $totalContacts) * 100;
+                */
 
-                $segments = [];
-                $segmentIds = [];
-                if($campSegmentsObj){
-                    foreach($campSegmentsObj as $campSegment){
-                        $segmentIds[] = $campSegment->segment_id;
+                if(!empty($decisions)){
+                    foreach($decisions as &$decision){
+                        $decEvntId = $decision->id;
+                        $decCampId = $decision->campaignId;
+                        
+                        $success = $decision->success;
+                        $failed = $decision->failed;
+                        $completed = $decision->completed;
+                        $pending = $decision->pending;
+
+                        if($eventsReport){
+                            foreach($eventsReport as $evntRprtD){
+                                $evntRprtEvntID = $evntRprtD->event_id;
+                                $evntRprtEvntCampID = $evntRprtD->campaign_id;
+                                $evntRprtEvntHandled = $evntRprtD->handled;
+                                $evntRprtEvntYesNo = $evntRprtD->decision_path; //yes/no
+                                
+                                if($decEvntId == $evntRprtEvntID && $decCampId == $evntRprtEvntCampID){
+                                    
+                                    if($evntRprtEvntHandled == 1 && $evntRprtEvntYesNo == 'yes'){
+                                        $success = $success + 1;    
+                                        $completed = $completed + 1;
+                                    }
+
+                                    if($evntRprtEvntHandled == 1 && $evntRprtEvntYesNo == 'no'){
+                                        $pending = $pending + 1;
+                                    }
+
+                                    if($evntRprtEvntHandled == 0){
+                                        $failed = $failed + 1;
+                                    }
+
+                                }
+
+                            }
+                        }
+
+                        $decision->success = $success;
+                        $decision->failed = $failed;
+                        $decision->completed = $completed;
+                        $decision->pending = $pending;
+                    
                     }
 
-                    if(!empty($segmentIds)){
-                        $segments = segments_model::whereIn("id", $segmentIds)->get();
+                    //calculate success/failed %
+                    foreach($decisions as &$decision2){
+                        
+                        $success = $decision2->success;
+                        $failed = $decision2->failed;
+                        $completed = $decision2->completed;
+                        $pending = $decision2->pending;
+                        $successPercent = 0;
+                        $failedPercent = 0;
+                        if($contactCounts > 0){
+                            $successPercent = ($success/$contactCounts) * 100;
+                            $failedPercent = ($failed/$contactCounts) * 100;
+                        }
+
+                        $decision2->successPercent = $successPercent;
+                        $decision2->failedPercent = $failedPercent;
                     }
                 }
 
+                if(!empty($actions)){
+                    foreach($actions as &$action){
+                        $actEvntId = $action->id;
+                        $actCampId = $action->campaignId;
+                        
+                        $success = $action->success;
+                        $failed = $action->failed;
+                        $completed = $action->completed;
+                        $pending = $action->pending;
+
+                        if($eventsReport){
+                            foreach($eventsReport as $evntRprtA){
+                                $evntRprtEvntID = $evntRprtA->event_id;
+                                $evntRprtEvntCampID = $evntRprtA->campaign_id;
+                                $evntRprtEvntHandled = $evntRprtA->handled;
+                                $evntRprtEvntYesNo = $evntRprtA->decision_path; //yes/no
+                                
+                                if($actEvntId == $evntRprtEvntID && $actCampId == $evntRprtEvntCampID){
+                                    
+                                    if($evntRprtEvntHandled == 1 && $evntRprtEvntYesNo == 'yes'){
+                                        $success = $success + 1;    
+                                        $completed = $completed + 1;
+                                    }
+
+                                    if($evntRprtEvntHandled == 1 && $evntRprtEvntYesNo == 'no'){
+                                        $pending = $pending + 1;
+                                    }
+
+                                    if($evntRprtEvntHandled == 0){
+                                        $failed = $failed + 1;
+                                    }
+
+                                }
+
+                            }
+                        }
+                        
+                        $action->success = $success;
+                        $action->failed = $failed;
+                        $action->completed = $completed;
+                        $action->pending = $pending;
+                    }
+
+                    //calculate success/failed %
+                    foreach($actions as &$action2){
+                        
+                        $success = $action2->success;
+                        $failed = $action2->failed;
+                        $completed = $action2->completed;
+                        $pending = $action2->pending;
+                        $successPercent = 0;
+                        $failedPercent = 0;
+                        if($contactCounts > 0){
+                            $successPercent = ($success/$contactCounts) * 100;
+                            $failedPercent = ($failed/$contactCounts) * 100;
+                        }
+
+                        $action2->successPercent = $successPercent;
+                        $action2->failedPercent = $failedPercent;
+                    }
+                }
+
+                if(!empty($conditions)){
+                    foreach($conditions as &$condition){
+                        $actEvntId = $condition->id;
+                        $actCampId = $condition->campaignId;
+                        
+                        $success = $condition->success;
+                        $failed = $condition->failed;
+                        $completed = $condition->completed;
+                        $pending = $condition->pending;
+
+                        if($eventsReport){
+                            foreach($eventsReport as $evntRprtC){
+                                $evntRprtEvntID = $evntRprtC->event_id;
+                                $evntRprtEvntCampID = $evntRprtC->campaign_id;
+                                $evntRprtEvntHandled = $evntRprtC->handled;
+                                $evntRprtEvntYesNo = $evntRprtC->decision_path; //yes/no
+                                
+                                if($actEvntId == $evntRprtEvntID && $actCampId == $evntRprtEvntCampID){
+                                    
+                                    if($evntRprtEvntHandled == 1 && $evntRprtEvntYesNo == 'yes'){
+                                        $success = $success + 1;    
+                                        $completed = $completed + 1;
+                                    }
+
+                                    if($evntRprtEvntHandled == 1 && $evntRprtEvntYesNo == 'no'){
+                                        $pending = $pending + 1;
+                                    }
+
+                                    if($evntRprtEvntHandled == 0){
+                                        $failed = $failed + 1;
+                                    }
+
+                                }
+
+                            }
+                        }
+                        
+                        $condition->success = $success;
+                        $condition->failed = $failed;
+                        $condition->completed = $completed;
+                        $condition->pending = $pending;
+                    }
+
+                    //calculate success/failed %
+                    foreach($conditions as &$condition2){
+                        
+                        $success = $condition2->success;
+                        $failed = $condition2->failed;
+                        $completed = $condition2->completed;
+                        $pending = $condition2->pending;
+                        $successPercent = 0;
+                        $failedPercent = 0;
+                        if($contactCounts > 0){
+                            $successPercent = ($success/$contactCounts) * 100;
+                            $failedPercent = ($failed/$contactCounts) * 100;
+                        }
+
+                        $condition2->successPercent = $successPercent;
+                        $condition2->failedPercent = $failedPercent;
+                    }
+                }
                 
                 $data = array();
                 $data["campaignsUrl"] = url('campaigns');
                 $data["campaignId"] = $campaignId;
+                $data["campaign"] = $campaignObj;
                 $data["segments"] = $segments;
-
-                $decisions = config('campaignevents.decisions');
-                $actions = config('campaignevents.actions');
-                $conditions = config('campaignevents.conditions');  
+                $data["contacts"] = $contacts;
+                $data["events"] = $eventsObj;
                 $data["decisions"] = $decisions;
                 $data["actions"] = $actions;
                 $data["conditions"] = $conditions;
-
-                //dd($data); die;
+                
+                //echo "<pre>"; print_r($data); die;
+                
                 return Inertia::render('Campaign', [
                     'pageTitle'  => 'Campaign',
                     'csrfToken' => $csrfToken,

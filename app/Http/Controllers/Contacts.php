@@ -278,6 +278,42 @@ class Contacts extends Controller
         return response()->json($response); die;
     }
 
+    function importcontacts(Request $request){
+
+        if($this->USERID > 0){
+            $userCompany = $this->getSession('companyId');
+            $firstName = $this->getSession('firstName');
+            $lastName = $this->getSession('lastName');
+            $fullName = $firstName." ".$lastName; 
+            $today = date("Y-m-d H:i:s");
+
+            $importData = $request->input("importData");
+            
+            if(!empty($importData)){
+                //check if email is already exist
+                $emailsArr = [];
+                foreach($importData as $importRw){
+                    $emailsArr[] = $importRw["Email"];
+                }
+
+                //get records by email
+                $existingContactsObj = contacts_model::select("email")->whereIn("emails",$emailsArr)->get();
+
+                dd($existingContactsObj);
+            }
+
+        }else{
+            //session expired
+            $response = [
+                'C' => 1004,
+                'M' => $this->ERRORS[1004],
+                'R' => [],
+            ];
+        }
+
+        return response()->json($response); die;
+    }
+
     function contact($id){
         if($this->USERID > 0){
             $csrfToken = csrf_token();

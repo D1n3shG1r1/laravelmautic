@@ -20,7 +20,6 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
   const tempEventId = inputData.tempEventId;
   const csrftoken = inputData.csrftoken;
  
-
   const [isLoading, setIsLoading] = useState(false);
   const [emailsOptions, setEmailsOptions] = useState([]);
   
@@ -75,7 +74,6 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
     }
   }, []); // Empty dependency array ensures it only runs once when the component mounts
   
-
   const createNode = (propJson, x, y) => {
     /*Create other Nodes */
     const type = propJson.type;
@@ -155,6 +153,7 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
 
     //add circles/buttons/endpoints
     document.getElementById("campaign-builder").appendChild(node);
+
     if (type === 'source') { 
       const endpointLeft = <NodeEndpoints nodeType={type} endpointType="left" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue} />;
       const endpointRight = <NodeEndpoints nodeType={type} endpointType="right" parentEventType={parentEventType} parentEventTypeValue={parentEventTypeValue}/>;
@@ -164,7 +163,7 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
       const rootLeft = ReactDOM.createRoot(document.getElementById(id+'_endpointLeftHolder'));
       const rootRight = ReactDOM.createRoot(document.getElementById(id+'_endpointRightHolder'));
       const rootBottomCenter = ReactDOM.createRoot(document.getElementById(id+'_endpointBottomCenterHolder'));
-  
+      
       rootLeft.render(endpointLeft);
       rootRight.render(endpointRight);
       rootBottomCenter.render(endpointBottomCenter);
@@ -202,7 +201,7 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
     
     //endpoint connecting line
     // Bottom-Left of source (with 10px margin left)
-    
+    var strokeColor = "#d5d4d4";
     if(parentNodeType == 'source'){
         //source
         var anchSrcX = 0.56;
@@ -213,11 +212,18 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
         //decision or condition
         if(parentNodeAnchor == "yes"){
             var anchSrcX = 0.23; //left anchor
+            strokeColor = "#00b49d";
         }else if(parentNodeAnchor == "no"){
             var anchSrcX = 0.88; //right anchor
+            strokeColor = "#f86b4f";
         }
     }
 
+    var lineHoverColor = strokeColor;
+    var lineColor = strokeColor;
+    var circleColor = strokeColor;
+    var arrowColor = strokeColor;
+    
     var anchSrcY = 1;
     var anchSrcXornt = -1;
     var anchSrcYornt = 0;
@@ -233,41 +239,33 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
     var anchTrgYofst = 0;
 
     if(type != 'source'){
-      jsPlumbInstanceReff.current.connect(node, {
-            source: parentNodeId,
-            target: id,
-            isSource: true,
-            isTarget: true,
-            anchor: "Continuous",
-            anchors: [
-                [anchSrcX, anchSrcY, anchSrcXornt, anchSrcYornt, anchSrcXofst, anchSrcYofst], 
-                [anchTrgX, anchTrgY, anchTrgXornt, anchTrgYornt, anchTrgXofst, anchTrgYofst],
-            ],
-            endpoint: ["Dot", { radius: 6 }],
-            /*paintStyle: { fill: "#4caf50" },
-            connector: ["Bezier", { curviness: 50 }],*/
-            connectorStyle: { stroke: "#4caf50", strokeWidth: 2 },
-
-            Connector: ["Bezier", { curviness: 50 }], // Smooth curved lines
-            PaintStyle: { stroke: "#bbb", strokeWidth: 2 }, // Line color and thickness
-            HoverPaintStyle: { stroke: "#999", strokeWidth: 3 }, // Line hover style
-            EndpointStyle: { fill: "#bbb", radius: 5 }, // Circle at endpoints
-
-            overlays: [
-                [
-                    "Arrow",
-                    {
+      jsPlumbInstanceReff.current.connect({
+        source: parentNodeId,
+        target: id,
+        anchors: [
+            [anchSrcX, anchSrcY, anchSrcXornt, anchSrcYornt, anchSrcXofst, anchSrcYofst],
+            [anchTrgX, anchTrgY, anchTrgXornt, anchTrgYornt, anchTrgXofst, anchTrgYofst],
+        ],
+        endpoint: ["Dot", { radius: 6 }],
+        paintStyle: { stroke: lineColor, strokeWidth: 2 },
+        hoverPaintStyle: { stroke: lineHoverColor, strokeWidth: 3 },
+        endpointStyle: { fill: circleColor, radius: 5 },
+        connector: ["Bezier", { curviness: 50 }],
+        overlays: [
+            [
+                "Arrow",
+                {
                     width: 10,
                     length: 10,
-                    location: 0.5, // Arrowhead at the end
-                    foldback: 0.8, // Arrowhead style
+                    location: 0.5,
+                    foldback: 0.8,
                     id: "arrow",
-                    direction: 1, // Points forward
-                    paintStyle: { fill: "#bbb" }, // Arrowhead color
-                    },
-                ],
+                    direction: 1,
+                    paintStyle: { fill: arrowColor },
+                },
             ],
-        });
+        ],
+    });
     }
 
   };
@@ -304,8 +302,8 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
         
         const formData = new FormData(formRef.current);
         const serializedData = new URLSearchParams(formData).toString();
-        console.log('serializedData');
-        console.log(serializedData);  // The serialized data string
+        //console.log('serializedData');
+        //console.log(serializedData);  // The serialized data string
         
         var url = 'savenewevent';
         var postJson = {"_token":csrftoken, "eventData":serializedData};
@@ -339,15 +337,14 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
                 var resp_eventName = resp_campaignevent.name;
                 var truncateEventName = resp_eventName;
 
-                // create node
-                var nodeIcon = '';
-                if(resp_eventType == "decision"){
-                    nodeIcon = '<i className="hidden-xs fa fa-random fa-lg"></i>';
-                }else if(resp_eventType == "action"){
-                    nodeIcon = '<i className="hidden-xs fa fa-bullseye fa-lg"></i>';
-                }else if(resp_eventType == "condition"){
-                    nodeIcon = '<i className="hidden-xs fa fa-filter fa-lg"></i>';
-                }
+               // create node
+               const nodeIconMap = {
+                decision: '<i class="hidden-xs fa fa-random fa-lg" style="color:#00b49d"></i>',
+                action: '<i class="hidden-xs fa fa-bullseye fa-lg" style="color:#9babeb"></i>',
+                condition: '<i class="hidden-xs fa fa-filter fa-lg" style="color:#ffb79f"></i>'
+              };
+
+              const nodeIcon = nodeIconMap[resp_eventType] || '';
                 
                 var nodeType = resp_eventType;
                 var nodeId = 'CampaignEvent_new-'+resp_eventId;

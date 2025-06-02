@@ -82,6 +82,9 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
     }
   }, []); // Empty dependency array ensures it only runs once when the component mounts
   
+  const deleteEventNode = (nodeId) => {
+
+  }
 
   const createNode = (propJson, x, y) => {
     /*Create other Nodes */
@@ -120,6 +123,12 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
     node.style.position = "absolute";
     node.style.left = `${x}px`;
     node.style.top = `${y}px`;
+
+    //create delete button
+    const deleteButton = document.createElement("i");
+    deleteButton.classList.add(["hidden-xs", "bi", "bi-x", "fa-lg", "deleteEventNode"]);
+    deleteButton.setAttribute("onClick",deleteEventNode(id));
+    node.appendChild(deleteButton);
 
     if(classType != ''){
         node.classList.add(classType);
@@ -207,7 +216,7 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
     jsPlumbInstanceReff.current.draggable(node);
     
     // Bottom-Left of source (with 10px margin left)
-    
+    var strokeColor = "#d5d4d4";
     if(parentNodeType == 'source'){
         //source
         var anchSrcX = 0.56;
@@ -218,10 +227,17 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
         //decision or condition
         if(parentNodeAnchor == "yes"){
             var anchSrcX = 0.23; //left anchor
+            strokeColor = "#00b49d";
         }else if(parentNodeAnchor == "no"){
             var anchSrcX = 0.88; //right anchor
+            strokeColor = "#f86b4f";
         }
     }
+
+    var lineHoverColor = strokeColor;
+    var lineColor = strokeColor;
+    var circleColor = strokeColor;
+    var arrowColor = strokeColor;
 
     var anchSrcY = 1;
     var anchSrcXornt = -1;
@@ -238,41 +254,33 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
     var anchTrgYofst = 0;
 
     if(type != 'source'){
-      jsPlumbInstanceReff.current.connect(node, {
-            source: parentNodeId,
-            target: id,
-            isSource: true,
-            isTarget: true,
-            anchor: "Continuous",
-            anchors: [
-                [anchSrcX, anchSrcY, anchSrcXornt, anchSrcYornt, anchSrcXofst, anchSrcYofst], 
-                [anchTrgX, anchTrgY, anchTrgXornt, anchTrgYornt, anchTrgXofst, anchTrgYofst],
-            ],
-            endpoint: ["Dot", { radius: 6 }],
-            /*paintStyle: { fill: "#4caf50" },
-            connector: ["Bezier", { curviness: 50 }],*/
-            connectorStyle: { stroke: "#4caf50", strokeWidth: 2 },
-
-            Connector: ["Bezier", { curviness: 50 }], // Smooth curved lines
-            PaintStyle: { stroke: "#bbb", strokeWidth: 2 }, // Line color and thickness
-            HoverPaintStyle: { stroke: "#999", strokeWidth: 3 }, // Line hover style
-            EndpointStyle: { fill: "#bbb", radius: 5 }, // Circle at endpoints
-
-            overlays: [
-                [
-                    "Arrow",
-                    {
+      jsPlumbInstanceReff.current.connect({
+        source: parentNodeId,
+        target: id,
+        anchors: [
+            [anchSrcX, anchSrcY, anchSrcXornt, anchSrcYornt, anchSrcXofst, anchSrcYofst],
+            [anchTrgX, anchTrgY, anchTrgXornt, anchTrgYornt, anchTrgXofst, anchTrgYofst],
+        ],
+        endpoint: ["Dot", { radius: 6 }],
+        paintStyle: { stroke: lineColor, strokeWidth: 2 },
+        hoverPaintStyle: { stroke: lineHoverColor, strokeWidth: 3 },
+        endpointStyle: { fill: circleColor, radius: 5 },
+        connector: ["Bezier", { curviness: 50 }],
+        overlays: [
+            [
+                "Arrow",
+                {
                     width: 10,
                     length: 10,
-                    location: 0.5, // Arrowhead at the end
-                    foldback: 0.8, // Arrowhead style
+                    location: 0.5,
+                    foldback: 0.8,
                     id: "arrow",
-                    direction: 1, // Points forward
-                    paintStyle: { fill: "#bbb" }, // Arrowhead color
-                    },
-                ],
+                    direction: 1,
+                    paintStyle: { fill: arrowColor },
+                },
             ],
-        });
+        ],
+    });
     }
 
   };
@@ -345,14 +353,13 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
                 var truncateEventName = resp_eventName;
 
                 // create node
-                var nodeIcon = '';
-                if(resp_eventType == "decision"){
-                    nodeIcon = '<i className="hidden-xs fa fa-random fa-lg"></i>';
-                }else if(resp_eventType == "action"){
-                    nodeIcon = '<i className="hidden-xs fa fa-bullseye fa-lg"></i>';
-                }else if(resp_eventType == "condition"){
-                    nodeIcon = '<i className="hidden-xs fa fa-filter fa-lg"></i>';
-                }
+                const nodeIconMap = {
+                  decision: '<i class="hidden-xs fa fa-random fa-lg" style="color:#00b49d"></i>',
+                  action: '<i class="hidden-xs fa fa-bullseye fa-lg" style="color:#9babeb"></i>',
+                  condition: '<i class="hidden-xs fa fa-filter fa-lg" style="color:#ffb79f"></i>'
+                };
+  
+                const nodeIcon = nodeIconMap[resp_eventType] || '';
                 
                 var nodeType = resp_eventType;
                 var nodeId = 'CampaignEvent_new-'+resp_eventId;
