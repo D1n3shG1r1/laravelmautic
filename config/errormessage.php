@@ -31,7 +31,10 @@ return [
     "123" => ["error" => 1,"message" =>"The email could not be deleted. Please try again."],
     "124" => ["error" => 0,"message" =>"The campaign has been successfully deleted."],
     "125" => ["error" => 1,"message" =>"The campaign could not be deleted. Please try again."],
-
+    "126" => ["error" => 0,"message" =>"Contacts imported successfully."],
+    "127" => ["error" => 1,"message" =>"Contacts could not be imported. Please try again."],
+    "128" => ["error" => 1,"message" =>"The contacts listed below are already associated with us."],
+    "129" => ["error" => 1,"message" =>"No data was submitted."],
 
     
     "1004" => ["error" => 1,"message" =>"Your session has expired. Please log in again to continue."],

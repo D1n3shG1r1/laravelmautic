@@ -74,9 +74,11 @@ class Contacts extends Controller
     
         $data = [
             "contactsUrl" => url('contacts'),
+            "sampleFileUrl" => url('files/Sample Import Contacts.xlsx'),
+            "sampleFileName" => "Sample Import Contacts.xlsx",
             "contacts" => $contactsPaginator,
         ];
-    
+        
         return Inertia::render('Contacts', [
             'pageTitle' => 'Contacts',
             'csrfToken' => $csrfToken,
@@ -288,7 +290,7 @@ class Contacts extends Controller
             $today = date("Y-m-d H:i:s");
 
             $importData = $request->input("importData");
-            
+            $existingEmails = [];
             if(!empty($importData)){
                 //check if email is already exist
                 $emailsArr = [];
@@ -297,9 +299,78 @@ class Contacts extends Controller
                 }
 
                 //get records by email
-                $existingContactsObj = contacts_model::select("email")->whereIn("emails",$emailsArr)->get();
+                $existingContactsObj = contacts_model::select("email")->whereIn("email",$emailsArr)->get();
+                
+                if($existingContactsObj){
+                    foreach($existingContactsObj as $existingContactRw){
+                        $existingEmails[] = $existingContactRw->email;
+                    }
+                }
 
-                dd($existingContactsObj);
+                $batchRows = [];
+                foreach($importData as $importRw){
+                    $tmpEmail = $importRw["Email"];
+                    
+                    if(!in_array($tmpEmail,$existingEmails)){
+                        
+                        $batchRows[] = array(
+                            "title" => $importRw["Title"],
+                            "firstname" => $importRw["First Name"],
+                            "lastname" => $importRw["Last Name"],
+                            "email" => $importRw["Email"],
+                            "address1" => $importRw["Address1"],
+                            "address2" => $importRw["Address2"],
+                            "city" => $importRw["City"],
+                            "state" => $importRw["State"],
+                            "zipcode" => $importRw["Pincode"],
+                            "country" => $importRw["Country"],
+                            "mobile" => $importRw["Mobile"],
+                            "company" => $importRw["Company"],
+                            "is_published" => 1,
+                            "date_added" => $today,
+                            "created_by" => $this->USERID,
+                            "created_by_user" => $fullName,
+                            "created_by_company" => $userCompany,
+                            "points" => 0
+                        );
+
+                    }
+                }
+
+                if(!empty($batchRows)){
+                    $inserted = DB::table('contacts')->insert($batchRows);
+                    if($inserted){
+                        //rows inserted
+                        $response = [
+                            'C' => 100,
+                            'M' => $this->ERRORS[126],
+                            'R' => [],
+                        ];
+                    }else{
+                        //rows not inserted
+                        $response = [
+                            'C' => 101,
+                            'M' => $this->ERRORS[127],
+                            'R' => [],
+                        ];
+                    }
+                    
+                }else{
+                    //empty batch rows or contacts are already exists
+                    $response = [
+                        'C' => 102,
+                        'M' => $this->ERRORS[128],
+                        'R' => [],
+                    ];
+                }
+                
+            }else{
+                //empty post data
+                $response = [
+                    'C' => 103,
+                    'M' => $this->ERRORS[129],
+                    'R' => [],
+                ];
             }
 
         }else{

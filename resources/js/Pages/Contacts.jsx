@@ -17,7 +17,7 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
     const contacts = params.contacts.data;
     const links = params.contacts.links;
     const modalRef = useRef();
-
+    
     useEffect(() => {
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
         const tooltips = [...tooltipTriggerList].map((tooltip) => new bootstrap.Tooltip(tooltip));
@@ -117,22 +117,49 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
       setShowConfirmBox(false); // Hide the custom confirmation box
     };
 
-    const sampleFile = () => {
-
-    };
-
-    const cancel = () => {
-        //
-    };
-
     
+    const downloadSample = () => {
+        const link = document.createElement('a');
+        link.href = params.sampleFileUrl; // Path relative to the public folder
+        link.download = params.sampleFileName; // Optional: rename when downloading
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+    
+
+    const cancelUploadXls = () => {
+        window.location.href = params.contactsUrl;
+    };
+
     const [importData, setData] = useState([]);
     const [errors, setErrors] = useState([]);
     const requiredColumns = ['Title', 'First Name', 'Last Name', 'Email', 'Mobile', 'Address1', 'Address2', 'City', 'State', 'Pincode', 'Country', 'Company'];
+    const fileInputRef = useRef(null);
+    
+    useEffect(() => {
+      const modalEl = document.getElementById('importContactsModal');
+  
+      const handleModalOpen = () => {
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+          setErrors([]); // Clear errors
+        }
+      };
+  
+      modalEl?.addEventListener('shown.bs.modal', handleModalOpen);
+  
+      return () => {
+        modalEl?.removeEventListener('shown.bs.modal', handleModalOpen);
+      };
+    }, []);
+
+    
 
     const validateFile = (jsonData) => {
-        const errorMessages = [];
         
+        const errorMessages = [];
+
         // Check for missing required columns
         const columns = Object.keys(jsonData[0] || {});
         requiredColumns.forEach(col => {
@@ -157,10 +184,12 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
     };
 
     const handleFileUpload = (event) => {
+        
         const file = event.target.files[0];
         const reader = new FileReader();
 
         reader.onload = (e) => {
+            setErrors([]);
             const binaryStr = e.target.result;
             const workbook = XLSX.read(binaryStr, { type: 'binary' });
             const sheetName = workbook.SheetNames[0];
@@ -176,31 +205,16 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                 setData(jsonData); // Set data if validation passes
                 setErrors([]); // Clear errors
             }
+
+            /*if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }*/
         };
 
         if (file) {
             reader.readAsBinaryString(file);
         }
     };
-
-    /*const handleFileUpload = (event) => {
-        const file = event.target.files[0];
-        const reader = new FileReader();
-
-        reader.onload = (e) => {
-        const binaryStr = e.target.result;
-        const workbook = XLSX.read(binaryStr, { type: 'binary' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(sheet);
-        
-        setData(jsonData);
-        };
-
-        if (file) {
-            reader.readAsBinaryString(file);
-        }
-    };*/
 
     const uploadXls = () => {
     
@@ -222,6 +236,17 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                 var msg = resp.M.message;
                 var R = resp.R;
                 
+                if(C == 100 && error == 0){
+                    //signup successfull
+                    showToastMsg(error, msg);
+
+                    setTimeout(function(){
+                        window.location.href = params.contactsUrl;
+                    }, 1000);
+                    
+                }else{
+                   showToastMsg(error, msg);
+                }
             });
         }
         
@@ -359,35 +384,37 @@ const Contacts = ({ pageTitle, csrfToken, params }) => {
                 </div>
             </div>
             
-            <BootstrapModal id="importContactsModal" title="Import Contacts" modalRef={modalRef} onCancel={cancel} showFooter={true} confirmText={'Upload'} onConfirm={uploadXls}>
+            <BootstrapModal id="importContactsModal" title="Import Contacts" modalRef={modalRef} onCancel={cancelUploadXls} showFooter={true} confirmText={'Upload'} onConfirm={uploadXls}>
                 <form>
                     <div className="form-group">
                         <div className='row'>
                             <div className='col-md-12'>
                                 <InputLabel className='mr-2' value="Select a file to upload from your computer"/>
-                                <PrimaryButton type="button" className={`mr-2 btn btn-primary`} onClick={() => sampleFile()} data-bs-toggle="tooltip" title="Download sample file">
+                                <PrimaryButton type="button" className={`mr-2 btn btn-primary ${Styles.floatRight}`} onClick={() => downloadSample()} data-bs-toggle="tooltip" title="Download sample file">
                                     <i className={`${Styles.newBtnIcon} fa fa-download`}></i> Download Sample File
                                 </PrimaryButton>
                             </div>
                         </div>
                         <div className='row'>
                             <div className='col-md-12'>
-                                <TextInput type="file" accept=".xlsx,.xls" onChange={handleFileUpload}/>
-                            </div>
-                            <div className='row'>
-                                {/* Display validation errors */}
-                                {errors.length > 0 && (
-                                    <div style={{ color: 'red' }} className='col-md-12'>
-                                        <h3>Validation Errors:</h3>
-                                        <ul>
-                                            {errors.map((error, index) => (
-                                                <li key={index}>{error}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
+                                <TextInput type="file" accept=".xlsx,.xls" onChange={handleFileUpload} ref={fileInputRef}/>
                             </div>
                         </div>
+                        
+                        {/* Display validation errors */}
+                        {errors.length > 0 && (
+                            <div className='row'>
+                                <div style={{ color: '#721c24' }} className='marginTop10 col-md-12'>
+                                    <h4>Validation Errors:</h4>
+                                    <ul className={`alert alert-danger ${Styles.existingContactsUl}`}>
+                                        {errors.map((error, index) => (
+                                            <li key={index}>{error}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        )}
+                        
                         <div className='row'>
                             <div className='col-md-12 text-right'>
                                 

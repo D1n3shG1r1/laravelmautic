@@ -30,7 +30,7 @@ const BootstrapModal = ({ id, title, children, onConfirm, onCancel, confirmText 
             {/* Conditional rendering of footer */}
             {showFooter && (
               <div className={`${Styles.modalFooter}`}>
-                <button type="button" className={`${Styles.marginRight} btn btn-secondary`} data-bs-dismiss="modal">
+                <button type="button" className={`${Styles.marginRight} btn btn-secondary`} data-bs-dismiss="modal" onClick={onCancel}>
                   Close
                 </button>
                 <button type="button" className="btn btn-primary" onClick={onConfirm}>
