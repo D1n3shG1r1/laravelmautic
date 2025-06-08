@@ -8,6 +8,7 @@ use App\Http\Controllers\Contacts;
 use App\Http\Controllers\Segments;
 use App\Http\Controllers\Whatsapp;
 use App\Http\Controllers\Emailsbuilder;
+use App\Http\Controllers\Newsletters;
 use App\Http\Controllers\Tags;
 use App\Http\Controllers\Settings;
 
@@ -81,6 +82,10 @@ Route::post('/email/save',[Emailsbuilder::class,'save']);
 Route::get('/email/edit/{id}',[Emailsbuilder::class,'email']);
 Route::post('/email/update',[Emailsbuilder::class,'update']);
 Route::post('/email/delete',[Emailsbuilder::class,'delete']);
+
+Route::post('/newsletters/getnewswebsites',[Newsletters::class,'getnewswebsites']);
+Route::post('/newsletters/createnewsletter',[Newsletters::class,'createnewsletter']);
+
 
 Route::get('/tags',[Tags::class,'tags']);
 Route::get('/tags/new',[Tags::class,'new']);

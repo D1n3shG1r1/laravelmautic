@@ -60,6 +60,7 @@ class Emailsbuilder extends Controller
             $userCompany = $this->getSession('companyId');
             $isAdmin = $this->getSession('isAdmin');
             
+            //themens for campaigns
             $themesData = [];
             $themesNames = ["blank", "brienz", "confirm_me"];
             
@@ -83,6 +84,29 @@ class Emailsbuilder extends Controller
                 }
             }
             
+            //themes for newsletter
+            $newsletterThemesData = [];
+            $themesNames = ["newsletter"];
+            
+            foreach ($themesNames as $themeName) {
+                $templatePath = public_path('themes/'.$themeName . '/' . $themeName . '.html');
+                
+                if (file_exists($templatePath)) {
+                    
+                    $html = fileRead($templatePath);
+                    
+                    $thumbnailPath = url('themes/'.$themeName . '/thumbnail.png');
+                
+                    // Add theme data to the array
+                    $newsletterThemesData[] = [
+                        'name' => str_replace('_', ' ', $themeName),
+                        'id' => $themeName,
+                        'html' => $html,
+                        'css' => '',
+                        'thumbnail' => $thumbnailPath,
+                    ];
+                }
+            }
 
             if ($isAdmin > 0) {
                 $segmentsObj = segments_model::select("id","name")->where("created_by_company", $userCompany)->get();
@@ -126,6 +150,7 @@ class Emailsbuilder extends Controller
             $data = [];
             $data["emailsUrl"] = url('emails');
             $data["themes"] = $themesData;
+            $data["newsletterThemes"] = $newsletterThemesData;
             $data["segments"] = $segments;
 
             return Inertia::render('NewEmail', [
@@ -141,7 +166,7 @@ class Emailsbuilder extends Controller
     }
 
     function save(Request $request){
-
+        
         if($this->USERID > 0){
             
             $userCompany = $this->getSession('companyId');

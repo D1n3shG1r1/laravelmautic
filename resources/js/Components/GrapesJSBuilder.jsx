@@ -45,9 +45,6 @@ const GrapesJSBuilder = ({ containerId, apiUrl, isVisible, onClose, onApply, tem
           
           var files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
 
-          console.log('files');
-          console.log(files);
-
           if (files.length === 1) {
             const file =  files[0];
 
@@ -56,7 +53,7 @@ const GrapesJSBuilder = ({ containerId, apiUrl, isVisible, onClose, onApply, tem
 
             // Check if the file type is valid
             if (allowedTypes.includes(file.type)) {
-              console.log('Selected file:', file);
+              
               const reader = new FileReader();
               reader.onload = function(e) {
 
@@ -311,6 +308,12 @@ const applyInlineStyles = (htmlContent, cssContent) => {
 
   // Apply inline styles for regular CSS rules
   Object.keys(cssRules.regular).forEach((selector) => {
+    
+    // Skip @font-face rules
+    if (selector.includes('@font-face')) {
+      return; // Ignore @font-face rules
+    }
+
     const rule = cssRules.regular[selector];
     const elements = doc.querySelectorAll(selector);
 

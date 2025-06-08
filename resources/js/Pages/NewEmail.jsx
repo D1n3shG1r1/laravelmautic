@@ -6,34 +6,47 @@ import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import InputLabel from "@/Components/InputLabel";
 import ToggleButton from "@/Components/ToggleButton";
+import NewsMasterList from "@/Components/NewsMasterList";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Styles from "../../css/Modules/Emails.module.css";
 
 const EmailComponent = ({pageTitle, csrfToken, params}) => {
   const themes = params.themes;
+  var newsletterThemes = params.newsletterThemes;
   const segments = params.segments;
-
+  const initializedRef = useRef(false);
+  const [isListEmail, setIsListEmail] = useState(false);
   useEffect(() => {
+    
     if (window.jQuery) {
-    // Initialize Bootstrap tooltips
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-    tooltipTriggerList.forEach((tooltip) => new bootstrap.Tooltip(tooltip));
+      // Initialize Bootstrap tooltips
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+      tooltipTriggerList.forEach((tooltip) => new bootstrap.Tooltip(tooltip));
 
-
-    // Initialize the Select2 plugin
-    $('#contactsegment').select2({
-      placeholder: "Select contact segments",
-      allowClear: true,
-      width: '100%', // Makes it responsive
-      dropdownParent: $('#campaignSourceModal'), // Ensures dropdown is within the modal
-    });
-
-    // Cleanup function to destroy chosen instances
-    return () => {
-      $('#contactsegment').select2('destroy');
-    };
+      
+      if (isListEmail === 'list') {
+        // Defer initialization to ensure the DOM has updated
+        setTimeout(() => {
+          if ($('#contactsegment').length && !initializedRef.current) {
+            $('#contactsegment').select2({
+              placeholder: "Select contact segments",
+              allowClear: true,
+              width: '100%',
+              dropdownParent: $('#contactsegmentParent'),
+            });
+            initializedRef.current = true;
+          }
+        }, 0);
+      }
+  
+      return () => {
+        if (initializedRef.current && window.jQuery) {
+          $('#contactsegment').select2('destroy');
+          initializedRef.current = false;
+        }
+      };
     }
-  }, []);
+  }, [isListEmail]);
   
   const modalRef = useRef(null);
   const modalInstanceRef = useRef(null); // Store the modal instance
@@ -51,15 +64,25 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
     });
 
   }, []);
-
-  const [isListEmail, setIsListEmail] = useState(false);
+  
+  
   const selectEmailType = (type) => {
     
-    setIsListEmail(type);
     // Close the modal programmatically
     if (modalInstanceRef.current) {
       modalInstanceRef.current.hide();
     }
+
+    setIsListEmail(type);
+    if(type == 'template'){
+      //for campaigns
+    }
+
+    if(type == 'list'){
+      //for newsletters
+      //ask for news-content selection
+    }
+
   };
 
   // State to keep track of the selected theme's key
@@ -73,14 +96,25 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
   const [selectedTemplateName, setSelectedTemplateName] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   useEffect(() => {
-      if (themes.length > 0) {
+      if (themes.length > 0 && isListEmail === 'template') {
+          
           setSelectedTemplate(themes[0]);
           setSelectedTemplateName(themes[0].name);
           //if template is not customized
           setHtmlContent(themes[0].html);
           setCssContent(themes[0].css);
+
+      }else if(newsletterThemes.length > 0 && isListEmail === 'list'){
+        
+          toggleNewsMasterList();
+          setSelectedTemplate(newsletterThemes[0]);
+          setSelectedTemplateName(newsletterThemes[0].name);
+          //if template is not customized
+          setHtmlContent(newsletterThemes[0].html);
+          setCssContent(newsletterThemes[0].css);
+
       }
-  }, [themes]);
+  }, [themes, newsletterThemes, isListEmail]);
   
   // Handle the changes received from the child component
   const [htmlContent, setHtmlContent] = useState('');
@@ -108,6 +142,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
     attachments:'',
   });
   
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
   const handleInputChange = (e) => {
         
     const { name, value } = e.target;
@@ -135,6 +170,26 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
 
     const subject = document.getElementById("subject").value.trim();
     const internalname = document.getElementById("internalname").value.trim();
+
+    var selectedSegments = [];
+    
+    if(emailType === 'list'){
+      
+      const contactSegments = document.getElementById("contactsegment");
+      
+      // Convert HTMLCollection to an array
+      const srcSlctOptArr = Array.from(contactSegments.selectedOptions);
+      
+      // Loop through selected options and collect their values
+      srcSlctOptArr.forEach((v, i) => {
+        var tmpOptVal = v.value; // Directly use v (the current option)
+        var tmpOptTxt = v.text;
+        selectedSegments[i] = tmpOptVal;
+        
+      });
+
+    }
+    
     const activateat = document.getElementById("activateat").value;
     const deactivateat = document.getElementById("deactivateat").value;
     const fromname = document.getElementById("fromname").value.trim();
@@ -201,7 +256,27 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
       return false;
     }
 
+    if (emailType === 'list' && selectedSegments.length == 0){
+      var err = 1;
+      var msg = "Select the contact segment to run the campaign.";
+      showToastMsg(err, msg);
+      return false;
+    }
 
+    if(!isRealVal(activateat)){
+      var err = 1;
+      var msg = "The activation date is required.";
+      showToastMsg(err, msg);
+      return false;
+    }
+
+    if(!isRealVal(deactivateat)){
+      var err = 1;
+      var msg = "The deactivation date is required.";
+      showToastMsg(err, msg);
+      return false;
+    }
+    
     //validate email address
     
     if(isRealVal(fromaddress) && !validateEmail(fromaddress)){
@@ -237,6 +312,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
       "subject":subject,
       "internalname":internalname,
       "isPublish":isPublish,
+      "segments":selectedSegments,
       "activateat":activateat,
       "deactivateat":deactivateat,
       "fromname":fromname,
@@ -273,7 +349,30 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
 
   const cancel = () => {
     window.location.href = window.url('emails');
-  }
+  };
+
+  const [isVisibleNewsList, setIsVisibleNewsList] = useState(false);
+  const [newsletterResponse, setNewsletterResponse] = useState(null);
+ 
+  const toggleNewsMasterList = () => {
+    setIsVisibleNewsList(!isVisibleNewsList);
+  };
+
+  const handleNewsletterResponse = (response) => {
+    // Handle the response here
+    setNewsletterResponse(response);
+    setIsVisibleNewsList(false);  // Hides the component
+    
+    const key = 0;
+    const theme = response.R[key];
+    handleTemplateSelect(theme, key);
+  };
+
+  // Function to cancel and hide NewsMasterList
+  const cancelNewsletter = () => {
+    setIsVisibleNewsList(false);  // Hides the component
+      window.location.href = window.url('emails');
+  };
 
   return (
     <Layout pageTitle={pageTitle}>
@@ -292,9 +391,6 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                     
                     <PrimaryButton type="submit" isLoading={isLoading} className="btn btn-primary"><i className="bi bi-floppy2-fill"></i> Save</PrimaryButton>
                     
-                    {/*<PrimaryButton type="button" className="btn btn-primary"><i className="bi bi-floppy2-fill"></i> Save</PrimaryButton>*/}
-
-
                     <PrimaryButton type="button" className="btn btn-primary" onClick={() => cancel()}><i className="bi bi-x"></i> Cancel</PrimaryButton>
                   </div>
                 </div>
@@ -330,121 +426,95 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                                         </InputLabel>
                                         
                                         <div className="row mb-3">
-                                          
-                                        {themes.map((theme, key) => {
+                                        {isListEmail === 'template' ? (
+                                          themes.map((theme, key) => {
                                             const isSelected = key === selectedThemeKey;
-                                        return (
-                                            <div key={key} className={`col-md-3 ${Styles.themeList}`}>
+                                            return (
+                                              <div key={key} className={`col-md-3 ${Styles.themeList}`}>
                                                 <div className={`${Styles.panel} ${Styles.themeListPanel} panel-default theme-selected`}>
-                                                    <div className={`${Styles.panelBody} ${Styles.textCenter}`}>
-                                                        <h3 className={`${Styles.themeHeading}`}>{theme.name}</h3>
-                                                        <a href="#" data-toggle="modal" data-target="#theme-blank">
-                                                            <div style={{
-                                                                backgroundImage: `url(${theme.thumbnail})`,
-                                                                backgroundRepeat: "no-repeat",
-                                                                backgroundSize: "contain",
-                                                                backgroundPosition: "center",
-                                                                width: "100%",
-                                                                height: "250px"
-                                                            }}></div>
-                                                        </a>
-
-                                                        {/* Conditionally apply 'hide' to <a> and <button> based on selected theme */}
-                                                        <a 
-                                                            href="#" 
-                                                            type="button" 
-                                                            data-theme="blank" 
-                                                            className={`${Styles.selectAnchorBtn} ${Styles.selectThemeLink} btn ${Styles.btnDefault} ${isSelected ? 'hide' : ''}`} 
-                                                            onClick={() => handleTemplateSelect(theme, key)}
-                                                        >
-                                                            Select
-                                                        </a>
-
-                                                        <button 
-                                                            type="button" 
-                                                            className={`select-theme-selected btn ${Styles.btnDefault} ${isSelected ? '' : 'hide'}`} 
-                                                            disabled
-                                                        >
-                                                            Selected
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-
-
-                                          {/* Blank Theme*/}
-                                          {/*<div className={`col-md-3 ${Styles.themeList}`}>
-                                            <div className={`${Styles.panel} ${Styles.themeListPanel} panel-default theme-selected`}>
-                                            <div className={`${Styles.panelBody} ${Styles.textCenter}`}>
-                                            <h3 className={`${Styles.themeHeading}`}>Blank</h3>
-                                            <a href="#" data-toggle="modal" data-target="#theme-blank">
-                                                <div style={{backgroundImage: `url(${blankThumbnail})`,backgroundRepeat:"no-repeat",backgroundSize:"contain", backgroundPosition:"center", width: "100%", height: "250px"}}></div>
-                                            </a>
-                                            <a href="#" type="button" data-theme="blank" className={`${Styles.selectAnchorBtn} ${Styles.selectThemeLink} btn ${Styles.btnDefault} hide`} onClick={() => handleTemplateSelect(templates[0])}>Select</a>
-                                            <button type="button" className={`select-theme-selected btn ${Styles.btnDefault}`} disabled="disabled">
-                                                Selected
-                                            </button>
-                                            </div>
-                                            </div>
-                                                                
-                                            <div className="modal fade" id="theme-blank" role="dialog" aria-labelledby="blank">
-                                              <div className="modal-dialog" role="document">
-                                                    <div className="modal-content">
-                                                      <div className="modal-header">
-                                                          <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
-                                                          <h4 className="modal-title" id="blank">Blank</h4>
-                                                      </div>
-                                                      <div className="modal-body">
-                                                        <div style={{backgroundImage: `url(${blankThumbnail})`,backgroundRepeat:"no-repeat",backgroundSize:"contain", backgroundPosition:"center", width: "100%", height: "600px"}}></div>
-                                                      </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                          </div>*/}
-                                          {/* Brienz Theme*/}          
-                                          {/*<div className={`col-md-3 ${Styles.themeList}`}>
-                                            <div className={`${Styles.panel} ${Styles.themeListPanel} panel-default`}>
-                                              <div className={`${Styles.panelBody} ${Styles.textCenter}`}>
-                                                <h3 className={`${Styles.themeHeading}`}>Brienz</h3>
-                                                <a href="#" data-toggle="modal" data-target="#theme-brienz">
-                                                <div 
-                                                  style={{
-                                                    backgroundImage: `url(${brienzThumbnail})`, 
-                                                    backgroundRepeat: "no-repeat",
-                                                    backgroundSize: "contain", 
-                                                    backgroundPosition: "center",
-                                                    width: "100%", 
-                                                    height: "250px"
-                                                  }}
-                                                ></div>
-                                              </a>
-
-                                                
-                                                <a href="#" type="button" data-theme="brienz" className={`${Styles.selectAnchorBtn} ${Styles.selectThemeLink} btn ${Styles.btnDefault}`} onClick={() => handleTemplateSelect(templates[1])}>Select</a>
-
-                                                <button type="button" className={`select-theme-selected btn ${Styles.btnDefault} hide`} disabled="disabled">Selected</button>
-                                                </div>
-                                            </div>
-                                                                
-                                            <div className="modal fade" id="theme-brienz" role="dialog" aria-labelledby="brienz">
-                                              <div className="modal-dialog" role="document">
-                                                <div className="modal-content">
-                                                  <div className="modal-header">
-                                                    <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
-                                                    <h4 className="modal-title" id="brienz">Brienz</h4>
-                                                  </div>
-                                                  <div className="modal-body">
-                                                      <div style={{backgroundImage: `url(${brienzThumbnail})`, backgroundRepeat:"no-repeat",backgroundSize:"contain", backgroundPosition:"center", width: "100%", height: "600px"}}></div>
+                                                  <div className={`${Styles.panelBody} ${Styles.textCenter}`}>
+                                                    <h3 className={`${Styles.themeHeading}`}>{theme.name}</h3>
+                                                    <a href="#" data-toggle="modal" data-target="#theme-blank">
+                                                      <div
+                                                        style={{
+                                                          backgroundImage: `url(${theme.thumbnail})`,
+                                                          backgroundRepeat: "no-repeat",
+                                                          backgroundSize: "contain",
+                                                          backgroundPosition: "center",
+                                                          width: "100%",
+                                                          height: "250px"
+                                                        }}
+                                                      ></div>
+                                                    </a>
+                                                    <a
+                                                      href="#"
+                                                      type="button"
+                                                      data-theme="blank"
+                                                      className={`${Styles.selectAnchorBtn} ${Styles.selectThemeLink} btn ${Styles.btnDefault} ${isSelected ? 'hide' : ''}`}
+                                                      onClick={() => handleTemplateSelect(theme, key)}
+                                                    >
+                                                      Select
+                                                    </a>
+                                                    <button
+                                                      type="button"
+                                                      className={`select-theme-selected btn ${Styles.btnDefault} ${isSelected ? '' : 'hide'}`}
+                                                      disabled
+                                                    >
+                                                      Selected
+                                                    </button>
                                                   </div>
                                                 </div>
+                                              </div>
+                                            );
+                                          })
+                                        ) : isListEmail === 'list' ? (
+                                          newsletterThemes.map((themeNwsLtr, key) => {
+                                            const isSelected = key === selectedThemeKey;
+                                            return (
+                                              <div key={key} className={`col-md-3 ${Styles.themeList}`}>
+                                                <div className={`${Styles.panel} ${Styles.themeListPanel} panel-default theme-selected`}>
+                                                  <div className={`${Styles.panelBody} ${Styles.textCenter}`}>
+                                                    <h3 className={`${Styles.themeHeading}`}>{themeNwsLtr.name}</h3>
+                                                    <a href="#" data-toggle="modal" data-target="#theme-blank">
+                                                      <div
+                                                        style={{
+                                                          backgroundImage: `url(${themeNwsLtr.thumbnail})`,
+                                                          backgroundRepeat: "no-repeat",
+                                                          backgroundSize: "contain",
+                                                          backgroundPosition: "center",
+                                                          width: "100%",
+                                                          height: "250px"
+                                                        }}
+                                                      ></div>
+                                                    </a>
+                                                    <a
+                                                      href="#"
+                                                      type="button"
+                                                      data-theme="blank"
+                                                      className={`${Styles.selectAnchorBtn} ${Styles.selectThemeLink} btn ${Styles.btnDefault} ${isSelected ? 'hide' : ''}`}
+                                                      onClick={() => handleTemplateSelect(themeNwsLtr, key)}
+                                                    >
+                                                      Select
+                                                    </a>
+                                                    <button
+                                                      type="button"
+                                                      className={`select-theme-selected btn ${Styles.btnDefault} ${isSelected ? '' : 'hide'}`}
+                                                      disabled
+                                                    >
+                                                      Selected
+                                                    </button>
+                                                  </div>
                                                 </div>
-                                            </div>
-                                          </div>*/}
-
-
+                                              </div>
+                                            );
+                                          })
+                                        ):(
+                                        <div className="col-12">
+                                          <p>No themes to display.</p>
                                         </div>
+                                      )}
+                                      </div>
+
                                     </div>
                                   </div>
                                 </div>
@@ -512,7 +582,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                                             </div>
                                         </div>
 
-                                        <div className="row mb-3">
+                                        <div className="row mb-3 hide">
                                             <div className="col-md-12">
                                                 <InputLabel className="form-label">
                                                   Attachments&nbsp;<i
@@ -578,7 +648,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                       <div className="col-md-12">
                         <InputLabel className={`form-label ${Styles.required}`} value="Contact Segment" />
                         
-                        <div id="campaignSourceModal">
+                        <div id="contactsegmentParent">
                           <select name="contactsegment" 
                           id="contactsegment" multiple="multiple" className="form-select" style={{ width: '100%' }}>
                             {segments.map((segment) => (
@@ -596,8 +666,6 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                     </div>
                   )}
                   
-                  
-
                   <div className="row mb-3">
                       <div className="col-md-12">
                         <InputLabel className="form-label" value="Available for use"/>
@@ -608,14 +676,14 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                   <div className="row mb-3">
                       <div className="col-md-12">
                         <InputLabel className={`form-label ${Styles.required}`} value="Activate at (date)"/>
-                        <TextInput type="date" className="form-control" name="activateat" id="activateat" placeholder="Activate at (date)" value={formValues.activateat} onChange={handleInputChange} />
+                        <TextInput type="date" className="form-control" name="activateat" id="activateat" placeholder="Activate at (date)" value={formValues.activateat} onChange={handleInputChange} min={today}/>
                       </div>
                   </div>
 
                   <div className="row mb-3">
                       <div className="col-md-12">
                         <InputLabel className={`form-label ${Styles.required}`} value="Deactivate at (date)"/>
-                        <TextInput type="date" className="form-control" name="deactivateat" id="deactivateat" placeholder="Deactivate at (date)" value={formValues.deactivateat} onChange={handleInputChange} />
+                        <TextInput type="date" className="form-control" name="deactivateat" id="deactivateat" placeholder="Deactivate at (date)" value={formValues.deactivateat} onChange={handleInputChange} min={formValues.activateat || today}/>
                       </div>
                   </div>
                 </div>
@@ -701,12 +769,21 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                   </ul>
                 </div>
                 <div className={`${Styles.textCenter} ${Styles.panelFooter} hidden-xs`}>
-                <button className={`btn ${Styles.textPrimary}`} onClick={() => selectEmailType("list")} disabled>Select</button>
+                <button className={`btn ${Styles.textPrimary}`} onClick={() => selectEmailType("list")}>Select</button>
                 </div>
               </div>
             </div>
           </div>
         </BootstrapModal>
+
+        {/*--- NewsMasterLetter content ---*/}
+        {/* Show NewsMasterList only when isVisible is true */}
+        {isVisibleNewsList && (
+          <NewsMasterList csrfToken={csrfToken}
+          cancelNewsletter={cancelNewsletter}
+          onCreateNewsletter={handleNewsletterResponse}
+          />
+        )}
       </div>
     </Layout>
   );

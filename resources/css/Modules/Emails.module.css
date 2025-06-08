@@ -212,3 +212,25 @@
 .filterTrashIcon {
     color: #dc3545 !important;
 }
+
+.websiteListContainer {
+    position: absolute;
+    background: #000000ad;
+    display: flex;
+    flex-direction: column;
+    z-index: 1500;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    padding: 15px 15px;
+}
+
+.pdTop22 {
+    padding: 28px 0px 0px 0px;
+}
+
+.createNewsletterFormBox {
+    display: ruby;
+    text-align: right;
+}
