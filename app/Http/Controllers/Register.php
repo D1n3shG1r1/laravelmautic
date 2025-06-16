@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\user_model;
 use App\Models\role_model;
 use App\Models\company_model;
+use App\Models\settings_model;
 
 class Register extends Controller
 {
@@ -124,6 +125,7 @@ class Register extends Controller
                 $save = $userObj->save();
                 $userId = $userObj->id;
                 if($save){
+
                     //save role
                     $roleObj = new role_model();
                     $roleObj->is_published = $published;
@@ -155,6 +157,29 @@ class Register extends Controller
                         //update roll-id and company-id in users table
                         $updateData = array("role_id" => $roleId, "company_id" => $companyId);
                         user_model::where("id",$userId)->update($updateData);
+
+                        //save settings
+                        $settingsObj = new settings_model();
+                        $settingsObj->created_by = $userId;
+                        $settingsObj->created_by_user = $firstName.' '.$lastName;
+                        $settingsObj->created_by_company = $companyId;
+                        $settingsObj->smtp = json_encode(
+                            array(
+                                "fromname" => "",
+                                "fromemailaddress" => "",
+                                "replytoaddress" => "",
+                                "emailreturnpath" => "",
+                                "dsnscheme" => "",
+                                "dsnhost" => "",
+                                "dsnport" => "",
+                                "dsnpath" => "",
+                                "dsnuser" => "",
+                                "dsnpassword" => "",
+                                "brevoapikey" => ""
+                            )
+                        );
+                        //$settingsObj->usescipsmtp = 1;
+                        $settingsObj->save();
                     }
                 }
                 
@@ -199,6 +224,7 @@ class Register extends Controller
         $password = sha1($password);
 
         $rowObj = user_model::select("id","role_id","company_id","email","first_name","last_name")->where("email",$email)->where("password",$password)->first();        
+        
         if($rowObj){
 
             $user = $rowObj->toArray();

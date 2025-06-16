@@ -17,6 +17,7 @@ const Layout = ({ pageTitle, children }) => {
     const campaignsUrl = window.url('campaigns');
     const whatsappUrl = window.url('whatsapp');
     const emailsUrl = window.url('emails');
+    const newsUrl = window.url('news');
     const tagsUrl = window.url('tags');
     const settingsUrl = window.url('settings');
     const signoutUrl = window.url('signout');
@@ -101,6 +102,9 @@ const Layout = ({ pageTitle, children }) => {
                                         </li>
                                     </ul>
                                 </li>
+
+
+                                <li><a href={newsUrl}><i className="fa fa-newspaper-o orange_color"></i> <span>News</span></a></li>
 
                                 <li><a href={tagsUrl}><i className="fa fa-tags orange_color"></i> <span>Tags</span></a></li>
                             </ul>

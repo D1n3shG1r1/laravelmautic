@@ -2,9 +2,8 @@
 
 namespace App\Jobs;
 
-use App\Models\campaign_emails_queue_model;
-use App\Models\campaigns_model;
-use App\Models\campaign_events_model;
+use App\Models\newsletter_emails_queue_model;
+use App\Models\emailsbuilder_model;
 use App\Models\settings_model;
 
 use App\Mail\CampaignEmail;
@@ -18,59 +17,56 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class SendCampaignEmail implements ShouldQueue
+class SendNewsletterEmail implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $queueId;
-    public $campaignId;
+    public $emailId;
 
     public function __construct($param)
     {
         $this->queueId = $param["id"];
-        $this->campaignId = $param["campaignId"];
+        $this->emailId = $param["emailId"];
     }
 
     public function handle()
     {
 
-        Log::info("JOB STARTED: Campaign Email CampaignID: {$this->campaignId}, QueueID: {$this->queueId}");
+        Log::info("JOB STARTED: Campaign Email CampaignID: {$this->emailId}, QueueID: {$this->queueId}");
         
-        $emailRow = campaign_emails_queue_model::where("id", $this->queueId)
-        ->where("campaignId", $this->campaignId)
+        $emailRow = newsletter_emails_queue_model::where("id", $this->queueId)
+        ->where("emailId", $this->emailId)
         ->first();
         
         if(!$emailRow){
-            Log::warning("Email queue not found for CampaignID: {$this->campaignId}, QueueID: {$this->queueId}") ;
+            Log::warning("Email queue not found for EmailID: {$this->emailId}, QueueID: {$this->queueId}") ;
             return;
         }
 
-        /*
-        $emailRow->id
-        $emailRow->campaignId
-        $emailRow->segmentId
-        $emailRow->eventId
-        $emailRow->contactId
-        $emailRow->contactName
-        $emailRow->contactEmail
-        $emailRow->subject
-        $emailRow->html
-        $emailRow->emailSent
-        $emailRow->emailBrevoEvents
-        $emailRow->brevoTransactionId
-        $emailRow->date_added
-        $emailRow->date_modified
-        */
-
         
-        //get smpt credentials or brevo key by $campaignId
-        $campainRow = campaigns_model::select("id", "created_by_company")
-        ->where("id", $this->campaignId)
+        $emailId = $emailRow->emailId; //email tempate id
+        $toEmail = $emailRow->contactEmail;
+        $toName = $emailRow->contactName;
+        $subject = $emailRow->subject;
+        $message = $emailRow->html;
+        $message = str_replace("{unsubscribe_text} | {webview_text}\n","",$message);
+
+        // Further escape single quotes for the shell
+        $escapedMessage = str_replace("'", "\"", $message);
+        // Escape the message for JSON encoding (double quotes handled automatically)
+        $escapedMessage = json_encode($escapedMessage);
+        
+
+        //get smpt credentials or brevo key by $emailId
+        
+        $templateRow = emailsbuilder_model::select("id", "created_by_company")
+        ->where("id", $emailId)
         ->first();
 
-        if($campainRow){
-            //$campaignId = $campainRow->id;
-            $companyId = $campainRow->created_by_company; //common in every model
+        if($templateRow){
+            $templateId = $templateRow->id;
+            $companyId = $templateRow->created_by_company; //common in every model
         
             $settings = settings_model::select("smtp","usescipsmtp")
             ->where("created_by_company", $companyId)
@@ -108,25 +104,7 @@ class SendCampaignEmail implements ShouldQueue
                 // we are using brevo api to send email instead of smtp
                 // if email is sent through api then we are able to track email events by brevo
                 
-                $apikey = config('brevo.apikey');
-                $smtp = config('brevo.smtp');
-                $senderName = $smtp["sendername"];
-                $senderEmail = $smtp["senderemail"];
-                $replyToName = $smtp["replytoname"];
-                $replyToEmail = $smtp["replytoemail"];
-
-                $toEmail = $emailRow->contactEmail;
-                $toName = $emailRow->contactName;
-                $subject = $emailRow->subject;
-                $message = $emailRow->html;
-                $message = str_replace("{unsubscribe_text} | {webview_text}\n","",$message);
-
-                // Further escape single quotes for the shell
-                $escapedMessage = str_replace("'", "\"", $message);
-                // Escape the message for JSON encoding (double quotes handled automatically)
-                $escapedMessage = json_encode($escapedMessage);
                 
-
                 // Prepare the cURL command
                 $cmd = "curl --location 'https://api.brevo.com/v3/smtp/email' \
                 --header 'accept: application/json' \
@@ -161,7 +139,7 @@ class SendCampaignEmail implements ShouldQueue
                     $response = json_decode($out[0]);
                     if(property_exists($response, 'code') && ($response->code == 'bad_request' || $response->code == 'unauthorized')){ 
                         //echo 'code:'.$response->code.', message:'.$response->message;
-                        Log::warning("Brevo error: code:{$response->code}', message:{$response->message} for CampaignID: {$this->campaignId}, QueueID: {$this->queueId}") ;
+                        Log::warning("Brevo error: code:{$response->code}', message:{$response->message} for EmailID: {$this->emailId}, QueueID: {$this->queueId}") ;
                         
                     }else{
 
@@ -173,19 +151,22 @@ class SendCampaignEmail implements ShouldQueue
                             "date_modified" => date("Y-m-d H:i:s")
                         );
                         
-                        campaign_emails_queue_model::where("id", $this->queueId)
-                        ->where("campaignId", $this->campaignId)
+                        newsletter_emails_queue_model::where("id", $this->queueId)
+                        ->where("emailId", $this->emailId)
                         ->update($updateData);
 
                         
                         //update campaign event triggred to 1
+                        $emailObj = emailsbuilder_model::select("sent_count")->where("id", $this->emailId)
+                        ->get();
+
                         $updateData = array(
-                            "triggered" => 1,
-                            "trigger_count" => 1,
-                            "triggered_on" => date("Y-m-d H:i:s")
+                            
+                            "sent_count" => $emailObj->sent_count + 1,
+                            "date_modified" => date("Y-m-d H:i:s")
                         );
 
-                        campaign_events_model::where("id", $emailRow->eventId)
+                        emailsbuilder_model::where("id", $emailRow->eventId)
                         ->where("campaignId", $emailRow->campaignId)
                         ->update($updateData);
 
@@ -219,15 +200,16 @@ class SendCampaignEmail implements ShouldQueue
                 ]);
                 */
                 //Mail::to($this->user['email'])->send(new CampaignEmail($this->user));
-
+                
             }else{
                 //log settings row not found
-                Log::warning("SMPT settings not found for CampaignID: {$this->campaignId}, QueueID: {$this->queueId}") ;
+                Log::warning("SMPT settings not found for EmailID: {$this->emailId}, QueueID: {$this->queueId}") ;
             }
-        }else{
-            Log::warning("Campaign not found for CampaignID: {$this->campaignId}, QueueID: {$this->queueId}") ;
-        }
 
+
+        }else{
+            Log::warning("Email-Template not found for EmailID: {$this->emailId}, QueueID: {$this->queueId}") ;
+        }
         
     }
 }

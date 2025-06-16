@@ -83,8 +83,17 @@ Route::get('/email/edit/{id}',[Emailsbuilder::class,'email']);
 Route::post('/email/update',[Emailsbuilder::class,'update']);
 Route::post('/email/delete',[Emailsbuilder::class,'delete']);
 
+
+Route::get('/news',[Newsletters::class,'getnews']);
+Route::get('/news/newwebsite',[Newsletters::class,'new']);
+Route::get('/news/edit/{id}',[Newsletters::class,'editnews']);
+Route::post('/news/websitesave',[Newsletters::class,'save']);
+Route::post('/news/websiteupdate',[Newsletters::class,'update']);
+Route::post('/news/websitedelete',[Newsletters::class,'delete']);
 Route::post('/newsletters/getnewswebsites',[Newsletters::class,'getnewswebsites']);
 Route::post('/newsletters/createnewsletter',[Newsletters::class,'createnewsletter']);
+
+
 
 
 Route::get('/tags',[Tags::class,'tags']);

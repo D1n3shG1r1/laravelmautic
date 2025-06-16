@@ -12,18 +12,24 @@ import Styles from "../../css/Modules/Settings.module.css";
 const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
     
     const smtp = params.smtp;
+    const usescipsmtp = params.usescipsmtp;
     const mailerDsn = params.mailerDsn;
+    const [toggleValue, setToggleValue] = useState(0);
+    const toggleState = usescipsmtp ? true : false;
+    const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingSave, setIsLoadingSave] = useState(false);
 
     useEffect(() => {
+        
+        handleToggle(usescipsmtp);
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
         const tooltips = [...tooltipTriggerList].map((tooltip) => new bootstrap.Tooltip(tooltip));
-        
+    
         return () => {
             tooltips.forEach((tooltip) => tooltip.dispose());
         };
     }, []);
     
-    const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState("email"); // Default active tab
 
     const handleTabChange = (tabName) => {
@@ -31,6 +37,7 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
     };
     
     const [formValuesDNS, setDNSFormValues] = useState({
+        brevoapikey:smtp.brevoapikey || "",
         fromname: smtp.fromname || "",
         replytoaddress: smtp.replytoaddress || "",
         fromemailaddress: smtp.fromemailaddress || "",
@@ -53,8 +60,6 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
         }));
     };
 
-    const [toggleValue, setToggleValue] = useState(false);
-
     const handleToggle = (value) => {
         setToggleValue(value);
     };
@@ -62,22 +67,24 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
     const save = (event) => {
 
         event.preventDefault();
-
+        
         const fromname = document.getElementById("fromname").value.trim();
         const fromemailaddress = document.getElementById("fromemailaddress").value.trim();
         const replytoaddress = document.getElementById("replytoaddress").value.trim();
-        const emailreturnpath = document.getElementById("emailreturnpath").value.trim();
+        const brevoapikey = document.getElementById("brevoapikey").value.trim();
+        
+        /*const emailreturnpath = document.getElementById("emailreturnpath").value.trim();
         const dsnscheme = document.getElementById("dsnscheme").value.trim();
         const dsnhost = document.getElementById("dsnhost").value.trim();
         const dsnport = document.getElementById("dsnport").value.trim();
         const dsnpath = document.getElementById("dsnpath").value.trim();
         const dsnuser = document.getElementById("dsnuser").value.trim();
-        const dsnpassword = document.getElementById("dsnpassword").value.trim();
+        const dsnpassword = document.getElementById("dsnpassword").value.trim();*/
         
-
+        
         if(!isRealVal(fromname)){
             var err = 1;
-            var msg = "Set the from nameSet the from name for email sent by system.";
+            var msg = "Set the from name for email sent by system.";
             showToastMsg(err, msg);
             return false;
         }
@@ -90,6 +97,13 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
             return false;
         }
         
+        if((!toggleValue || toggleValue == 0) && !isRealVal(brevoapikey)){
+            var err = 1;
+            var msg = "Enter the Brevo API key or enable 'Use SCIP Email Service' to send or receive emails, campaigns, and newsletters.";
+            showToastMsg(err, msg);
+            return false;
+        }
+        /*
         if(!isRealVal(dsnscheme)){
             var err = 1;
             var msg = "Set the email dsn scheme.";
@@ -111,12 +125,12 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
             return false;
         }
         
-        /*if(!isRealVal(dsnpath)){
+        if(!isRealVal(dsnpath)){
             var err = 1;
             var msg = "Set the email dsn path.";
             showToastMsg(err, msg);
             return false;
-        }*/
+        }
 
         if(!isRealVal(dsnuser)){
             var err = 1;
@@ -130,9 +144,9 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
             var msg = "Set the email dsn dsnpassword.";
             showToastMsg(err, msg);
             return false;
-        }
+        }*/
         
-        setIsLoading(true);
+        setIsLoadingSave(true);
 
         var url = "emaildsn/update";
         var postJson = {
@@ -140,19 +154,20 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
             "fromname":fromname,
             "fromemailaddress":fromemailaddress,
             "replytoaddress":replytoaddress,
-            "emailreturnpath":emailreturnpath,
+            /*"emailreturnpath":emailreturnpath,
             "dsnscheme":dsnscheme,
             "dsnhost":dsnhost,
             "dsnport":dsnport,
             "dsnpath":dsnpath,
             "dsnuser":dsnuser,
-            "dsnpassword":dsnpassword
+            "dsnpassword":dsnpassword,*/
+            "brevoapikey":brevoapikey,
+            "toggleValue":toggleValue
         };
         
         httpRequest(url, postJson, function(resp){
             var C = resp.C;
-            
-            var msg = resp.M;
+            var msg = resp.M.message;
             var R = resp.R;
 
             var error = 0;
@@ -164,7 +179,7 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
 
             showToastMsg(0, msg);
 
-            setIsLoading(false);
+            setIsLoadingSave(false);
         });
         
     }
@@ -305,7 +320,8 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                                         <TextInput type="text" className="form-control" name="fromemailaddress" id="fromemailaddress" placeholder="From Email Address" value={formValuesDNS.fromemailaddress} onChange={handleInputChange} />
                                                         </div>
                                                     </div>
-
+                                                    
+                                                    {/*
                                                     <div className="row">
                                                         <div className="form-group col-xs-12">
                                                         <InputLabel className="form-label">
@@ -319,7 +335,7 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                                         </InputLabel>
                                                         <TextInput type="text" className="form-control" name="emailreturnpath" id="emailreturnpath" placeholder="Bounce path" value={formValuesDNS.emailreturnpath} onChange={handleInputChange} />
                                                         </div>
-                                                    </div>
+                                                    </div>*/}
                                                 </div>
                                             </div>
                                         </div>
@@ -333,6 +349,67 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                         <div className={`${Styles.panelBody}`}>
                                             {/* Email DSN Settings */}
                                             <div className="config-dsn-container">
+                                            
+                                            <div className="row mb-3">
+                                                <div className="col-md-12">
+                                                    <div className="row">
+                                                        <div className="form-group col-xs-12">
+                                                        
+                                                        <InputLabel className="form-label"
+                                                        value="Brevo api key"/>
+                                                        
+                                                        <TextInput type="text" className="form-control" name="brevoapikey" id="brevoapikey" placeholder="brevo Api Key" value={formValuesDNS.brevoapikey} onChange={handleInputChange}/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="row mb-3 col-md-12 text-center text-secondary">
+                                                <div className="col-md-12">OR</div>
+                                            </div>
+
+                                            <div className="row">
+                                                <div className="col-md-6">
+                                                    <InputLabel className="form-label" value="Use SCIP Email Service"/>
+                                                    <ToggleButton onToggle={handleToggle} state={toggleState} onText = "Yes" offText="No"/>
+                                                </div> 
+                                                <div className="col-md-6">
+                                                    <div className="form-inline">
+                                                        <div className={`${Styles.testContainerWidth} form-group`}>
+                                                            <div className="form-control-static ml-10">
+                                                                <span className="text-muted">If you don't have an SMTP account, please use the SCIP Email Service to send and receive emails, newsletters, and campaigns.</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>   
+                                            </div>
+                                            
+                          
+
+    <div className="row">
+        <div className="col-md-6">
+            {/*<div className={`${Styles.testContainerWidth} form-group`}>
+                <div className="form-control-static ml-10">
+                    <span className="text-muted">Using currently saved DSN:</span>
+                        <code>{mailerDsn}</code>
+                </div>
+            </div>*/}
+        </div>
+
+        <div className="col-md-6">
+            <div className={`${Styles.configDsnTestContainer}`}>
+                <div className="form-inline">
+                    <div className="form-group btn-group" role="group">
+
+                        <PrimaryButton id="sendEmailBtn" type="button" isLoading={isLoading} className="btn btn-primary" onClick={sendTestEmail}><i className="bi bi-window-sidebar"></i> Send test email</PrimaryButton>
+                    
+                        <PrimaryButton type="button" isLoading={isLoadingSave} className="btn btn-primary" onClick={save}><i className="bi bi-floppy2-fill"></i> Save</PrimaryButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                            {/*
                                             <div className="row">
                                                 <div className="col-md-6 col-lg-3">
                                                     <div className="row">
@@ -480,6 +557,7 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                         </div>
 
                                             </div>
+                                            */}
 
 
                                             </div>

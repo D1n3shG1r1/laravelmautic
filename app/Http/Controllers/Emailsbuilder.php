@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\emailsbuilder_model;
 use App\Models\segments_model;
 use App\Models\segment_contacts_model;
+use App\Models\email_segments_model;
+use Illuminate\Support\Facades\DB;
 //use App\Models\contacts_model;
 //use App\Models\role_model;
 
@@ -175,6 +177,7 @@ class Emailsbuilder extends Controller
             $fullName = $firstName." ".$lastName; 
             $today = date("Y-m-d");
 
+            $segments = $request->input('segments');
             $emailType = $request->input('emailType');
             $templateName = $request->input('templateName');
             $html = $request->input('html');
@@ -223,6 +226,21 @@ class Emailsbuilder extends Controller
             $emailObj->headers = '{}';
             $emailObj->save();
             $emailId = $emailObj->id;
+
+            if($emailId && $emailId > 0){
+                if($emailType == 'list' && !empty($segments)){
+                    $batchRows = array();
+                    foreach($segments as $segmentId){
+                        $batchRows[] = array("email_id" => $emailId, "segment_id" => $segmentId);
+                    }
+                    
+                    if(!empty($batchRows)){
+                        $inserted = DB::table('email_segments')->insert($batchRows);
+                    }
+                    
+                }
+                
+            }
 
             $response = [
                 'C' => 100,

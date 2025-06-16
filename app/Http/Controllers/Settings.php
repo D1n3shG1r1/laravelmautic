@@ -40,7 +40,8 @@ class Settings extends Controller
                 "dsnport"=>"",
                 "dsnpath"=>"",
                 "dsnuser"=>"",
-                "dsnpassword"=>""
+                "dsnpassword"=>"",
+                "brevoapikey" => ""
             );
             
             if($settings){
@@ -51,6 +52,7 @@ class Settings extends Controller
 
             $data = array();
             $data["smtp"] = $smtp;
+            $data["usescipsmtp"] = $settings["usescipsmtp"];
             $data["mailerDsn"] = $mailerDsn;
 
             return Inertia::render('Settings', [
@@ -66,11 +68,8 @@ class Settings extends Controller
 
     function updateEmaildsn(Request $request){
         if($this->USERID > 0){
-
-            //dd($request); die;
-
+            
             $csrfToken = csrf_token();
-
             $userCompany = $this->getSession('companyId');
             $firstName = $this->getSession('firstName');
             $lastName = $this->getSession('lastName');
@@ -80,6 +79,7 @@ class Settings extends Controller
             $fromname = $request->input('fromname');
             $fromemailaddress = $request->input('fromemailaddress');
             $replytoaddress = $request->input('replytoaddress');
+            /*
             $emailreturnpath = $request->input('emailreturnpath');
             $dsnscheme = $request->input('dsnscheme');
             $dsnhost = $request->input('dsnhost');
@@ -87,22 +87,28 @@ class Settings extends Controller
             $dsnpath = $request->input('dsnpath');
             $dsnuser = $request->input('dsnuser');
             $dsnpassword = $request->input('dsnpassword');
-
+            */
+            $brevoapikey = $request->input('brevoapikey');
+            $toggleValue = $request->input('toggleValue');
+            
             $updateData = array();
             $updateData["smtp"] = json_encode(
                 array(
                     "fromname" => $fromname,
                     "fromemailaddress" => $fromemailaddress,
                     "replytoaddress" => $replytoaddress,
-                    "emailreturnpath" => $emailreturnpath,
-                    "dsnscheme" => $dsnscheme,
-                    "dsnhost" => $dsnhost,
-                    "dsnport" => $dsnport,
-                    "dsnpath" => $dsnpath,
-                    "dsnuser" => $dsnuser,
-                    "dsnpassword" => $dsnpassword
+                    "emailreturnpath" => "",//$emailreturnpath,
+                    "dsnscheme" => "",//$dsnscheme,
+                    "dsnhost" => "",//$dsnhost,
+                    "dsnport" => "",//$dsnport,
+                    "dsnpath" => "",//$dsnpath,
+                    "dsnuser" => "",//$dsnuser,
+                    "dsnpassword" => "",//$dsnpassword,
+                    "brevoapikey" => $brevoapikey
                 )
             );
+
+            $updateData["usescipsmtp"] = $toggleValue;
             
             //settings_model::where("id")
             $updated = settings_model::where("created_by_company", $userCompany)->update($updateData);
@@ -154,12 +160,14 @@ class Settings extends Controller
                 "dsnport"=>"",
                 "dsnpath"=>"",
                 "dsnuser"=>"",
-                "dsnpassword"=>""
+                "dsnpassword"=>"",
+                "brevoapikey"=>""
             );
             
-
+            $usescipsmtp = 1;
             if($settings){
                 $smtp = json_decode($settings["smtp"], true);
+                $usescipsmtp = $settings["usescipsmtp"];
             }
 
             $emptyField = '';
@@ -175,7 +183,111 @@ class Settings extends Controller
                 }
             }
 
-            if($emptyField){
+            /*if($emptyField){*/
+                //----
+                if($usescipsmtp == 1){
+                    //scip smtp
+                    $apikey = config('brevo.apikey');
+                    $smtp = config('brevo.smtp');
+                    $senderName = $smtp["sendername"];
+                    $senderEmail = $smtp["senderemail"];
+                    $replyToName = $smtp["replytoname"];
+                    $replyToEmail = $smtp["replytoemail"];
+                }else{
+                    //own smtp
+                    $apikey = $smtp["brevoapikey"];
+                    $senderName = $smtp["fromname"];
+                    $senderEmail = $smtp["fromemailaddress"];
+                    $replyToName = $smtp["fromname"];
+
+                    if(!$smtp["replytoaddress"] || $smtp["replytoaddress"] == ''){
+                        $replyToEmail = $smtp["fromemailaddress"];
+                    }else{
+                        $replyToEmail = $smtp["replytoaddress"];
+                    }
+                    
+                }
+                 
+               
+                $subject = "Test email";
+                
+                // Render the Blade template to a string
+                $templateBlade = "emails.testEmail";
+                $htmlContent = view($templateBlade, [
+                    'userName' => $fullName,
+                    'companyLogo' => $companyLogo,
+                    'companyName' => $companyName,
+                ])->render();
+
+                $payload = [
+                    "sender" => [
+                        "name" => $senderName,
+                        "email" => $senderEmail,
+                    ],
+                    "replyTo" => [
+                        "name" => $replyToName,
+                        "email" => $replyToEmail,
+                    ],
+                    "to" => [[
+                        "email" => $userEmail,
+                        "name" => $fullName,
+                    ]],
+                    "subject" => $subject,
+                    "htmlContent" => $htmlContent,
+                ];
+                
+                // Encode JSON safely
+                $jsonPayload = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                
+                // Escape quotes for shell
+                $escapedJson = escapeshellarg($jsonPayload);
+                
+                // Build the command
+                $cmd = "curl --location 'https://api.brevo.com/v3/smtp/email' \
+                --header 'accept: application/json' \
+                --header 'api-key: $apikey' \
+                --header 'content-type: application/json' \
+                --data $escapedJson";
+                
+                // Execute
+                exec($cmd, $out);
+                
+                // Output the result for debugging
+                if(!empty($out)){
+                    
+                    $result = json_decode($out[0], true);
+                }else{
+                    $result = [];
+                }
+                
+                if(!empty($result)){
+                    if(array_key_exists("code", $result)){
+                        //api error
+                        $code = $result["code"];
+                        $message = $result["message"];
+                        $response = [
+                            'C' => 101,
+                            'M' => ["error" => 1, "message" => $code.":".$message],
+                            'R' => ['result' => $result],
+                        ];
+                    }else{
+                        $response = [
+                            'C' => 100,
+                            'M' => $this->ERRORS[113],
+                            'R' => ['result' => $result],
+                        ];
+                    }
+                }else{
+                    //empty respoinse could not connect to smtp
+                    $response = [
+                        'C' => 102,
+                        'M' => $this->ERRORS[114],
+                        'R' => [],
+                    ];
+                }
+                
+                //----
+                /*
                 //send test email
                 $mailerDsn = $smtp["dsnscheme"].'://'. $smtp["dsnuser"] . ':' . $smtp["dsnpassword"] .'@'. $smtp["dsnhost"] . ':'. $smtp["dsnport"];
 
@@ -205,7 +317,7 @@ class Settings extends Controller
                 $smtpDetails['replyTo_email'] = $replyTo_email;
                 $smtpDetails['replyTo_name'] = $replyTo_name;
             
-
+                
                 $recipient = ['name' => $fullName, 'email' => $userEmail];
                 
                 $bladeData = [
@@ -213,9 +325,11 @@ class Settings extends Controller
                     'companyLogo' => $companyLogo,
                     'companyName' => $companyName,
                 ];
-                
-                $result = $this->MYSMTP($smtpDetails, $recipient, $subject, $templateBlade, $bladeData);
 
+                               
+                $result = $this->MYSMTP($smtpDetails, $recipient, $subject, $templateBlade, $bladeData);
+                
+                
                 
                 $response = [
                     'C' => 100,
@@ -230,7 +344,7 @@ class Settings extends Controller
                     'M' => $this->ERRORS[114],
                     'R' => [],
                 ];
-            }
+            }*/
 
         }else{
             

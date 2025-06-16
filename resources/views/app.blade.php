@@ -16,6 +16,15 @@ $lastName = $AUTHDATA["lastName"];
             /*body {
                 font-family: 'Nunito', sans-serif;
             }*/
+            
+            .toastMessage {
+                display: none;
+                position: fixed !important;
+                width: fit-content;
+                right: 10px;
+                bottom: 10px;
+                z-index: 1050;
+            }
         </style>
         
         <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">-->
@@ -90,5 +99,6 @@ $lastName = $AUTHDATA["lastName"];
         @yield("contentbox")
         
         @stack("js")
+        <div id="toastMessage" class="toastMessage alert alert-danger" role="alert">This is a danger alert—check it out!</div>
     </body>
 </html>

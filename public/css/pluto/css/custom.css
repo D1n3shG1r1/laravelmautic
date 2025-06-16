@@ -18,8 +18,8 @@
 
 button .spinner-border {
     display: inline-block;
-    width: 2rem;
-    height: 2rem;
+    width: 1rem;
+    height: 1rem;
     vertical-align: -.125em;
     border: .15em solid currentColor;
     border-right-color: transparent;

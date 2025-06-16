@@ -60,10 +60,10 @@ class ProcessCampaignJob implements ShouldQueue
         $currentDateTime =  date("Y-m-d H:i:s");
         $published = 1; 
         $deleted = null;
-        $campaign = campaigns_model::where("id", $this->CAMPAIGNID)
+        /*$campaign = campaigns_model::where("id", $this->CAMPAIGNID)
         ->where("publish_up", $today)
         ->where("is_published", $published)
-        ->first();
+        ->first();*/
 
         $campaign = campaigns_model::where("id", $this->CAMPAIGNID)->first();
         

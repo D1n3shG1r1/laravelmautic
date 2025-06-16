@@ -25,11 +25,11 @@ class ProcessCampaigns extends Command
         ->where("is_published", $published)
         ->count();
 
-    $this->info("Found {$campaignsCount} campaigns for today.");
+        $this->info("Found {$campaignsCount} campaigns for today.");
 
-    if ($campaignsCount === 0) {
-        $this->warn("No campaigns matched today's date and published status.");
-    }
+        if ($campaignsCount === 0) {
+            $this->warn("No campaigns matched today's date and published status.");
+        }
         
         campaigns_model::where("publish_up", "<=", $today)
         ->where("publish_down", ">=", $today)

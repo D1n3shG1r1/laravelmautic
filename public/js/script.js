@@ -134,28 +134,23 @@ function validatePassword(password) {
 }
 
 function showToastMsg(err, msg){
-    alert(msg);
-    /*
+  
     if(err > 0){
-		//error
-        document.getElementById("toastMessage").classList.remove("successMessage");
-        document.getElementById("toastMessage").classList.add("errorMessage");
+        //error
+        $("#toastMessage").removeClass("alert-success");
+        $("#toastMessage").addClass("alert-danger");
     }else{
-        //success
-        document.getElementById("toastMessage").classList.remove("errorMessage");
-        document.getElementById("toastMessage").classList.add("successMessage");
-    }
-    
-    document.querySelector('span[class="toastMessageContent"]').innerHTML=msg;
-    document.getElementById("toastMessage").classList.remove("hide");
-    document.getElementById("toastMessage").classList.add("show");
-    
-    setTimeout(function(){
-        document.getElementById("toastMessage").classList.remove("show");
-        document.getElementById("toastMessage").classList.add("hide");
+            //success
+        $("#toastMessage").removeClass("alert-danger");
+        $("#toastMessage").addClass("alert-success");
+        }
 
-    }, 3000);
-    */
+    $("#toastMessage").html(msg);
+    $("#toastMessage").show();
+    setTimeout(function(){
+        $("#toastMessage").hide("slow");
+    }, 5000);
+  
 }
 
 function truncateString(str, maxLength) {

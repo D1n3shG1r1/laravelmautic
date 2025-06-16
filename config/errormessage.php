@@ -35,7 +35,11 @@ return [
     "127" => ["error" => 1,"message" =>"Contacts could not be imported. Please try again."],
     "128" => ["error" => 1,"message" =>"The contacts listed below are already associated with us."],
     "129" => ["error" => 1,"message" =>"No data was submitted."],
-
+    "130" => ["error" => 0,"message" =>"The website has been successfully created."],
+    "131" => ["error" => 0,"message" =>"The website was successfully deleted."],
+    "132" => ["error" => 0,"message" =>"The website has been successfully updated."],
+    "133" => ["error" => 1,"message" =>"The website could not be saved. Please try again."],
+    "134" => ["error" => 1,"message" =>"The website could not be deleted. Please try again."],
     
     "1004" => ["error" => 1,"message" =>"Your session has expired. Please log in again to continue."],
 
