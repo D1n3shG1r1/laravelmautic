@@ -87,6 +87,10 @@ const NewsMasterList = ({ csrfToken, cancelNewsletter = 'cancelNewsletter', onCr
 
     };
 
+    const editEmail = (id) => {
+        window.location.href = window.url('news/edit/'+id);
+    }
+
     return (
         <div className={`midde_cont ${Styles.websiteListContainer}`}>
             <div className="container-fluid">

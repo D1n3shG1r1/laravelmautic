@@ -25,7 +25,7 @@ class SendNewsletterEmails extends Command
 
         newsletter_emails_queue_model::where("emailSent", 0)
         ->chunk(100, function ($emailQueue) {
-
+            
             foreach ($emailQueue as $emailRw) {
                 $data = [
                     'id' => $emailRw->id,

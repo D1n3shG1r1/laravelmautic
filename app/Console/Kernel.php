@@ -39,6 +39,7 @@ class Kernel extends ConsoleKernel
         */
 
         // You can schedule the command to run periodically if needed.
+        // please run these commands in following sequence
         //## 1
         // $schedule->command('process:segment-contacts')->daily();
 
@@ -48,6 +49,14 @@ class Kernel extends ConsoleKernel
         //## 3
         //$schedule->command('process:send-campaign-emails')->daily();
 
+        //## 4
+        //$schedule->command('process:newsletters')->daily();
+
+        //## 5
+        //$schedule->command('process:send-newsletter-emails')->daily();
+
+        //run on terminal to test command
+        //php artisan process:send-newsletter-emails
     }
 
     /**

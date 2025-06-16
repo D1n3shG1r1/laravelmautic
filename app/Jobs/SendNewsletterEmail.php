@@ -158,16 +158,14 @@ class SendNewsletterEmail implements ShouldQueue
                         
                         //update campaign event triggred to 1
                         $emailObj = emailsbuilder_model::select("sent_count")->where("id", $this->emailId)
-                        ->get();
+                        ->first();
 
                         $updateData = array(
-                            
                             "sent_count" => $emailObj->sent_count + 1,
                             "date_modified" => date("Y-m-d H:i:s")
                         );
 
-                        emailsbuilder_model::where("id", $emailRow->eventId)
-                        ->where("campaignId", $emailRow->campaignId)
+                        emailsbuilder_model::where("id", $this->emailId)
                         ->update($updateData);
 
                     }

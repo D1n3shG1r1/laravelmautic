@@ -14,6 +14,11 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
   const themes = params.themes;
   const emailData = params.emailData;
   
+  const segments = params.segments;
+  //const preselectedIds = params.prevSegments;
+  const [preselectedIds, setPreselectedIds] = useState(params.prevSegments);
+  const initializedRef = useRef(false);
+  
   /*emailData
   is_published name description subject from_address from_name reply_to_address bcc_address use_owner_as_mailer template plain_text custom_html email_type publish_up publish_down*/
 
@@ -21,10 +26,39 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
     const tooltips = [...tooltipTriggerList].map((tooltip) => new bootstrap.Tooltip(tooltip));
   
+
+    if (isListEmail === 'list') {
+      // Defer initialization to ensure the DOM has updated
+      setTimeout(() => {
+        if (!initializedRef.current) {
+          $('#contactsegment').select2({
+            placeholder: "Select contact segments",
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#contactsegmentParent'),
+          });
+    
+          // Preselect values after select2 is initialized
+          if (preselectedIds.length > 0) {
+            $('#contactsegment').val(preselectedIds).trigger('change');
+          }
+    
+          initializedRef.current = true;
+        } else {
+          // If preselectedIds change, reset the selected values without destroying select2
+          $('#contactsegment').val(preselectedIds).trigger('change');
+        }
+      }, 100);
+    }
+
     return () => {
       tooltips.forEach((tooltip) => tooltip.dispose());
+      if (initializedRef.current && window.jQuery) {
+        $('#contactsegment').select2('destroy');
+        initializedRef.current = false;
+      }
     };
-  }, []);
+  }, [preselectedIds]);
 
   const modalRef = useRef(null);
   const modalInstanceRef = useRef(null); // Store the modal instance
@@ -256,13 +290,13 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
       "plaintext":plaintext,
     };
     
-    httpRequest(url, postJson, function(resp){
+    /*httpRequest(url, postJson, function(resp){
         var C = resp.C;
         var error = resp.M.error;
         var msg = resp.M.message;
         var R = resp.R;
 
-        /*if(C == 100 && error == 0){
+        if(C == 100 && error == 0){
             showToastMsg(error, msg);
             window.location.href = params.emailsUrl;
 
@@ -272,11 +306,11 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                 msg = JSON.stringify(R); 
             }
             showToastMsg(error, msg);
-        }*/
+        }
 
         setIsLoading(false);
     });
-
+  */
 
   };
 
@@ -381,77 +415,6 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                                             </div>
                                         );
                                     })}
-
-
-                                          {/* Blank Theme*/}
-                                          {/*<div className={`col-md-3 ${Styles.themeList}`}>
-                                            <div className={`${Styles.panel} ${Styles.themeListPanel} panel-default theme-selected`}>
-                                            <div className={`${Styles.panelBody} ${Styles.textCenter}`}>
-                                            <h3 className={`${Styles.themeHeading}`}>Blank</h3>
-                                            <a href="#" data-toggle="modal" data-target="#theme-blank">
-                                                <div style={{backgroundImage: `url(${blankThumbnail})`,backgroundRepeat:"no-repeat",backgroundSize:"contain", backgroundPosition:"center", width: "100%", height: "250px"}}></div>
-                                            </a>
-                                            <a href="#" type="button" data-theme="blank" className={`${Styles.selectAnchorBtn} ${Styles.selectThemeLink} btn ${Styles.btnDefault} hide`} onClick={() => handleTemplateSelect(templates[0])}>Select</a>
-                                            <button type="button" className={`select-theme-selected btn ${Styles.btnDefault}`} disabled="disabled">
-                                                Selected
-                                            </button>
-                                            </div>
-                                            </div>
-                                                                
-                                            <div className="modal fade" id="theme-blank" role="dialog" aria-labelledby="blank">
-                                              <div className="modal-dialog" role="document">
-                                                    <div className="modal-content">
-                                                      <div className="modal-header">
-                                                          <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
-                                                          <h4 className="modal-title" id="blank">Blank</h4>
-                                                      </div>
-                                                      <div className="modal-body">
-                                                        <div style={{backgroundImage: `url(${blankThumbnail})`,backgroundRepeat:"no-repeat",backgroundSize:"contain", backgroundPosition:"center", width: "100%", height: "600px"}}></div>
-                                                      </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                          </div>*/}
-                                          {/* Brienz Theme*/}          
-                                          {/*<div className={`col-md-3 ${Styles.themeList}`}>
-                                            <div className={`${Styles.panel} ${Styles.themeListPanel} panel-default`}>
-                                              <div className={`${Styles.panelBody} ${Styles.textCenter}`}>
-                                                <h3 className={`${Styles.themeHeading}`}>Brienz</h3>
-                                                <a href="#" data-toggle="modal" data-target="#theme-brienz">
-                                                <div 
-                                                  style={{
-                                                    backgroundImage: `url(${brienzThumbnail})`, 
-                                                    backgroundRepeat: "no-repeat",
-                                                    backgroundSize: "contain", 
-                                                    backgroundPosition: "center",
-                                                    width: "100%", 
-                                                    height: "250px"
-                                                  }}
-                                                ></div>
-                                              </a>
-
-                                                
-                                                <a href="#" type="button" data-theme="brienz" className={`${Styles.selectAnchorBtn} ${Styles.selectThemeLink} btn ${Styles.btnDefault}`} onClick={() => handleTemplateSelect(templates[1])}>Select</a>
-
-                                                <button type="button" className={`select-theme-selected btn ${Styles.btnDefault} hide`} disabled="disabled">Selected</button>
-                                                </div>
-                                            </div>
-                                                                
-                                            <div className="modal fade" id="theme-brienz" role="dialog" aria-labelledby="brienz">
-                                              <div className="modal-dialog" role="document">
-                                                <div className="modal-content">
-                                                  <div className="modal-header">
-                                                    <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
-                                                    <h4 className="modal-title" id="brienz">Brienz</h4>
-                                                  </div>
-                                                  <div className="modal-body">
-                                                      <div style={{backgroundImage: `url(${brienzThumbnail})`, backgroundRepeat:"no-repeat",backgroundSize:"contain", backgroundPosition:"center", width: "100%", height: "600px"}}></div>
-                                                  </div>
-                                                </div>
-                                                </div>
-                                            </div>
-                                          </div>*/}
-
 
                                         </div>
                                     </div>
@@ -581,25 +544,29 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                         <TextInput type="text" className="form-control" name="internalname" id="internalname" placeholder="Internal Name" value={formValues.internalname} onChange={handleInputChange} />
                       </div>
                   </div>
-                  {/* use this later
+                  
                   {isListEmail === 'list' && (
                     <div className="row mb-3">
                       <div className="col-md-12">
                         <InputLabel className={`form-label ${Styles.required}`} value="Contact Segment" />
-                        <TextInput 
-                          type="text" 
-                          className="form-control" 
-                          name="contactsegment" 
-                          id="contactsegment" 
-                          placeholder="Contact Segment" 
-                          value={formValues.name} 
-                          onChange={handleInputChange} 
-                        />
+                        
+                        <div id="contactsegmentParent">
+                          <select name="contactsegment" 
+                          id="contactsegment" multiple="multiple" className="form-select" style={{ width: '100%' }}>
+                            {segments.map((segment) => (
+                              <option
+                              key={`seg_${segment.id}`}
+                              id={`campaignSegment_${segment.id}`}
+                              title={`${segment.name}(${segment.contacts})`}
+                              value={segment.id}>
+                                  {`${segment.name}(${segment.contacts})`}
+                              </option>
+                              ))}
+                            </select>
+                        </div>
                       </div>
                     </div>
                   )}
-                  */}
-                  
 
                   <div className="row mb-3">
                       <div className="col-md-12">

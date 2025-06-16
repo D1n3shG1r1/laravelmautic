@@ -321,31 +321,92 @@ class Emailsbuilder extends Controller
                 $emailObj = emailsbuilder_model::select("is_published", "name", "description", "subject", "from_address", "from_name", "reply_to_address", "bcc_address", "use_owner_as_mailer", "template", "plain_text", "custom_html", "email_type", "publish_up", "publish_down")->where("created_by", $this->USERID)->where("id", $id)->first();
             }
 
+            //dd($emailObj);
             if($emailObj){
                 
                 $emailObj["publish_up"] = date("Y-m-d", strtotime($emailObj["publish_up"]));
                 $emailObj["publish_down"] = date("Y-m-d", strtotime($emailObj["publish_down"]));
 
+                $themesNames = [];
                 $themesData = [];
-                $themesNames = ["blank", "brienz", "confirm_me"];
                 
-                foreach ($themesNames as $themeName) {
-                    $templatePath = public_path('themes/'.$themeName . '/' . $themeName . '.html');
-                    
-                    if (file_exists($templatePath)) {
+                if($emailObj["email_type"] == "template"){
+                    //campaigns
+                    $themesNames = ["blank", "brienz", "confirm_me"];
+                }
+
+                if($emailObj["email_type"] == "list"){
+                    //news letter
+                    $themesNames = ["newsletter"];
+                }
+
+                if(!empty($themesNames)){
+                    foreach ($themesNames as $themeName) {
+                        $templatePath = public_path('themes/'.$themeName . '/' . $themeName . '.html');
                         
-                        $html = fileRead($templatePath);
+                        if (file_exists($templatePath)) {
+                            
+                            $html = fileRead($templatePath);
+                            
+                            $thumbnailPath = url('themes/'.$themeName . '/thumbnail.png');
                         
-                        $thumbnailPath = url('themes/'.$themeName . '/thumbnail.png');
+                            // Add theme data to the array
+                            $themesData[] = [
+                                'name' => str_replace('_', ' ', $themeName),
+                                'id' => $themeName,
+                                'html' => $html,
+                                'css' => '',
+                                'thumbnail' => $thumbnailPath,
+                            ];
+                        }
+                    }
+                }
+
+
+                if ($isAdmin > 0) {
+                    $segmentsObj = segments_model::select("id","name")->where("created_by_company", $userCompany)->get();
+                } else {
+                    $segmentsObj = segments_model::select("id","name")->where("created_by", $this->USERID)->get();
+                }
+                
+                if($segmentsObj){
+                    $segmentIdsArr = array();
+                    foreach($segmentsObj as $segment){
+                        $segmentIdsArr[] =  $segment["id"];
+                    }
+    
+                    $segmentContactsObj = segment_contacts_model::select('segment_id', 'contact_id')->whereIn('segment_id', $segmentIdsArr)->get();
+    
+                    $segementContactArr = array();
+                    if($segmentContactsObj){
+                        foreach($segmentContactsObj as $segmentContactRw){
+                            $segementContactArr[$segmentContactRw["segment_id"]][] = $segmentContactRw["contact_id"]; 
+                        }
+                    }
+    
+                    foreach($segmentsObj as &$segmentRw){
+                        //$segmentIdsArr[] =  $segment["id"];
                     
-                        // Add theme data to the array
-                        $themesData[] = [
-                            'name' => str_replace('_', ' ', $themeName),
-                            'id' => $themeName,
-                            'html' => $html,
-                            'css' => '',
-                            'thumbnail' => $thumbnailPath,
-                        ];
+                        if(!array_key_exists($segmentRw["id"], $segementContactArr)){
+                            $contactsCount = 0;
+                        }else{
+                            $contactsCount = count($segementContactArr[$segmentRw["id"]]);
+                        }
+                        
+                        $segmentRw['contacts'] = $contactsCount;
+                    }
+    
+                    $segments = $segmentsObj;
+                }else{
+                    $segments = array();
+                }
+
+                //get previous selected segments
+                $prevSegments = [];
+                $prevSegmentsObj = email_segments_model::where("email_id", $id)->get();                
+                if($prevSegmentsObj){
+                    foreach($prevSegmentsObj as $prevSegRw){
+                        $prevSegments[] = $prevSegRw->segment_id;
                     }
                 }
 
@@ -353,7 +414,8 @@ class Emailsbuilder extends Controller
                 $data["emailsUrl"] = url('email/update');
                 $data["themes"] = $themesData;
                 $data["emailData"] = $emailObj;
-                
+                $data["segments"] = $segments;
+                $data["prevSegments"] = $prevSegments;
                 //echo "<pre>"; print_r($data); die;
                 
                 return Inertia::render('EditEmail', [

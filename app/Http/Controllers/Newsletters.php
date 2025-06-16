@@ -286,62 +286,6 @@ class Newsletters extends Controller
                     $finalRowsHtml .= $tmpRow;
                 }
             
-                foreach($newsletterData as $newsletterRw){
-                    
-                    $newsContent = $newsletterRw->selectorData;
-                    $newsContent = substr($newsContent,0,220).'...';
-                    $websiteName = $newsletterRw->websiteName;
-                    $websiteUrl = $newsletterRw->websiteUrl;
-                    $author = $newsletterRw->author;
-                    $author = ucwords($author);
-                    $heading = $newsletterRw->heading;
-                    $heading = ucwords($heading);
-                    $subHeading = $newsletterRw->subHeading;
-                    $subHeading = ucwords($subHeading);
-                    $publishDate = $newsletterRw->publishDate;
-                    $publishDate = date('F j, Y', strtotime($publishDate));
-                    $tmpRow = $rowSkeleton;
-                    //$tmpRow = str_replace(,$websiteName,$rowSkeleton);
-                    //$tmpRow = str_replace(,$websiteUrl,$tmpRow);
-                    $tmpRow = str_replace("[#HEADING#]",$heading,$tmpRow);
-                    $tmpRow = str_replace("[#SUBHEADING#]",$subHeading,$tmpRow);
-                    $tmpRow = str_replace("[#CONTENT#]",$newsContent,$tmpRow);
-                    $tmpRow = str_replace("[#AUTHOR#]",$author,$tmpRow);
-                    $tmpRow = str_replace("[#PUBLISHEDON#]",$publishDate,$tmpRow);
-                    $tmpRow = str_replace("[#NEWS_IMG_URL#]",url('images/newspaper.jpg'),$tmpRow);
-                    $tmpRow = str_replace("[#READMORE_LINK#]",$websiteUrl,$tmpRow);
-                    
-                    $finalRowsHtml .= $tmpRow;
-                }
-
-                foreach($newsletterData as $newsletterRw){
-                    
-                    $newsContent = $newsletterRw->selectorData;
-                    $newsContent = substr($newsContent,0,220).'...';
-                    $websiteName = $newsletterRw->websiteName;
-                    $websiteUrl = $newsletterRw->websiteUrl;
-                    $author = $newsletterRw->author;
-                    $author = ucwords($author);
-                    $heading = $newsletterRw->heading;
-                    $heading = ucwords($heading);
-                    $subHeading = $newsletterRw->subHeading;
-                    $subHeading = ucwords($subHeading);
-                    $publishDate = $newsletterRw->publishDate;
-                    $publishDate = date('F j, Y', strtotime($publishDate));
-                    $tmpRow = $rowSkeleton;
-                    //$tmpRow = str_replace(,$websiteName,$rowSkeleton);
-                    //$tmpRow = str_replace(,$websiteUrl,$tmpRow);
-                    $tmpRow = str_replace("[#HEADING#]",$heading,$tmpRow);
-                    $tmpRow = str_replace("[#SUBHEADING#]",$subHeading,$tmpRow);
-                    $tmpRow = str_replace("[#CONTENT#]",$newsContent,$tmpRow);
-                    $tmpRow = str_replace("[#AUTHOR#]",$author,$tmpRow);
-                    $tmpRow = str_replace("[#PUBLISHEDON#]",$publishDate,$tmpRow);
-                    $tmpRow = str_replace("[#NEWS_IMG_URL#]",url('images/newspaper.jpg'),$tmpRow);
-                    $tmpRow = str_replace("[#READMORE_LINK#]",$websiteUrl,$tmpRow);
-                    
-                    $finalRowsHtml .= $tmpRow;
-                }
-
                 $mainSkeleton = str_replace("[#LOGO_IMG_URL#]",url('images/sciplogo.png'),$mainSkeleton);
 
                 $date = date('Y-m-d');
