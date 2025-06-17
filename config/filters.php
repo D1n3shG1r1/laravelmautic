@@ -13,7 +13,17 @@ return [
             "dataFieldObject"=> "contact",
             "dataFieldType"=> "lookup",
             "dataFieldOperators"=>[
-                "equals"=>"=","not equal"=>"!=","empty"=>"empty","not empty"=>"!empty","like"=>"like","not like"=>"!like","regexp"=>"regexp","not regexp"=>"!regexp","starts with"=>"startsWith","ends with"=>"endsWith","contains"=>"contains"
+                "equals"=>"=",
+                "not equal"=>"!=",
+                "empty"=>"empty",
+                "not empty"=>"!empty",
+                "like"=>"like",
+                "not like"=>"!like",
+                /*"including"=>"in",
+                "excluding"=>"!in",*/
+                "starts with"=>"startsWith",
+                "ends with"=>"endsWith",
+                "contains"=>"contains"
             ]
         ],
         [
@@ -33,10 +43,8 @@ return [
                 "not empty"=>"!empty",
                 "like"=>"like",
                 "not like"=>"!like",
-                "including"=>"in",
-                "excluding"=>"!in",
-                "regexp"=>"regexp",
-                "not regexp"=>"!regexp",
+                /*"including"=>"in",
+                "excluding"=>"!in",*/
                 "starts with"=>"startsWith",
                 "ends with"=>"endsWith",
                 "contains"=>"contains"
@@ -59,10 +67,8 @@ return [
                 "not empty"=>"!empty",
                 "like"=>"like",
                 "not like"=>"!like",
-                "including"=>"in",
-                "excluding"=>"!in",
-                "regexp"=>"regexp",
-                "not regexp"=>"!regexp",
+                /*"including"=>"in",
+                "excluding"=>"!in",*/
                 "starts with"=>"startsWith",
                 "ends with"=>"endsWith",
                 "contains"=>"contains"
@@ -79,17 +85,17 @@ return [
             "dataFieldObject"=> "contact",
             "dataFieldType"=> "email",
             "dataFieldOperators"=> [
-                "equals"=> "=",
-                "not equal"=> "!=",
-                "empty"=> "empty",
-                "not empty"=> "!empty",
-                "like"=> "like",
-                "not like"=> "!like",
-                "regexp"=> "regexp",
-                "not regexp"=> "!regexp",
-                "starts with"=> "startsWith",
-                "ends with"=> "endsWith",
-                "contains"=> "contains"
+                "equals"=>"=",
+                "not equal"=>"!=",
+                "empty"=>"empty",
+                "not empty"=>"!empty",
+                "like"=>"like",
+                "not like"=>"!like",
+                /*"including"=>"in",
+                "excluding"=>"!in",*/
+                "starts with"=>"startsWith",
+                "ends with"=>"endsWith",
+                "contains"=>"contains"
             ]
         ],
         [
@@ -109,37 +115,14 @@ return [
                 "not empty"=>"!empty",
                 "like"=>"like",
                 "not like"=>"!like",
-                "regexp"=>"regexp",
-                "not regexp"=>"!regexp",
+                /*"including"=>"in",
+                "excluding"=>"!in",*/
                 "starts with"=>"startsWith",
                 "ends with"=>"endsWith",
                 "contains"=>"contains"
             ]
         ],
-        /*[
-            "key"=> "available_lead_phone",
-            "id"=> "available_lead_phone",
-            "title"=> "Phone",
-            "value"=> "phone",
-            "label"=> "Phone",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "tel",
-            "dataFieldOperators"=>[
-                "equals"=>"=",
-                "not equal"=>"!=",
-                "empty"=>"empty",
-                "not empty"=>"!empty",
-                "like"=>"like",
-                "not like"=>"!like",
-                "regexp"=>"regexp",
-                "not regexp"=>"!regexp",
-                "starts with"=>"startsWith",
-                "ends with"=>"endsWith",
-                "contains"=>"contains"
-            ]
-        ],*/ 
+        
         [
             "key"=> "available_lead_address1",
             "id"=> "available_lead_address1",
@@ -151,19 +134,17 @@ return [
             "dataFieldObject"=> "contact",
             "dataFieldType"=> "text",
             "dataFieldOperators"=> [
-                "equals"=> "=",
-                "not equal"=> "!=",
-                "empty"=> "empty",
-                "not empty"=> "!empty",
-                "like"=> "like",
-                "not like"=> "!like",
-                "including"=> "in",
-                "excluding"=> "!in",
-                "regexp"=> "regexp",
-                "not regexp"=> "!regexp",
-                "starts with"=> "startsWith",
-                "ends with"=> "endsWith",
-                "contains"=> "contains"
+                "equals"=>"=",
+                "not equal"=>"!=",
+                "empty"=>"empty",
+                "not empty"=>"!empty",
+                "like"=>"like",
+                "not like"=>"!like",
+                /*"including"=>"in",
+                "excluding"=>"!in",*/
+                "starts with"=>"startsWith",
+                "ends with"=>"endsWith",
+                "contains"=>"contains"
             ]
         ],
         [
@@ -177,19 +158,17 @@ return [
             "dataFieldObject"=> "contact",
             "dataFieldType"=> "text",
             "dataFieldOperators"=> [
-                "equals"=> "=",
-                "not equal"=> "!=",
-                "empty"=> "empty",
-                "not empty"=> "!empty",
-                "like"=> "like",
-                "not like"=> "!like",
-                "including"=> "in",
-                "excluding"=> "!in",
-                "regexp"=> "regexp",
-                "not regexp"=> "!regexp",
-                "starts with"=> "startsWith",
-                "ends with"=> "endsWith",
-                "contains"=> "contains"
+                "equals"=>"=",
+                "not equal"=>"!=",
+                "empty"=>"empty",
+                "not empty"=>"!empty",
+                "like"=>"like",
+                "not like"=>"!like",
+                /*"including"=>"in",
+                "excluding"=>"!in",*/
+                "starts with"=>"startsWith",
+                "ends with"=>"endsWith",
+                "contains"=>"contains"
             ]
         ],
         [
@@ -203,19 +182,17 @@ return [
             "dataFieldObject"=> "contact",
             "dataFieldType"=> "text",
             "dataFieldOperators"=> [
-                "equals"=> "=",
-                "not equal"=> "!=",
-                "empty"=> "empty",
-                "not empty"=> "!empty",
-                "like"=> "like",
-                "not like"=> "!like",
-                "including"=> "in",
-                "excluding"=> "!in",
-                "regexp"=> "regexp",
-                "not regexp"=> "!regexp",
-                "starts with"=> "startsWith",
-                "ends with"=> "endsWith",
-                "contains"=> "contains"
+                "equals"=>"=",
+                "not equal"=>"!=",
+                "empty"=>"empty",
+                "not empty"=>"!empty",
+                "like"=>"like",
+                "not like"=>"!like",
+                /*"including"=>"in",
+                "excluding"=>"!in",*/
+                "starts with"=>"startsWith",
+                "ends with"=>"endsWith",
+                "contains"=>"contains"
             ]
         ],
         [
@@ -229,7 +206,17 @@ return [
             "dataFieldObject"=> "contact",
             "dataFieldType"=> "region",
             "dataFieldOperators"=>[
-                "equals"=>"=","not equal"=>"!=","empty"=>"empty","not empty"=>"!empty","including"=>"in","excluding"=>"!in","regexp"=>"regexp","not regexp"=>"!regexp"
+                "equals"=>"=",
+                "not equal"=>"!=",
+                "empty"=>"empty",
+                "not empty"=>"!empty",
+                "like"=>"like",
+                "not like"=>"!like",
+                /*"including"=>"in",
+                "excluding"=>"!in",*/
+                "starts with"=>"startsWith",
+                "ends with"=>"endsWith",
+                "contains"=>"contains"
             ]
         ],
         [
@@ -243,14 +230,17 @@ return [
             "dataFieldObject"=> "contact",
             "dataFieldType"=> "country",
             "dataFieldOperators"=> [
-                "equals"=> "=",
-                "not equal"=> "!=",
-                "empty"=> "empty",
-                "not empty"=> "!empty",
-                "including"=> "in",
-                "excluding"=> "!in",
-                "regexp"=> "regexp",
-                "not regexp"=> "!regexp"
+                "equals"=>"=",
+                "not equal"=>"!=",
+                "empty"=>"empty",
+                "not empty"=>"!empty",
+                "like"=>"like",
+                "not like"=>"!like",
+                /*"including"=>"in",
+                "excluding"=>"!in",*/
+                "starts with"=>"startsWith",
+                "ends with"=>"endsWith",
+                "contains"=>"contains"
             ]
         ],
         [
@@ -264,65 +254,19 @@ return [
             "dataFieldObject"=> "contact",
             "dataFieldType"=> "text",
             "dataFieldOperators"=>[
-                "equals"=>"=","not equal"=>"!=","empty"=>"empty","not empty"=>"!empty","like"=>"like","not like"=>"!like","including"=>"in","excluding"=>"!in","regexp"=>"regexp","not regexp"=>"!regexp","starts with"=>"startsWith","ends with"=>"endsWith","contains"=>"contains"
+                "equals"=>"=",
+                "not equal"=>"!=",
+                "empty"=>"empty",
+                "not empty"=>"!empty",
+                "like"=>"like",
+                "not like"=>"!like",
+                /*"including"=>"in",
+                "excluding"=>"!in",*/
+                "starts with"=>"startsWith",
+                "ends with"=>"endsWith",
+                "contains"=>"contains"
             ]
         ],
-        /*[
-            "key"=> "available_lead_attribution",
-            "id"=> "available_lead_attribution",
-            "title"=> "Attribution",
-            "value"=> "attribution",
-            "label"=> "Attribution",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "number",
-            "dataFieldOperators"=> [
-                "equals"=> "=",
-                "not equal"=> "!=",
-                "greater than"=> ">",
-                "greater than or equal"=> ">=",
-                "less than"=> "<",
-                "less than or equal"=> "<=",
-                "empty"=> "empty",
-                "not empty"=> "!empty",
-                "like"=> "like",
-                "not like"=> "!like",
-                "regexp"=> "regexp",
-                "not regexp"=> "!regexp",
-                "starts with"=> "startsWith",
-                "ends with"=> "endsWith",
-                "contains"=> "contains"
-            ]
-        ],
-        [
-            "key"=> "available_lead_attribution_date",
-            "id"=> "available_lead_attribution_date",
-            "title"=> "Attribution Date",
-            "value"=> "attribution_date",
-            "label"=> "Attribution Date",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "datetime",
-            "dataFieldOperators"=> [
-                "equals"=> "=",
-                "not equal"=> "!=",
-                "greater than"=> ">",
-                "greater than or equal"=> ">=",
-                "less than"=> "<",
-                "less than or equal"=> "<=",
-                "empty"=> "empty",
-                "not empty"=> "!empty",
-                "like"=> "like",
-                "not like"=> "!like",
-                "regexp"=> "regexp",
-                "not regexp"=> "!regexp",
-                "starts with"=> "startsWith",
-                "ends with"=> "endsWith",
-                "contains"=> "contains"
-            ]
-        ],*/
         [
             "key"=> "available_lead_date_added",
             "id"=> "available_lead_date_added",
@@ -340,344 +284,15 @@ return [
                 "greater than or equal"=> ">=",
                 "less than"=> "<",
                 "less than or equal"=> "<=",
-                "empty"=> "empty",
+                /*"empty"=> "empty",
                 "not empty"=> "!empty",
                 "like"=> "like",
                 "not like"=> "!like",
-                "regexp"=> "regexp",
-                "not regexp"=> "!regexp",
                 "starts with"=> "startsWith",
                 "ends with"=> "endsWith",
-                "contains"=> "contains"
+                "contains"=> "contains"*/
             ]
         ],
-        /*[
-            "key"=> "available_lead_date_identified",
-            "id"=> "available_lead_date_identified",
-            "title"=> "Date Identified",
-            "value"=> "date_identified",
-            "label"=> "Date Identified",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "date",
-            "dataFieldOperators"=> [
-                "equals"=> "=",
-                "not equal"=> "!=",
-                "greater than"=> ">",
-                "greater than or equal"=> ">=",
-                "less than"=> "<",
-                "less than or equal"=> "<=",
-                "empty"=> "empty",
-                "not empty"=> "!empty",
-                "like"=> "like",
-                "not like"=> "!like",
-                "regexp"=> "regexp",
-                "not regexp"=> "!regexp",
-                "starts with"=> "startsWith",
-                "ends with"=> "endsWith",
-                "contains"=> "contains"
-            ]
-        ],
-        [
-            "key"=> "available_lead_last_active",
-            "id"=> "available_lead_last_active",
-            "title"=> "Date Last Active",
-            "value"=> "last_active",
-            "label"=> "Date Last Active",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "datetime",
-            "dataFieldOperators"=> [
-                "equals"=> "=",
-                "not equal"=> "!=",
-                "greater than"=> ">",
-                "greater than or equal"=> ">=",
-                "less than"=> "<",
-                "less than or equal"=> "<=",
-                "empty"=> "empty",
-                "not empty"=> "!empty",
-                "like"=> "like",
-                "not like"=> "!like",
-                "regexp"=> "regexp",
-                "not regexp"=> "!regexp",
-                "starts with"=> "startsWith",
-                "ends with"=> "endsWith",
-                "contains"=> "contains"
-            ]
-        ],
-        [
-            "key"=> "available_lead_generated_email_domain",
-            "id"=> "available_lead_generated_email_domain",
-            "title"=> "Email Domain",
-            "value"=> "generated_email_domain",
-            "label"=> "Email Domain",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "email_domain",
-            "dataFieldOperators"=> [
-                "equals"=> "=",
-                "not equal"=> "!=",
-                "empty"=> "empty",
-                "not empty"=> "!empty",
-                "like"=> "like",
-                "not like"=> "!like",
-                "regexp"=> "regexp",
-                "not regexp"=> "!regexp",
-                "starts with"=> "startsWith",
-                "ends with"=> "endsWith",
-                "contains"=> "contains"
-            ]
-        ],
-        [
-            "key"=> "available_lead_foursquare",
-            "id"=> "available_lead_foursquare",
-            "title"=> "Foursquare",
-            "value"=> "foursquare",
-            "label"=> "Foursquare",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "text",
-            "dataFieldOperators"=>[
-                "equals"=>"=",
-                "not equal"=>"!=",
-                "empty"=>"empty",
-                "not empty"=>"!empty",
-                "like"=>"like",
-                "not like"=>"!like",
-                "including"=>"in",
-                "excluding"=>"!in",
-                "regexp"=>"regexp",
-                "not regexp"=>"!regexp",
-                "starts with"=>"startsWith",
-                "ends with"=>"endsWith",
-                "contains"=>"contains"
-            ]
-        ],
-        [
-            "key"=> "available_lead_instagram",
-            "id"=> "available_lead_instagram",
-            "title"=> "Instagram",
-            "value"=> "instagram",
-            "label"=> "Instagram",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "text",
-            "dataFieldOperators"=>[
-                "equals"=>"=",
-                "not equal"=>"!=",
-                "empty"=>"empty",
-                "not empty"=>"!empty",
-                "like"=>"like",
-                "not like"=>"!like",
-                "including"=>"in",
-                "excluding"=>"!in",
-                "regexp"=>"regexp",
-                "not regexp"=>"!regexp",
-                "starts with"=>"startsWith",
-                "ends with"=>"endsWith",
-                "contains"=>"contains"
-            ]
-        ],
-        [
-            "key"=> "available_lead_date_modified",
-            "id"=> "available_lead_date_modified",
-            "title"=> "Modified Date",
-            "value"=> "date_modified",
-            "label"=> "Modified Date",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "datetime",
-            "dataFieldOperators"=>[
-                "equals"=>"=",
-                "not equal"=>"!=",
-                "greater than"=>">",
-                "greater than or equal"=>">=",
-                "less than"=>"<",
-                "less than or equal"=>"<=",
-                "empty"=>"empty",
-                "not empty"=>"!empty",
-                "like"=>"like",
-                "not like"=>"!like",
-                "regexp"=>"regexp",
-                "not regexp"=>"!regexp",
-                "starts with"=>"startsWith",
-                "ends with"=>"endsWith",
-                "contains"=>"contains"
-            ]
-        ],
-        [
-            "key"=> "available_lead_owner_id",
-            "id"=> "available_lead_owner_id",
-            "title"=> "Owner",
-            "value"=> "owner_id",
-            "label"=> "Owner",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "lookup_id",
-            "dataFieldOperators"=>[
-                "equals"=>"=",
-                "not equal"=>"!=",
-                "empty"=>"empty",
-                "not empty"=>"!empty"
-            ]
-        ], 
-        [
-            "key"=> "available_lead_points",
-            "id"=> "available_lead_points",
-            "title"=> "Points (+/-)",
-            "value"=> "points",
-            "label"=> "Points (+/-)",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "number",
-            "dataFieldOperators"=>[
-                "equals"=>"=",
-                "not equal"=>"!=",
-                "greater than"=>">",
-                "greater than or equal"=>">=",
-                "less than"=>"<",
-                "less than or equal"=>"<=",
-                "empty"=>"empty",
-                "not empty"=>"!empty",
-                "like"=>"like",
-                "not like"=>"!like",
-                "regexp"=>"regexp",
-                "not regexp"=>"!regexp",
-                "starts with"=>"startsWith",
-                "ends with"=>"endsWith",
-                "contains"=>"contains"
-            ]
-        ],
-        [
-            "key"=> "available_lead_position",
-            "id"=> "available_lead_position",
-            "title"=> "Position",
-            "value"=> "position",
-            "label"=> "Position",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "text",
-            "dataFieldOperators"=>[
-                "equals"=>"=",
-                "not equal"=>"!=",
-                "empty"=>"empty",
-                "not empty"=>"!empty",
-                "like"=>"like",
-                "not like"=>"!like",
-                "including"=>"in",
-                "excluding"=>"!in",
-                "regexp"=>"regexp",
-                "not regexp"=>"!regexp",
-                "starts with"=>"startsWith",
-                "ends with"=>"endsWith",
-                "contains"=>"contains"
-            ]
-        ],
-        [
-            "key"=> "available_lead_preferred_locale",
-            "id"=> "available_lead_preferred_locale",
-            "title"=> "Preferred Locale",
-            "value"=> "preferred_locale",
-            "label"=> "Preferred Locale",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "locale",
-            "dataFieldOperators"=>[
-                "equals"=>"=",
-                "not equal"=>"!=",
-                "empty"=>"empty",
-                "not empty"=>"!empty",
-                "including"=>"in",
-                "excluding"=>"!in",
-                "regexp"=>"regexp",
-                "not regexp"=>"!regexp"
-            ]
-        ],
-        [
-            "key"=> "available_lead_timezone",
-            "id"=> "available_lead_timezone",
-            "title"=> "Preferred Timezone",
-            "value"=> "timezone",
-            "label"=> "Preferred Timezone",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "timezone",
-            "dataFieldOperators"=>[
-                "equals"=>"=",
-                "not equal"=>"!=",
-                "empty"=>"empty",
-                "not empty"=>"!empty",
-                "including"=>"in",
-                "excluding"=>"!in",
-                "regexp"=>"regexp",
-                "not regexp"=>"!regexp"
-            ]
-        ],
-        [
-            "key"=> "available_lead_company",
-            "id"=> "available_lead_company",
-            "title"=> "Primary Company",
-            "value"=> "company",
-            "label"=> "Primary Company",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "text",
-            "dataFieldOperators"=>[
-                "equals"=>"=",
-                "not equal"=>"!=",
-                "empty"=>"empty",
-                "not empty"=>"!empty",
-                "like"=>"like",
-                "not like"=>"!like",
-                "including"=>"in",
-                "excluding"=>"!in",
-                "regexp"=>"regexp",
-                "not regexp"=>"!regexp",
-                "starts with"=>"startsWith",
-                "ends with"=>"endsWith",
-                "contains"=>"contains"
-            ]
-        ],
-        [
-            "key"=> "available_lead_skype",
-            "id"=> "available_lead_skype",
-            "title"=> "Skype",
-            "value"=> "skype",
-            "label"=> "Skype",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "text",
-            "dataFieldOperators"=>[
-                "equals"=>"=","not equal"=>"!=","empty"=>"empty","not empty"=>"!empty","like"=>"like","not like"=>"!like","including"=>"in","excluding"=>"!in","regexp"=>"regexp","not regexp"=>"!regexp","starts with"=>"startsWith","ends with"=>"endsWith","contains"=>"contains"
-            ]
-        ],
-        [
-            "key"=> "available_lead_stage",
-            "id"=> "available_lead_stage",
-            "title"=> "Stage",
-            "value"=> "stage",
-            "label"=> "Stage",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "stage",
-            "dataFieldOperators"=>[
-                "equals"=>"=","not equal"=>"!=","empty"=>"empty","not empty"=>"!empty"
-            ]
-        ],*/
         [
             "key"=> "available_lead_tags",
             "id"=> "available_lead_tags",
@@ -689,51 +304,13 @@ return [
             "dataFieldObject"=> "contact",
             "dataFieldType"=> "tags",
             "dataFieldOperators"=>[
-                "empty"=>"empty","not empty"=>"!empty","including"=>"in","excluding"=>"!in"
+                "empty"=>"empty",
+                "not empty"=>"!empty",
+                "including"=>"in",
+                "excluding"=>"!in"
             ]
         ],
-        /*[
-            "key"=> "available_lead_twitter",
-            "id"=> "available_lead_twitter",
-            "title"=> "Twitter",
-            "value"=> "twitter",
-            "label"=> "Twitter",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "text",
-            "dataFieldOperators"=>[
-                "equals"=>"=","not equal"=>"!=","empty"=>"empty","not empty"=>"!empty","like"=>"like","not like"=>"!like","including"=>"in","excluding"=>"!in","regexp"=>"regexp","not regexp"=>"!regexp","starts with"=>"startsWith","ends with"=>"endsWith","contains"=>"contains"
-            ]
-        ],
-        [
-            "key"=> "available_lead_website",
-            "id"=> "available_lead_website",
-            "title"=> "Website",
-            "value"=> "website",
-            "label"=> "Website",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "url",
-            "dataFieldOperators"=>[
-                "equals"=>"=","not equal"=>"!=","empty"=>"empty","not empty"=>"!empty","like"=>"like","not like"=>"!like","regexp"=>"regexp","not regexp"=>"!regexp","starts with"=>"startsWith","ends with"=>"endsWith","contains"=>"contains"
-            ]
-        ],
-        [
-            "key"=> "available_lead_linkedin",
-            "id"=> "available_lead_linkedin",
-            "title"=> "Linkedin",
-            "value"=> "linkedin",
-            "label"=> "Linkedin",
-            "className"=> "segment-filter user",
-            "function"=> "",
-            "dataFieldObject"=> "contact",
-            "dataFieldType"=> "text",
-            "dataFieldOperators"=>[
-                "equals"=>"=","not equal"=>"!=","empty"=>"empty","not empty"=>"!empty","like"=>"like","not like"=>"!like","including"=>"in","excluding"=>"!in","regexp"=>"regexp","not regexp"=>"!regexp","starts with"=>"startsWith","ends with"=>"endsWith","contains"=>"contains"
-            ]
-        ],*/
+        
     ]
 ];
 

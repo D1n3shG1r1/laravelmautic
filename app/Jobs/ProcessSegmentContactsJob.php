@@ -8,6 +8,7 @@ use App\Models\segment_contacts_model;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ProcessSegmentContactsJob implements ShouldQueue
 {
@@ -34,8 +35,9 @@ class ProcessSegmentContactsJob implements ShouldQueue
     public function handle()
     {
         // Fetch the segment based on segmentId
+        
         $segment = segments_model::find($this->segmentId);
-
+        //dd($segment);
         // If the segment does not exist, skip this job
         if (!$segment) {
             return;
@@ -50,7 +52,7 @@ class ProcessSegmentContactsJob implements ShouldQueue
         }
 
         $filtersArr = json_decode($filters, true);
-        
+        //dd($filtersArr);
         if(!empty($filtersArr)){
 
             // Get contacts based on the filters
@@ -72,27 +74,78 @@ class ProcessSegmentContactsJob implements ShouldQueue
                 [object] => contact
                 */
                 $glue = $filterRw['glue'];
-                $operator = $filterRw['operator'];
+                $operatorVal = $filterRw['operator'];
                 $filter = $filterRw['properties']['filter'];
                 $field = $filterRw['field'];
-
-                if ($i == 0) {
-                    // For the first filter, use `where` directly
-                    $contactsQuery->where($field, $operator, $filter);
-                } else {
-                    // For subsequent filters, use `orWhere` or `where` based on the glue
-                    if ($glue == "or") {
-                        $contactsQuery->orWhere($field, $operator, $filter);
-                    } else if ($glue == "and") {
-                        $contactsQuery->where($field, $operator, $filter);
-                    }
+                
+                $operator = '';
+                
+                if($operatorVal == '='){
+                    $operator = '=';
+                }else if($operatorVal == '!='){
+                    $operator = '!=';
+                }else if($operatorVal == 'empty'){
+                    $operator = '=';
+                    $filter = '';
+                }else if($operatorVal == '!empty'){
+                    $operator = '!=';
+                    $filter = '';
+                }else if($operatorVal == 'like'){
+                    $operator = 'LIKE';
+                    $filter = "%$filter%";
+                }else if($operatorVal == '!like'){
+                    $operator = 'NOT LIKE';
+                    $filter = "%$filter%";
+                }else if($operatorVal == 'startsWith'){
+                    $operator = 'LIKE';
+                    $filter = "$filter%";
+                }else if($operatorVal == 'endsWith'){
+                    $operator = 'LIKE';
+                    $filter = "%$filter";
+                }else if($operatorVal == 'contains'){
+                    $operator = 'LIKE';
+                    $filter = "%$filter%";
+                }else if($operatorVal == 'in'){
+                    $operator = 'IN' ;
+                    $filter = "($filter)";
+                }else if($operatorVal == '!in'){
+                    $operator = 'NOT IN' ;
+                    $filter = "($filter)";
+                }else if($operatorVal == '>'){
+                    $operator = '>' ;
+                    $filter = $filter;
+                }else if($operatorVal == '>='){
+                    $operator = '>=' ;
+                    $filter = $filter;
+                }else if($operatorVal == '<'){
+                    $operator = '<' ;
+                    $filter = $filter;
+                }else if($operatorVal == '<='){
+                    $operator = '<=' ;
+                    $filter = $filter;
                 }
+                
+                if($operator != ''){
+                    if ($i == 0) {
+                        // For the first filter, use `where` directly
+                        $contactsQuery->where($field, $operator, $filter);
+                    } else {
+                        // For subsequent filters, use `orWhere` or `where` based on the glue
+                        if ($glue == "or") {
+                            $contactsQuery->orWhere($field, $operator, $filter);
+                        } else if ($glue == "and") {
+                            $contactsQuery->where($field, $operator, $filter);
+                        }
+                    }
+                }else{
+                    Log::warning("Using inavlid Operator in contacts filter for segemet:$this->segmentId");
+                    return;
+                }
+                
             }
 
             // Get the results from the query
             $contacts = $contactsQuery->get();
-
-            //dd($contacts);
 
             // Begin a transaction to ensure data consistency
             DB::transaction(function () use ($segment, $contacts) {

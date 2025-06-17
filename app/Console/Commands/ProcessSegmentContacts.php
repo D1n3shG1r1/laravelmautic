@@ -81,6 +81,7 @@ class ProcessSegmentContacts extends Command
         segments_model::chunk(100, function ($segments) {
             foreach ($segments as $segment) {
                 // Dispatch a job for each segment to process its contacts
+                $this->info('Job dispatched segment:'.$segment->id);
                 ProcessSegmentContactsJob::dispatch($segment->id);
             }
         });

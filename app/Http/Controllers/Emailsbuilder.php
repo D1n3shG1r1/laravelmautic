@@ -316,9 +316,9 @@ class Emailsbuilder extends Controller
             $isAdmin = $this->getSession('isAdmin');
 
             if ($isAdmin > 0) {
-                $emailObj = emailsbuilder_model::select("is_published", "name", "description", "subject", "from_address", "from_name", "reply_to_address", "bcc_address", "use_owner_as_mailer", "template", "plain_text", "custom_html", "email_type", "publish_up", "publish_down")->where("created_by_company", $userCompany)->where("id", $id)->first();
+                $emailObj = emailsbuilder_model::select("id", "is_published", "name", "description", "subject", "from_address", "from_name", "reply_to_address", "bcc_address", "use_owner_as_mailer", "template", "plain_text", "custom_html", "email_type", "publish_up", "publish_down")->where("created_by_company", $userCompany)->where("id", $id)->first();
             } else {
-                $emailObj = emailsbuilder_model::select("is_published", "name", "description", "subject", "from_address", "from_name", "reply_to_address", "bcc_address", "use_owner_as_mailer", "template", "plain_text", "custom_html", "email_type", "publish_up", "publish_down")->where("created_by", $this->USERID)->where("id", $id)->first();
+                $emailObj = emailsbuilder_model::select("id","is_published", "name", "description", "subject", "from_address", "from_name", "reply_to_address", "bcc_address", "use_owner_as_mailer", "template", "plain_text", "custom_html", "email_type", "publish_up", "publish_down")->where("created_by", $this->USERID)->where("id", $id)->first();
             }
 
             //dd($emailObj);
@@ -411,7 +411,7 @@ class Emailsbuilder extends Controller
                 }
 
                 $data = [];
-                $data["emailsUrl"] = url('email/update');
+                $data["emailsUrl"] = url('emails');
                 $data["themes"] = $themesData;
                 $data["emailData"] = $emailObj;
                 $data["segments"] = $segments;
@@ -437,6 +437,102 @@ class Emailsbuilder extends Controller
 
     function update(Request $request){
         //111
+        
+        if($this->USERID > 0){
+        
+            $userCompany = $this->getSession('companyId');
+            $firstName = $this->getSession('firstName');
+            $lastName = $this->getSession('lastName');
+            $fullName = $firstName." ".$lastName; 
+            $today = date("Y-m-d");
+            
+            $emailId = $request->input('id');
+            $segments = $request->input('segments');
+            $emailType = $request->input('emailType');
+            $templateName = $request->input('templateName');
+            $html = $request->input('html');
+            $css = $request->input('css');
+            $subject = $request->input('subject');
+            $internalname = $request->input('internalname');
+            $isPublish = $request->input('isPublish');
+            $activateat = $request->input('activateat');
+            $deactivateat = $request->input('deactivateat');
+            $fromname = $request->input('fromname');
+            $fromaddress = $request->input('fromaddress');
+            $replytoaddress = $request->input('replytoaddress');
+            $bccaddress = $request->input('bccaddress');
+            $attachments = $request->input('attachments');
+            $plaintext = $request->input('plaintext');
+            
+            $html = str_replace('\"','"',$html);
+            $html = str_replace('\n','',$html);
+
+            $updateData = [
+                "is_published" => $isPublish,
+                "date_modified" => $today,
+                "modified_by" => $this->USERID,
+                "modified_by_user" => $fullName,
+                "created_by_company" => $userCompany,
+                "name" => $internalname,
+                "description" => $internalname."-".$subject,
+                "subject" => $subject,
+                "from_address" => $fromaddress,
+                "from_name" => $fromname,
+                "reply_to_address" => $replytoaddress,
+                "bcc_address" => $bccaddress,
+                "use_owner_as_mailer" => 0,
+                "template" => $templateName,
+                "plain_text" => $plaintext,
+                "custom_html" => $html,
+                "email_type" => $emailType,
+                "publish_up" => $activateat,
+                "publish_down" => $deactivateat,
+                "read_count" => 0,
+                "sent_count" => 0,
+                "variant_sent_count" => 0,
+                "variant_read_count" => 0,
+                "revision" => 0,
+                "lang" => 'en',
+                "headers" => '{}'
+            ];
+
+            $updated = emailsbuilder_model::where("id", $emailId)
+            ->update($updateData);
+
+            if($emailType == 'list' && !empty($segments)){
+                
+                //delete previous segments
+                email_segments_model::where("email_id", $emailId)->delete();
+
+                $batchRows = array();
+                foreach($segments as $segmentId){
+                    $batchRows[] = array("email_id" => $emailId, "segment_id" => $segmentId);
+                }
+                
+                if(!empty($batchRows)){
+                    $inserted = DB::table('email_segments')->insert($batchRows);
+                }
+                
+            }
+            
+            $response = [
+                'C' => 100,
+                'M' => $this->ERRORS[111],
+                'R' => [],
+            ];
+
+        }else{
+        
+            //session expired
+            $response = [
+                'C' => 1004,
+                'M' => $this->ERRORS[1004],
+                'R' => [],
+            ];
+        }
+
+        return response()->json($response); die;
+        
     }
 
     function delete(Request $request){

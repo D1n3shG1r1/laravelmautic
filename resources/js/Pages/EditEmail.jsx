@@ -13,6 +13,7 @@ import Styles from "../../css/Modules/Emails.module.css";
 const EmailComponent = ({pageTitle, csrfToken, params}) => {
   const themes = params.themes;
   const emailData = params.emailData;
+  const id = emailData.id;
   
   const segments = params.segments;
   //const preselectedIds = params.prevSegments;
@@ -178,6 +179,26 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
 
     const subject = document.getElementById("subject").value.trim();
     const internalname = document.getElementById("internalname").value.trim();
+
+    var selectedSegments = [];
+    
+    if(emailType === 'list'){
+      
+      const contactSegments = document.getElementById("contactsegment");
+      
+      // Convert HTMLCollection to an array
+      const srcSlctOptArr = Array.from(contactSegments.selectedOptions);
+      
+      // Loop through selected options and collect their values
+      srcSlctOptArr.forEach((v, i) => {
+        var tmpOptVal = v.value; // Directly use v (the current option)
+        var tmpOptTxt = v.text;
+        selectedSegments[i] = tmpOptVal;
+        
+      });
+
+    }
+    
     const activateat = document.getElementById("activateat").value;
     const deactivateat = document.getElementById("deactivateat").value;
     const fromname = document.getElementById("fromname").value.trim();
@@ -244,7 +265,27 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
       return false;
     }
 
+    if (emailType === 'list' && selectedSegments.length == 0){
+      var err = 1;
+      var msg = "Select the contact segment to run the campaign.";
+      showToastMsg(err, msg);
+      return false;
+    }
 
+    if(!isRealVal(activateat)){
+      var err = 1;
+      var msg = "The activation date is required.";
+      showToastMsg(err, msg);
+      return false;
+    }
+
+    if(!isRealVal(deactivateat)){
+      var err = 1;
+      var msg = "The deactivation date is required.";
+      showToastMsg(err, msg);
+      return false;
+    }
+    
     //validate email address
     
     if(isRealVal(fromaddress) && !validateEmail(fromaddress)){
@@ -271,8 +312,10 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
     setIsLoading(true);
 
     var url = "email/update";
+
     var postJson = {
       "_token":csrfToken,
+      "id":id,
       "emailType":isListEmail,
       "templateName":selectedTemplateName,
       "html":htmlContent,
@@ -280,6 +323,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
       "subject":subject,
       "internalname":internalname,
       "isPublish":isPublish,
+      "segments":selectedSegments,
       "activateat":activateat,
       "deactivateat":deactivateat,
       "fromname":fromname,
@@ -290,7 +334,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
       "plaintext":plaintext,
     };
     
-    /*httpRequest(url, postJson, function(resp){
+    httpRequest(url, postJson, function(resp){
         var C = resp.C;
         var error = resp.M.error;
         var msg = resp.M.message;
@@ -310,7 +354,7 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
 
         setIsLoading(false);
     });
-  */
+
 
   };
 

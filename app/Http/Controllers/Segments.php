@@ -36,6 +36,7 @@ class Segments extends Controller
 
             // Prepare filters for contacts
             $contactFilters = config("filters.contactFilters");
+            //dd($contactFilters);
 
             // Check if 'filterby' is 'contacts' and filters are provided
             if ($request->input('filterby') == 'contacts' && !empty($request->input('filters'))) {
@@ -57,21 +58,73 @@ class Segments extends Controller
                 // Loop through each filter and apply the necessary conditions to the query
                 foreach ($filters as $i => $filterRw) {
                     $glue = $filterRw['glue']; // 'and' or 'or'
-                    $operator = $filterRw['operator']; // '=', 'like', etc.
+                    $operatorVal = $filterRw['operator']; // '=', 'like', etc.
                     $filter = $filterRw['properties']['filter']; // Filter value
                     $field = $filterRw['field']; // Field name, e.g., 'email'
 
-                    // Apply the first filter using `where`
-                    if ($i == 0) {
-                        $contactsQuery->where($field, $operator, $filter);
-                    } else {
-                        // For subsequent filters, use 'orWhere' or 'where' based on 'glue'
-                        if ($glue == 'or') {
-                            $contactsQuery->orWhere($field, $operator, $filter);
-                        } else {
-                            $contactsQuery->where($field, $operator, $filter);
-                        }
+                    $operator = '';
+                    
+                    if($operatorVal == '='){
+                        $operator = '=';
+                    }else if($operatorVal == '!='){
+                        $operator = '!=';
+                    }else if($operatorVal == 'empty'){
+                        $operator = '=';
+                        $filter = '';
+                    }else if($operatorVal == '!empty'){
+                        $operator = '!=';
+                        $filter = '';
+                    }else if($operatorVal == 'like'){
+                        $operator = 'LIKE';
+                        $filter = "%$filter%";
+                    }else if($operatorVal == '!like'){
+                        $operator = 'NOT LIKE';
+                        $filter = "%$filter%";
+                    }else if($operatorVal == 'startsWith'){
+                        $operator = 'LIKE';
+                        $filter = "$filter%";
+                    }else if($operatorVal == 'endsWith'){
+                        $operator = 'LIKE';
+                        $filter = "%$filter";
+                    }else if($operatorVal == 'contains'){
+                        $operator = 'LIKE';
+                        $filter = "%$filter%";
+                    }else if($operatorVal == 'in'){
+                        $operator = 'IN' ;
+                        $filter = "($filter)";
+                    }else if($operatorVal == '!in'){
+                        $operator = 'NOT IN' ;
+                        $filter = "($filter)";
+                    }else if($operatorVal == '>'){
+                        $operator = '>' ;
+                        $filter = $filter;
+                    }else if($operatorVal == '>='){
+                        $operator = '>=' ;
+                        $filter = $filter;
+                    }else if($operatorVal == '<'){
+                        $operator = '<' ;
+                        $filter = $filter;
+                    }else if($operatorVal == '<='){
+                        $operator = '<=' ;
+                        $filter = $filter;
                     }
+
+                    // Apply the first filter using `where`
+                    if($operator != ''){
+                        if ($i == 0) {
+                            $contactsQuery->where($field, $operator, $filter);
+                        } else {
+                            // For subsequent filters, use 'orWhere' or 'where' based on 'glue'
+                            if ($glue == 'or') {
+                                $contactsQuery->orWhere($field, $operator, $filter);
+                            } else {
+                                $contactsQuery->where($field, $operator, $filter);
+                            }
+                        }
+                    }else{
+                        //invalid operator
+                    }
+
                 }
                 
                 // Paginate the contacts based on the filters

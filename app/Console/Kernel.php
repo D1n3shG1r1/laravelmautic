@@ -56,6 +56,10 @@ class Kernel extends ConsoleKernel
         //$schedule->command('process:send-newsletter-emails')->daily();
 
         //run on terminal to test command
+        //php artisan process:segment-contacts
+        //php artisan process:campaigns
+        //php artisan process:send-campaign-emails
+        //php artisan process:newsletters
         //php artisan process:send-newsletter-emails
     }
 
