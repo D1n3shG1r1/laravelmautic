@@ -8,6 +8,7 @@ use App\Http\Controllers\Contacts;
 use App\Http\Controllers\Segments;
 use App\Http\Controllers\Whatsapp;
 use App\Http\Controllers\Emailsbuilder;
+use App\Http\Controllers\EmailReplies;
 use App\Http\Controllers\Newsletters;
 use App\Http\Controllers\Tags;
 use App\Http\Controllers\Settings;
@@ -21,6 +22,7 @@ use App\Http\Controllers\Test;
 /*Route::get('/', function () {
     return view('welcome');
 });*/
+
 
 //Test Routes for Campaign Builder
 Route::get('/campaignbuilderidx',[Campaign::class, 'index']);
@@ -82,6 +84,8 @@ Route::post('/email/save',[Emailsbuilder::class,'save']);
 Route::get('/email/edit/{id}',[Emailsbuilder::class,'email']);
 Route::post('/email/update',[Emailsbuilder::class,'update']);
 Route::post('/email/delete',[Emailsbuilder::class,'delete']);
+Route::get('/email/view/{id}',[Emailsbuilder::class,'view']);
+Route::post('/emailreplies',[EmailReplies::class,'getReplies']);
 
 
 Route::get('/news',[Newsletters::class,'getnews']);
@@ -93,9 +97,6 @@ Route::post('/news/websitedelete',[Newsletters::class,'delete']);
 Route::post('/newsletters/getnewswebsites',[Newsletters::class,'getnewswebsites']);
 Route::post('/newsletters/createnewsletter',[Newsletters::class,'createnewsletter']);
 
-
-
-
 Route::get('/tags',[Tags::class,'tags']);
 Route::get('/tags/new',[Tags::class,'new']);
 Route::post('/tag/save',[Tags::class,'save']);
@@ -106,6 +107,10 @@ Route::post('/tag/delete',[Tags::class,'delete']);
 Route::get('/settings',[Settings::class,'settings']);
 Route::post('/emaildsn/update',[Settings::class,'updateEmaildsn']);
 Route::post('/emaildsn/sendtestmail',[Settings::class,'sendTestEmail']);
+Route::post('/imap/update',[Settings::class,'updateImap']);
+Route::get('/imap/testconnection',[Settings::class,'testimapConnection']);
+Route::post('/imap/testconnection',[Settings::class,'testimapConnection']);
+
 
 Route::post('/media/save',[Media::class,'save']);
 

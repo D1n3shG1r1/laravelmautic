@@ -47,7 +47,7 @@ class Tags extends Controller
     
             // Prepare the tags data with formatted date and contact counts
             foreach ($tagsObj as &$rw) {
-                $rw->date_added = date("F d, Y", strtotime($rw->date_added)); // format date
+                $rw->date_added = date("d-m-Y", strtotime($rw->date_added)); // format date
                 $rw->contacts = $contactCounts[$rw->id] ?? 0; // add contact count for the tag
             }
     
@@ -89,7 +89,7 @@ class Tags extends Controller
 
                 foreach($tagsObj["data"] as &$rw){
                     $tagsIds[] = $rw;
-                    $rw["date_added"] = date("F d, Y", strtotime($rw["date_added"]));
+                    $rw["date_added"] = date("d-m-Y", strtotime($rw["date_added"]));
                 }
 
                 foreach($tagsObj["data"] as &$rww){

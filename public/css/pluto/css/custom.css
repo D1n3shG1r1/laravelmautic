@@ -571,3 +571,9 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     border-radius: 2px;
     color: #fff;
 }
+
+.emailInterval.active {
+    color: #3c4650;
+    background-color: #e6e6e6 !important;
+    border-color: #bebebe !important;
+}

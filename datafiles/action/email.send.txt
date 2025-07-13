@@ -74,18 +74,7 @@
                                 <option value="m">month(s)</option>
                                 <option value="y">year(s)</option>
                             </select>
-                            <div class="chosen-container chosen-container-single" title="" id="campaignevent_triggerIntervalUnit_chosen" style="width: 100%;">
-                                <a class="chosen-single">
-                                    <span>day(s)</span>
-                                    <div><b></b></div>
-                                </a>
-                                <div class="chosen-drop">
-                                    <div class="chosen-search">
-                                    <input class="chosen-search-input" type="text" autocomplete="off">
-                                    </div>
-                                    <ul class="chosen-results"></ul>
-                                </div>
-                            </div>
+                           
                         </div>
                         </div>
                     </div>

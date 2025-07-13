@@ -19,10 +19,7 @@ class SendCampaignEmails extends Command
     {
         $this->info('Starting to dispatch campaign emails...');
 
-        $emailRow = campaign_emails_queue_model::where("emailSent", 0)
-        ->first();
-
-
+        /*
         campaign_emails_queue_model::where("emailSent", 0)
         ->chunk(100, function ($emailQueue) {
 
@@ -37,6 +34,28 @@ class SendCampaignEmails extends Command
     
             $this->info('All emails dispatched to the queue.');
         });
+        */
+
+        $trigger_date = date("Y-m-d");
+
+        campaign_emails_queue_model::where("emailSent", 0)
+            ->where(function($query) use ($trigger_date) {
+                $query->whereNull("triggerDate")
+                    ->orWhere("triggerDate", $trigger_date);
+            })
+            ->chunk(100, function ($emailQueue) {
+
+                foreach ($emailQueue as $emailRw) {
+                    $data = [
+                        'id' => $emailRw->id,
+                        'campaignId' => $emailRw->campaignId
+                    ];
+                    
+                    SendCampaignEmail::dispatch($data);
+                }
+
+                $this->info('All emails dispatched to the queue.');
+            });
 
     }
 }

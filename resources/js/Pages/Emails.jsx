@@ -51,6 +51,9 @@ const Emails = ({ pageTitle, csrfToken, params }) => {
         window.location.href = window.url('email/edit/'+id);
     };
 
+    const viewEmail = (id) =>{
+        window.location.href = window.url('email/view/'+id);
+    };
     
     const [showConfirmBox, setShowConfirmBox] = useState(false);
     const [currentId, setCurrentId] = useState(null); // State to hold the current ID
@@ -130,6 +133,7 @@ const Emails = ({ pageTitle, csrfToken, params }) => {
                                             <thead>
                                                 <tr>
                                                     <th>Name</th>
+                                                    <th>Type</th>
                                                     <th>Date created</th>
                                                     <th>Created by</th>
                                                     <th>ID</th>
@@ -150,6 +154,9 @@ const Emails = ({ pageTitle, csrfToken, params }) => {
                                                                 {email.name}
                                                             </td>
                                                             <td>
+                                                                {email.type}
+                                                            </td>
+                                                            <td>
                                                                 {email.date_added} 
                                                             </td>
                                                             <td>
@@ -159,6 +166,12 @@ const Emails = ({ pageTitle, csrfToken, params }) => {
                                                                 {email.id}
                                                             </td>
                                                             <td>
+                                                                <LinkButton type="button" className={`btn p-0`} onClick={() => viewEmail(email.id)} title="View">
+                                                                    <i className={`${Styles.filterTrashIcon} fa fa-eye`}></i>
+                                                                </LinkButton>
+
+                                                                <span className={`${Styles.buttonSeprator}`}></span>
+
                                                                 <LinkButton type="button" className={`btn p-0`} onClick={() => editEmail(email.id)} title="Edit">
                                                                     <i className={`${Styles.filterTrashIcon} fa fa-edit`}></i>
                                                                 </LinkButton>

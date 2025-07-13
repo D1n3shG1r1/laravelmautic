@@ -100,9 +100,9 @@ class Dashboard extends Controller
             $datewiseRecords = array();
             for($i = 0; $i < $daysDifference; $i++){
                 if($i == 0){
-                    $dateStr = $startDate->format('M d, y');
+                    $dateStr = $startDate->format('d-m-Y');
                 }else{
-                    $dateStr = $startDate->addDay()->format('M d, y');
+                    $dateStr = $startDate->addDay()->format('d-m-Y');
                 }
                 
                 $dateLabels[] = $dateStr;
@@ -111,7 +111,7 @@ class Dashboard extends Controller
 
             if($contacts){
                 foreach($contacts as $cont){
-                    $dtKey = date("M d, y", strtotime($cont->date_added));
+                    $dtKey = date("d-m-Y", strtotime($cont->date_added));
                     $datewiseRecords[$dtKey] = $datewiseRecords[$dtKey] + 1;
                 }
             }
@@ -125,8 +125,8 @@ class Dashboard extends Controller
 
             if($upcomingCampigns){
                 foreach($upcomingCampigns as &$upCamp){
-                    $upCamp->publish_up = date("M d, y", strtotime($upCamp->publish_up));
-                    $upCamp->publish_down = date("M d, y", strtotime($upCamp->publish_down));
+                    $upCamp->publish_up = date("d-m-Y", strtotime($upCamp->publish_up));
+                    $upCamp->publish_down = date("d-m-Y", strtotime($upCamp->publish_down));
                 }
             }
 

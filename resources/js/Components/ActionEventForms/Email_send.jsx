@@ -59,6 +59,9 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
   useEffect(() => {
     if (window.jQuery) {
       
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('campaignevent_triggerDate').setAttribute('min', today);
+
       // Initialize the Select2 plugin
       $('#campaignevent_properties_email').select2({
         placeholder: "Select email",
@@ -66,14 +69,59 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
         width: '100%', // Makes it responsive
       });
 
+
+      $('#campaignevent_triggerIntervalUnit').select2({
+        placeholder: "Select interval unit",
+        allowClear: true,
+        width: '100%', // Makes it responsive
+      });
+      
+
+
       // Cleanup function to destroy chosen instances
       return () => {
         $('#campaignevent_properties_email').select2('destroy');
+        $('#campaignevent_triggerIntervalUnit').select2('destroy');
       };
       
     }
   }, []); // Empty dependency array ensures it only runs once when the component mounts
   
+  const [selectedOption, setSelectedOption] = useState('immediate');
+
+  const handleRadioChange = (event) => {
+    const radioVal = event.target.value;
+    setSelectedOption(radioVal);
+
+    // Remove "active" from all related radio container elements
+    const allRadios = document.getElementsByClassName("emailInterval");
+    for (let i = 0; i < allRadios.length; i++) {
+      allRadios[i].classList.remove("active");
+    }
+
+    // Add "active" to the currently selected one
+    event.target.closest(".emailInterval").classList.add("active");
+
+    // Show/hide sections based on selected value
+    const triggerDate = document.getElementById("triggerDate");
+    const triggerInterval = document.getElementById("triggerInterval");
+
+    if (radioVal === 'immediate') {
+      triggerDate.classList.add("hide");
+      triggerInterval.classList.add("hide");
+    } else if (radioVal === 'interval') {
+      triggerDate.classList.add("hide");
+      triggerInterval.classList.remove("hide");
+    } else if (radioVal === 'date') {
+      triggerDate.classList.remove("hide");
+      triggerInterval.classList.add("hide");
+    } else {
+      triggerDate.classList.add("hide");
+      triggerInterval.classList.add("hide");
+    }
+  };
+  
+
   const createNode = (propJson, x, y) => {
     /*Create other Nodes */
     const type = propJson.type;
@@ -398,6 +446,24 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
     $('.modal-backdrop').remove();
   };
 
+  const [formValues, setFormValues] = useState({
+    triggerInterval: 1,
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+  
+    // Parse something like 'campaignevent[triggerInterval]'
+    const match = name.match(/^campaignevent\[(.+)\]$/);
+    if (match) {
+      const key = match[1];
+      setFormValues(prev => ({
+        ...prev,
+        [key]: value
+      }));
+    }
+  };
+
   return (
     <>
     <form
@@ -455,6 +521,92 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
         <div className="row">
             <div className="form-group col-xs-12">
             
+
+            <div id="campaignevent_triggers">
+              <div className="row">
+                <div className="form-group col-xs-12">
+                  
+                <InputLabel className="control-label required" htmlFor="campaignevent_properties_email" data-toggle="tooltip" data-container="body" data-placement="top" title="" data-original-title="This event will be executed for newly added Contacts to the Campaign, even if the scheduled date is in the past. For scheduled Emails, it is recommended that you unpublish the Email if you would not like Contacts to receive it after that date. All dates are in the Contact's timezone.">
+                Execute this event... <i className="ri-question-line"></i>
+                </InputLabel>
+
+                  
+                  
+                  <div className="choice-wrapper">
+                    <div className="btn-group btn-block" data-toggle="buttons">
+                      <InputLabel className="btn btn-default emailInterval active">
+                        <TextInput type="radio" id="campaignevent_triggerMode_0" name="campaignevent[triggerMode]" autoComplete="false" value="immediate"
+                        checked={selectedOption === 'immediate'}
+                        onChange={handleRadioChange}/>
+                            immediately
+                      </InputLabel>
+                            
+                      <InputLabel className="btn btn-default emailInterval">
+                        <TextInput type="radio" id="campaignevent_triggerMode_1" name="campaignevent[triggerMode]" autoComplete="false" value="interval"
+                        checked={selectedOption === 'interval'}
+                        onChange={handleRadioChange}/>
+                            at a relative time period
+                      </InputLabel>
+                            
+                      <InputLabel className="btn btn-default emailInterval">
+                        <TextInput type="radio" id="campaignevent_triggerMode_2" name="campaignevent[triggerMode]" autoComplete="false" value="date"
+                        checked={selectedOption === 'date'}
+                        onChange={handleRadioChange} />
+                            at a specific date/time
+                      </InputLabel>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <div className="hide" id="triggerDate">
+              <div className="row">
+                <div className="form-group col-xs-12">
+                  <div className="input-group">
+                    <span className="input-group-prepend input-group-addon preaddon">
+                      <i className="input-group-text fa fa-calendar"></i>
+                    </span>
+                    <TextInput autoComplete="false" type="date" id="campaignevent_triggerDate" name="campaignevent[triggerDate]" className="form-control calendar-activated" data-toggle="datetime"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="hide" id="triggerInterval">
+              <div className="row">
+                <div className="col-sm-4">
+                  <div className="row">
+                    <div className="form-group col-xs-12">
+                      <div className="input-group">
+                          <span className="input-group-prepend input-group-addon preaddon">
+                          <i className="input-group-text bi bi-hash"></i>
+                          </span>
+                          <TextInput autoComplete="false" type="text" id="campaignevent_triggerInterval" name="campaignevent[triggerInterval]" className="form-control" value={formValues.triggerInterval} onChange={handleInputChange}/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-sm-8">
+                  <div className="row">
+                    <div className="form-group col-xs-12 ">
+                      <div className="choice-wrapper">
+                        <select id="campaignevent_triggerIntervalUnit" name="campaignevent[triggerIntervalUnit]" className="form-control" autoComplete="false">
+                            {/*<option value="i">minute(s)</option>
+                            <option value="h">hour(s)</option>*/}
+                            <option value="d">day(s)</option>
+                            <option value="m">month(s)</option>
+                            <option value="y">year(s)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
             <div id="campaignevent_properties">
                 <div className="row">
                     <div className="form-group col-xs-12 ">

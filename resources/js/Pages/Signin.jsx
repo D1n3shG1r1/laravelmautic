@@ -11,6 +11,7 @@ import Styles from "../../css/Modules/SignInSignUp.module.css"; // Import styles
 const SignUpHtml = ({pageTitle,csrfToken,params}) => {
     
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const formRef = useRef();
     
@@ -27,6 +28,10 @@ const SignUpHtml = ({pageTitle,csrfToken,params}) => {
         ...formValues,
         [name]: value
         });
+    };
+
+    const togglePasswordVisibility = () => {
+      setShowPassword(prev => !prev);
     };
 
     const signIn = (event) =>{
@@ -105,7 +110,12 @@ const SignUpHtml = ({pageTitle,csrfToken,params}) => {
                                 </div>
                                 <div className="field">
                                     <InputLabel className={`${Styles.formLabel} label_field`} value="Password" />
-                                    <TextInput type="password" className={`${Styles.formInput}`} id="password" name="password" placeholder="Password" value={formValues.password} onChange={handleInputChange}/>
+                                    <TextInput type={showPassword ? 'text' : 'password'} className={`${Styles.formInput}`} id="password" name="password" placeholder="Password" value={formValues.password} onChange={handleInputChange}/>
+                                    
+                                    <button type="button" onClick={togglePasswordVisibility} className={`password-toggle-btn ${Styles.passwordToggle}`} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                                        <i className={`fa ${showPassword ? 'fa-eye' : 'fa-eye-slash'}`}></i>
+                                    </button>
+
                                 </div>
                                 <div className={`field margin_0`}>
                                     <div className={`${Styles.textAlignRight} field margin_0`}>

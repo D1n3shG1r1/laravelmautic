@@ -48,10 +48,15 @@ class Settings extends Controller
                 $smtp = json_decode($settings["smtp"], true);
             }
 
+
+            $imap = json_decode($settings["imap"], true);
+
+
             $mailerDsn = $smtp["dsnscheme"].'://'. $smtp["dsnuser"] . ':' . $smtp["dsnpassword"] .'@'. $smtp["dsnhost"] . ':'. $smtp["dsnport"];
 
             $data = array();
             $data["smtp"] = $smtp;
+            $data["imap"] = $imap;
             $data["usescipsmtp"] = $settings["usescipsmtp"];
             $data["mailerDsn"] = $mailerDsn;
 
@@ -357,5 +362,130 @@ class Settings extends Controller
         }
         
         return response()->json($response); die;
+    }
+
+
+    function updateImap(Request $request){
+        if($this->USERID > 0){
+            
+            $csrfToken = csrf_token();
+            $userCompany = $this->getSession('companyId');
+            $firstName = $this->getSession('firstName');
+            $lastName = $this->getSession('lastName');
+            $fullName = $firstName." ".$lastName; 
+            $today = date("Y-m-d");
+
+            $host = $request->input('host');
+            $port = $request->input('port');
+            $encryption = $request->input('encryption');
+            $username = $request->input('username');
+            $password = $request->input('password');
+
+            $updateData = array(
+                "imap" => json_encode([
+                    "host" => $host,
+                    "port" => $port,
+                    "encryption" => $encryption,
+                    "username" => $username,
+                    "password" => $password 
+                ])
+            );
+            
+            //settings_model::where("id")
+            $updated = settings_model::where("created_by_company", $userCompany)->update($updateData);
+            
+            $response = [
+                'C' => 100,
+                'M' => $this->ERRORS[135],
+                'R' => ["updated"=>$updated],
+            ];
+
+        }else{
+            
+            //session expired
+            $response = [
+                'C' => 1004,
+                'M' => $this->ERRORS[1004],
+                'R' => [],
+            ];
+        }
+        
+        return response()->json($response); die;
+    }
+
+
+    function testimapConnection(Request $request) {
+        if ($this->USERID <= 0) {
+            return response()->json([
+                'C' => 1004,
+                'M' => $this->ERRORS[1004],
+                'R' => [],
+            ]);
+        }
+    
+        $csrfToken = csrf_token();
+    
+        $userCompany = $this->getSession('companyId');
+        $companyName = "";
+        $companyLogo = "";
+        $firstName = $this->getSession('firstName');
+        $lastName = $this->getSession('lastName');
+        $fullName = $firstName . " " . $lastName;
+        $userEmail = $this->getSession('userEmail');
+        $today = date("Y-m-d");
+    
+        // Get IMAP settings
+        $settings = settings_model::where("created_by_company", $userCompany)->first();
+    
+        if (!$settings || empty($settings->imap)) {
+            return response()->json([
+                'C' => 101,
+                'M' => 'IMAP configuration is missing.',
+                'R' => [],
+            ]);
+        }
+    
+        $imapConfig = json_decode($settings->imap);
+    
+        $host = $imapConfig->host ?? '';
+        $port = $imapConfig->port ?? '';
+        $encryption = $imapConfig->encryption ?? '';
+        $username = $imapConfig->username ?? '';
+        $password = $imapConfig->password ?? '';
+    
+        if (empty($host) || empty($port) || empty($encryption) || empty($username) || empty($password)) {
+            return response()->json([
+                'C' => 102,
+                'M' => 'Incomplete IMAP configuration.',
+                'R' => [],
+            ]);
+        }
+    
+        $hostname = "{" . $host . ":" . $port . "/imap/" . $encryption . "}INBOX";
+    
+        try {
+            $inbox = @imap_open($hostname, $username, $password);
+    
+            if ($inbox) {
+                imap_close($inbox);
+                return response()->json([
+                    'C' => 100,
+                    'M' => 'IMAP connection successful!',
+                    'R' => [],
+                ]);
+            } else {
+                return response()->json([
+                    'C' => 103,
+                    'M' => 'IMAP connection failed: ' . imap_last_error(),
+                    'R' => [],
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'C' => 104,
+                'M' => 'Error: ' . $e->getMessage(),
+                'R' => [],
+            ]);
+        }
     }
 }

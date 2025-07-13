@@ -10,6 +10,8 @@ import Styles from "../../css/Modules/SignInSignUp.module.css"; // Import styles
 
 const SignUpHtml = ({pageTitle,csrfToken,params}) => {
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfPassword, setShowConfPassword] = useState(false);
 
     const formRef = useRef();
     
@@ -32,6 +34,16 @@ const SignUpHtml = ({pageTitle,csrfToken,params}) => {
         });
     };
 
+    const togglePasswordVisibility = () => {
+        //password
+        setShowPassword(prev => !prev);
+    };
+
+    const toggleConfPasswordVisibility = () => {
+        //confirm password
+        setShowConfPassword(prev => !prev);
+    };
+    
     const signUp = (event) =>{
         event.preventDefault();
         
@@ -201,11 +213,19 @@ const SignUpHtml = ({pageTitle,csrfToken,params}) => {
                                 </div>
                                 <div className="field">
                                     <InputLabel className={`${Styles.formLabel} label_field`} value="Password" />
-                                    <TextInput type="password" className={`${Styles.formInput}`} id="password" name="password" placeholder="Password" value={formValues.password} onChange={handleInputChange}/>
+                                    <TextInput type={showPassword ? 'text' : 'password'} className={`${Styles.formInput}`} id="password" name="password" placeholder="Password" value={formValues.password} onChange={handleInputChange}/>
+
+                                    <button type="button" onClick={togglePasswordVisibility} className={`password-toggle-btn ${Styles.passwordToggle}`} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                                        <i className={`fa ${showPassword ? 'fa-eye' : 'fa-eye-slash'}`}></i>
+                                    </button>
                                 </div>
                                 <div className="field">
                                     <InputLabel className={`${Styles.formLabel} label_field`} value="Confirm Password" />
-                                    <TextInput type="password" className={`${Styles.formInput}`} id="confirmpassword" name="confirmpassword" placeholder="Confirm Password" value={formValues.confirmpassword} onChange={handleInputChange}/>
+                                    <TextInput type={showConfPassword ? 'text' : 'password'} className={`${Styles.formInput}`} id="confirmpassword" name="confirmpassword" placeholder="Confirm Password" value={formValues.confirmpassword} onChange={handleInputChange}/>
+
+                                    <button type="button" onClick={toggleConfPasswordVisibility} className={`password-toggle-btn ${Styles.passwordToggle}`} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                                        <i className={`fa ${showConfPassword ? 'fa-eye' : 'fa-eye-slash'}`}></i>
+                                    </button>
                                 </div>
                                 {/*<div className="field">
                                     <InputLabel className="label_field hidden" value=">hidden label"/>

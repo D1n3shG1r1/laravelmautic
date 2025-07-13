@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
+import "bootstrap-icons/font/bootstrap-icons.css";
 import Styles from "../../css/Modules/Layout.module.css"; // Import styles from the CSS module
 
 const Layout = ({ pageTitle, children }) => {
@@ -17,6 +18,7 @@ const Layout = ({ pageTitle, children }) => {
     const campaignsUrl = window.url('campaigns');
     const whatsappUrl = window.url('whatsapp');
     const emailsUrl = window.url('emails');
+    const emailsReplies = window.url('emails');
     const newsUrl = window.url('news');
     const tagsUrl = window.url('tags');
     const settingsUrl = window.url('settings');
@@ -90,16 +92,22 @@ const Layout = ({ pageTitle, children }) => {
                                     <ul className={`collapse list-unstyled ${collapsedState['channels'] ? 'show' : ''}`} id="channels">
                                         <li>
                                             <a href={whatsappUrl}>
-                                                <i className="fa fa-angle-right"></i>
+                                                <i className="orange_color bi bi-whatsapp"></i>
                                                 <span>Whatsapp</span>
                                             </a>
                                         </li>
                                         <li>
                                             <a href={emailsUrl}>
-                                                <i className="fa fa-angle-right"></i>
+                                                <i className="orange_color bi bi-envelope-at"></i>
                                                 <span>Emails</span>
                                             </a>
                                         </li>
+                                        {/*<li>
+                                            <a href={emailsReplies}>
+                                                <i className="orange_color fa fa-mail-reply"></i>
+                                                <span>Replies</span>
+                                            </a>
+                                        </li>*/}
                                     </ul>
                                 </li>
 

@@ -19,3 +19,11 @@
 .formInput{
     width:370px !important;
 }
+
+.passwordToggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    float: right;
+    margin-top: -30px;
+}

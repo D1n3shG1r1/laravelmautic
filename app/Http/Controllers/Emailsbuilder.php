@@ -10,6 +10,8 @@ use App\Models\emailsbuilder_model;
 use App\Models\segments_model;
 use App\Models\segment_contacts_model;
 use App\Models\email_segments_model;
+use App\Models\newsletter_emails_queue_model;
+use App\Models\campaign_emails_queue_model;
 use Illuminate\Support\Facades\DB;
 //use App\Models\contacts_model;
 //use App\Models\role_model;
@@ -36,6 +38,21 @@ class Emailsbuilder extends Controller
                 $emailsObj = emailsbuilder_model::where("created_by", $this->USERID)->paginate(10)->toArray();
             }
             
+            if(!empty($emailsObj)){
+                foreach($emailsObj["data"] as &$rw){
+                    
+                    $rw["date_added"] = date('d-m-Y', strtotime($rw["date_added"]));
+
+                    if($rw["email_type"] == "template"){
+                        //campaign
+                        $rw["type"] = "campaign";
+                    }else{
+                        //newsletter
+                        $rw["type"] = "newsletter";
+                    }
+                }
+            }
+
             $data = array();
             $data["emails"] = $emailsObj;
             $data["emailsUrl"] = url('emails');
@@ -564,5 +581,156 @@ class Emailsbuilder extends Controller
         }
 
         return response()->json($response); die;
+    }
+
+    function view($id){
+        if ($this->USERID > 0) {
+            $csrfToken = csrf_token();
+            $userCompany = $this->getSession('companyId');
+            $isAdmin = $this->getSession('isAdmin');
+            
+            if ($isAdmin > 0) {
+                $emailObj = emailsbuilder_model::select("id", "is_published", "name", "description", "subject", "from_address", "from_name", "reply_to_address", "bcc_address", "use_owner_as_mailer", "template", "plain_text", "custom_html", "email_type", "publish_up", "publish_down", "date_added", "created_by", "created_by_user", "date_modified", "modified_by", "modified_by_user")->where("created_by_company", $userCompany)->where("id", $id)->first();
+            } else {
+                $emailObj = emailsbuilder_model::select("id","is_published", "name", "description", "subject", "from_address", "from_name", "reply_to_address", "bcc_address", "use_owner_as_mailer", "template", "plain_text", "custom_html", "email_type", "publish_up", "publish_down", "date_added", "created_by", "created_by_user", "date_modified", "modified_by", "modified_by_user")->where("created_by", $this->USERID)->where("id", $id)->first();
+            }
+
+            //dd($emailObj);
+            if($emailObj){
+                
+                $emailObj["publish_up"] = date("Y-m-d", strtotime($emailObj["publish_up"]));
+                $emailObj["publish_down"] = date("Y-m-d", strtotime($emailObj["publish_down"]));
+
+                $themesNames = [];
+                $themesData = [];
+                
+                /*if($emailObj["email_type"] == "template"){
+                    //campaigns
+                    $themesNames = ["blank", "brienz", "confirm_me"];
+                }
+
+                if($emailObj["email_type"] == "list"){
+                    //news letter
+                    $themesNames = ["newsletter"];
+                }
+
+                if(!empty($themesNames)){
+                    foreach ($themesNames as $themeName) {
+                        $templatePath = public_path('themes/'.$themeName . '/' . $themeName . '.html');
+                        
+                        if (file_exists($templatePath)) {
+                            
+                            $html = fileRead($templatePath);
+                            
+                            $thumbnailPath = url('themes/'.$themeName . '/thumbnail.png');
+                        
+                            // Add theme data to the array
+                            $themesData[] = [
+                                'name' => str_replace('_', ' ', $themeName),
+                                'id' => $themeName,
+                                'html' => $html,
+                                'css' => '',
+                                'thumbnail' => $thumbnailPath,
+                            ];
+                        }
+                    }
+                }*/
+
+
+                if ($isAdmin > 0) {
+                    $segmentsObj = segments_model::select("id","name")->where("created_by_company", $userCompany)->get();
+                } else {
+                    $segmentsObj = segments_model::select("id","name")->where("created_by", $this->USERID)->get();
+                }
+                
+                if($segmentsObj){
+                    $segmentIdsArr = array();
+                    foreach($segmentsObj as $segment){
+                        $segmentIdsArr[] =  $segment["id"];
+                    }
+    
+                    $segmentContactsObj = segment_contacts_model::select('segment_id', 'contact_id')->whereIn('segment_id', $segmentIdsArr)->get();
+    
+                    $segementContactArr = array();
+                    if($segmentContactsObj){
+                        foreach($segmentContactsObj as $segmentContactRw){
+                            $segementContactArr[$segmentContactRw["segment_id"]][] = $segmentContactRw["contact_id"]; 
+                        }
+                    }
+    
+                    foreach($segmentsObj as &$segmentRw){
+                        //$segmentIdsArr[] =  $segment["id"];
+                    
+                        if(!array_key_exists($segmentRw["id"], $segementContactArr)){
+                            $contactsCount = 0;
+                        }else{
+                            $contactsCount = count($segementContactArr[$segmentRw["id"]]);
+                        }
+                        
+                        $segmentRw['contacts'] = $contactsCount;
+                    }
+    
+                    $segments = $segmentsObj;
+                }else{
+                    $segments = array();
+                }
+
+                //get previous selected segments
+                $prevSegments = [];
+                $prevSegmentsObj = email_segments_model::where("email_id", $id)->get();                
+                if($prevSegmentsObj){
+                    foreach($prevSegmentsObj as $prevSegRw){
+                        $prevSegments[] = $prevSegRw->segment_id;
+                    }
+                }
+
+                $emailObj["date_added"] = date('d-m-Y', strtotime($emailObj["date_added"]));
+                
+                if($emailObj["date_modified"] != ''){
+                    $emailObj["date_modified"] = date('d-m-Y', strtotime($emailObj["date_modified"]));
+                }
+                
+
+                $contacts = [];
+
+                if($emailObj["email_type"] == "template"){
+                    //campaign
+                    $emailObj["type"] = "campaign";
+
+                    //contacts to whom sent the email
+                    //campaign_emails_queue_model::
+
+                }else{
+                    //newsletter
+                    $emailObj["type"] = "newsletter";
+
+                    //contacts to whom sent the email
+                    $contacts = newsletter_emails_queue_model::select("contactId", "contactName", "contactEmail")->where("emailId", $id)->get();
+                }
+
+                $data = [];
+                $data["emailsUrl"] = url('emails');
+                $data["themes"] = $themesData;
+                $data["emailData"] = $emailObj;
+                $data["segments"] = $segments;
+                $data["contacts"] = $contacts;
+                $data["prevSegments"] = $prevSegments;
+                //echo "<pre>"; print_r($data); die;
+                
+                return Inertia::render('ViewEmail', [
+                    'pageTitle' => 'View Email',
+                    'csrfToken' => $csrfToken,
+                    'params' => $data,
+                ]);
+
+            }else{
+                // Return a 404 response
+                abort(404, 'Page not found');
+            }
+            
+        } else {
+            // Redirect to the sign-in page if the user is not authenticated
+            return Redirect::to(url('signin'));
+        }
     }
 }

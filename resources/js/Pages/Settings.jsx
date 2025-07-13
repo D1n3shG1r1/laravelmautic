@@ -12,13 +12,17 @@ import Styles from "../../css/Modules/Settings.module.css";
 const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
     
     const smtp = params.smtp;
+    const imap = params.imap;
     const usescipsmtp = params.usescipsmtp;
     const mailerDsn = params.mailerDsn;
     const [toggleValue, setToggleValue] = useState(0);
     const toggleState = usescipsmtp ? true : false;
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingSave, setIsLoadingSave] = useState(false);
-
+    
+    const [isLoadingImapSave, setIsLoadingImapSave] = useState(false);
+    const [isLoadingTestImap, setIsLoadingTestImap] = useState(false);
+    
     useEffect(() => {
         
         handleToggle(usescipsmtp);
@@ -48,6 +52,12 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
         dsnpath: smtp.dsnpath || "",
         dsnuser: smtp.dsnuser || "",
         dsnpassword: smtp.dsnpassword || "",
+        imaphost: imap.host || "",
+        imapport: imap.port || "",
+        imapencryption: imap.encryption || "",
+        imapusername : imap.username || "",
+        imappassword : imap.password || "",
+
     });
     
     const formRefDNS = useRef();
@@ -60,10 +70,85 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
         }));
     };
 
+    const handleEncryptionChange = (e) => {
+        setDNSFormValues((prev) => ({
+            ...prev,
+            imapencryption: e.target.value,
+        }));
+    };
+
     const handleToggle = (value) => {
         setToggleValue(value);
     };
     
+    const testImapConnection = () => {
+        //test imap connection
+        setIsLoadingTestImap(true);
+
+        var url = "imap/testconnection";
+        var postJson = {
+            "_token":csrfToken,
+        };
+        
+        httpRequest(url, postJson, function(resp){
+            var C = resp.C;
+            //var msg = resp.M.message;
+            var msg = resp.M;
+            var R = resp.R;
+
+            var error = 0;
+            if(C == 100){
+                error = 0;
+            }else{
+                error = 1;
+            }
+
+            showToastMsg(error, msg);
+
+            setIsLoadingTestImap(false);
+        });
+    };
+
+    const  saveImap = (event) => {
+        //save imap
+        event.preventDefault();
+        const host = document.getElementById("imaphost").value.trim();
+        const port = document.getElementById("imapport").value.trim();
+        const encryption = document.getElementById("imapencryption").value.trim();
+        const username = document.getElementById("imapusername").value.trim();
+        const password = document.getElementById("imappassword").value.trim();
+        
+        setIsLoadingImapSave(true);
+
+        var url = "imap/update";
+        var postJson = {
+            "_token":csrfToken,
+            "host":host,
+            "port":port,
+            "encryption":encryption,
+            "username":username,
+            "password":password
+        };
+        
+        httpRequest(url, postJson, function(resp){
+            var C = resp.C;
+            var msg = resp.M.message;
+            var R = resp.R;
+
+            var error = 0;
+            if(C == 100){
+                error = 0;
+            }else{
+                error = 1;
+            }
+
+            showToastMsg(error, msg);
+
+            setIsLoadingImapSave(false);
+        });
+
+    };
+
     const save = (event) => {
 
         event.preventDefault();
@@ -563,13 +648,132 @@ const SettingsComponent = ({ pageTitle, csrfToken, params }) => {
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* IMAP Settings */}
+                                    <div className={`${Styles.panel} ${Styles.panelPrimary}`}>
+                                        <div className={`${Styles.panelHeading}`}>
+                                            <h3 className={`${Styles.panelTitle}`}>Monitored Inbox Settings (Default Mailbox)</h3>
+                                        </div>
+                                        <div className={`${Styles.panelBody}`}>
+                                            <div className="config-dsn-container">
+                                                <div className="row mb-3">
+                                                    <div className="col-md-6">
+                                                        <div className="row">
+                                                            <div className="form-group col-xs-12">
+                                                                <InputLabel className="form-label">
+                                                                IMAP host &nbsp;<i
+                                                                className="bi bi-question-circle"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="top"
+                                                                title="IMAP URL for the mail service host."
+                                                                style={{ cursor: "pointer" }}
+                                                                ></i>
+                                                                </InputLabel>
+
+                                                                <TextInput type="text" className="form-control" name="imaphost" id="imaphost" placeholder="" value={formValuesDNS.imaphost} onChange={handleInputChange} />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="row">
+                                                            <div className="form-group col-md-6">
+                                                                <InputLabel className="form-label">
+                                                                Port &nbsp;<i
+                                                                className="bi bi-question-circle"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="top"
+                                                                title="Port to use to connect to the mail host."
+                                                                style={{ cursor: "pointer" }}
+                                                                ></i>
+                                                                </InputLabel>
+
+                                                                <TextInput type="text" className="form-control" name="imapport" id="imapport" placeholder="" value={formValuesDNS.imapport} onChange={handleInputChange} />
+                                                            </div>
+                                                            
+                                                            <div className="form-group col-md-6">
+                                                                <InputLabel className="form-label">
+                                                                Encryption  &nbsp;<i
+                                                                className="bi bi-question-circle"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="top"
+                                                                title="Encryption for server connection. Some servers may require the no-validate options which will not validate the server's SSL certificate."
+                                                                style={{ cursor: "pointer" }}
+                                                                ></i>
+                                                                </InputLabel>
+                                                                
+                                                            <select id="imapencryption" name="imapencryption" className="form-select" style={{ width: '100%' }} 
+                                                            value={formValuesDNS.imapencryption}
+                                                            onChange={handleEncryptionChange}
+                                                            >
+<option value="">None</option>
+<option value="ssl" selected="selected">SSL</option>
+<option value="ssl/novalidate-cert">SSL with novalidate-cert</option>
+<option value="tls">TLS</option><option value="/tls/novalidate-cert">TLS with novalidate-cert</option>
+                                                            </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-md-6">
+                                                        <div className="row">
+                                                            <div className="form-group col-xs-12">
+                                                                <InputLabel className="form-label">
+                                                                IMAP username &nbsp;<i
+                                                                className="bi bi-question-circle"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="top"
+                                                                title="Username to login to the IMAP server."
+                                                                style={{ cursor: "pointer" }}
+                                                                ></i>
+                                                                </InputLabel>
+
+                                                                <TextInput type="text" className="form-control" name="imapusername" id="imapusername" placeholder="" value={formValuesDNS.imapusername} onChange={handleInputChange} />
+                                                            </div>
+                                                            
+                                                            <div className="form-group col-xs-12">
+                                                                <InputLabel className="form-label">
+                                                                IMAP password &nbsp;<i
+                                                                className="bi bi-question-circle"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="top"
+                                                                title="Password to login to the IMAP server."
+                                                                style={{ cursor: "pointer" }}
+                                                                ></i>
+                                                                </InputLabel>
+
+                                                                <TextInput type="text" className="form-control" name="imappassword" id="imappassword" placeholder="" value={formValuesDNS.imappassword} onChange={handleInputChange} />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="row">
+                                                            
+                                                           
+                                                           <div className="col-md-6">
+            <div className={`${Styles.configDsnTestContainer}`}>
+                <div className="form-inline">
+                    <div className="form-group btn-group" role="group">
+
+                        <PrimaryButton id="sendEmailBtn" type="button" isLoading={isLoadingTestImap} className="btn btn-primary" onClick={testImapConnection}><i className="bi bi-window-sidebar"></i>Test connection</PrimaryButton>
+                    
+                        <PrimaryButton type="button" isLoading={isLoadingImapSave} className="btn btn-primary" onClick={saveImap}><i className="bi bi-floppy2-fill"></i> Save</PrimaryButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+                                                          
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
                                     </form>
                                 </div>
                             </div>
                         </div>
 
                         <div className={`tab-pane fade ${activeTab === "user" ? "show active" : "hide"}`} role="tabpanel">
-                            <p>Add users and their permissions</p>
+                            <p>Add users and their permissions will be done by SCIP team as discussed with Smriti & Harsh on 23-05-2025</p>
                         </div>
                         </div>
                                             </div>

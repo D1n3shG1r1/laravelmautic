@@ -159,7 +159,7 @@ class Segments extends Controller
                                 
                                 $count = segment_contacts_model::where("segment_id", $segment->id)->count();
                                 $segment->contacts = $count;  // Add contacts count to each segment
-                                $segment->date_added = date('M d, y', strtotime($segment->date_added));
+                                $segment->date_added = date('d-m-Y', strtotime($segment->date_added));
                             }
                         }
 
@@ -221,7 +221,7 @@ class Segments extends Controller
                         
                         $count = segment_contacts_model::where("segment_id", $segment->id)->count();
                         $segment->contacts = $count;  // Add contacts count to each segment
-                        $segment->date_added = date('M d, y', strtotime($segment->date_added));
+                        $segment->date_added = date('d-m-Y', strtotime($segment->date_added));
                     }
                 }
                 
@@ -280,10 +280,10 @@ class Segments extends Controller
                     }
                 }
 
-                $segmentObj->date_added = date('M d, y', strtotime($segmentObj->date_added));
+                $segmentObj->date_added = date('d-m-Y', strtotime($segmentObj->date_added));
 
                 if($segmentObj->date_modified){
-                    $segmentObj->date_modified = date('M d, y', strtotime($segmentObj->date_modified));
+                    $segmentObj->date_modified = date('d-m-Y', strtotime($segmentObj->date_modified));
                 }else{
                     $segmentObj->date_modified = '';
                 }

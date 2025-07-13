@@ -180,7 +180,8 @@
     border-left: 1px solid #898989;
     height: 10px;
     width: 10px;
-    margin-left: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 .textAlignRight{
@@ -213,6 +214,19 @@
     color: #dc3545 !important;
 }
 
+.repliesListContainer {
+    position: absolute;
+    background: #000000ad;
+    display: flex;
+    flex-direction: column;
+    z-index: 1500;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    padding: 15px 15px;
+}
+
 .websiteListContainer {
     position: absolute;
     background: #000000ad;
@@ -233,4 +247,13 @@
 .createNewsletterFormBox {
     display: ruby;
     text-align: right;
+}
+
+.selectedSegments {
+    border: 1px solid #e9ecef;
+    padding: 0px 5px 0px 5px !important;
+    background-color: #e9ecef !important;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-right: 1px;
 }

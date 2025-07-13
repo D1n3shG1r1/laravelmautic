@@ -60,7 +60,7 @@ class Campaign extends Controller
                 
                 if(!empty($campaignsObj["data"])){
                     foreach($campaignsObj["data"] as &$obj){
-                        $obj["date_added"] = date('M d, y', strtotime($obj["date_added"]));
+                        $obj["date_added"] = date('d-m-Y', strtotime($obj["date_added"]));
                     }
                 }
             } else {
@@ -68,7 +68,7 @@ class Campaign extends Controller
 
                 if(!empty($campaignsObj["data"])){
                     foreach($campaignsObj["data"] as &$obj){
-                        $obj["date_added"] = date('M d, y', strtotime($obj["date_added"]));
+                        $obj["date_added"] = date('d-m-Y', strtotime($obj["date_added"]));
                     }
                 }
             }
@@ -335,7 +335,10 @@ class Campaign extends Controller
             parse_str($eventData,$postData); //unserialize form data
             //echo '<pre>'; print_r($postData); die;
             $campaignevent = $postData["campaignevent"];
-            
+            $triggerMode = $postData["triggerMode"]; //immediate//interval//date
+            $triggerDate = $postData["triggerDate"]; //06-07-2025 
+            $triggerInterval = $postData["triggerInterval"];// 1
+            $triggerIntervalUnit = $postData["triggerIntervalUnit"]; // i(minute), h(hour), d(days), m(month), y(year)
             
             $temp_id = $campaignevent["eventId"]; //temporary id
             $campaignId = $campaignevent["campaignId"];
@@ -370,6 +373,28 @@ class Campaign extends Controller
             $eventObj->temp_id = $temp_id;
             $eventObj->failed_count = 0;
             $eventObj->draft = $draft;
+
+            if($triggerMode == "immediate"){
+                $triggerDate = null;
+            }else if($triggerMode == "interval"){
+                if($triggerIntervalUnit == "d"){
+                    $triggerDate = date('Y-m-d', strtotime("+$triggerInterval days"));
+                }else if($triggerIntervalUnit == "m"){
+                    $triggerDate = date('Y-m-d', strtotime("+$triggerInterval months"));
+                }else if($triggerIntervalUnit == "y"){
+                    $triggerDate = date('Y-m-d', strtotime("+$triggerInterval year"));
+                }
+
+            }else if($triggerMode == "date"){
+                //triggerDate comes from form post
+            }else{
+                $triggerDate = null;
+            }
+            
+            $eventObj->trigger_mode = $triggerMode;
+            $eventObj->trigger_interval_unit = $triggerIntervalUnit;
+            $eventObj->trigger_interval = $triggerInterval;
+            $eventObj->trigger_date = $triggerDate;
 
             $saved = $eventObj->save();
             $lastInsertId = $eventObj->id;

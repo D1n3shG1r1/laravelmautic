@@ -40,6 +40,8 @@ return [
     "132" => ["error" => 0,"message" =>"The website has been successfully updated."],
     "133" => ["error" => 1,"message" =>"The website could not be saved. Please try again."],
     "134" => ["error" => 1,"message" =>"The website could not be deleted. Please try again."],
+    "135" => ["error" => 0,"message" =>"Default Mailbox has been saved successfully."],
+    "136" => ["error" => 1,"message" =>"Default Mailbox could not be saved. Please try again."],
     
     "1004" => ["error" => 1,"message" =>"Your session has expired. Please log in again to continue."],
 

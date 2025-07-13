@@ -160,7 +160,8 @@ class ProcessCampaignJob implements ShouldQueue
             $eventTriggered = $campaignEventRw->triggered; //0/1
             $eventDecisionPath = $campaignEventRw->decision_path; //yes/no
             $eventTriggerCount = $campaignEventRw->trigger_count; 
-
+            $eventTriggerDate = $campaignEventRw->trigger_date; 
+            
             $eventProperties = json_decode($eventProperties, true);
 
             $actionEventData = array();
@@ -173,6 +174,7 @@ class ProcessCampaignJob implements ShouldQueue
             $actionEventData["eventProperties"] = $eventProperties;
             $actionEventData["decisionPath"] = $eventDecisionPath;
             $actionEventData["trigger_count"] = $eventTriggerCount;
+            $actionEventData["trigger_date"] = $eventTriggerDate;
             $actionEventData["contactsObj"] = $contactsObj;
 
             //handle event operations
@@ -192,6 +194,7 @@ class ProcessCampaignJob implements ShouldQueue
         $eventType = $actionEventData["eventType"];
         $event = $actionEventData["event"];
         $eventProperties = $actionEventData["eventProperties"];
+        $trigger_date = $actionEventData["trigger_date"];
         $decisionPath = $actionEventData["decisionPath"];
         $triggerPrevCount = $actionEventData["trigger_count"]; //previous count
         $contactsObj = $actionEventData["contactsObj"];
@@ -432,6 +435,7 @@ class ProcessCampaignJob implements ShouldQueue
                             $batchRows[] = array(
                                 //'id'
                                 'campaignId' => $campaignId,
+                                'emailId' => $emailTemplateId,
                                 'segmentId' => 0,
                                 'eventId' => $eventId,
                                 'contactId' => $cntId,
@@ -440,6 +444,7 @@ class ProcessCampaignJob implements ShouldQueue
                                 'subject' => $subject,
                                 'html' => $custom_html,
                                 'emailSent' => 0,
+                                'triggerDate' => date("Y-m-d",strtotime($trigger_date)),
                                 'emailBrevoEvents' => '',
                                 'brevoTransactionId' => '',
                                 'date_added' => $today,

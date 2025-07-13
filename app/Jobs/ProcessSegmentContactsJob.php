@@ -150,16 +150,28 @@ class ProcessSegmentContactsJob implements ShouldQueue
             // Begin a transaction to ensure data consistency
             DB::transaction(function () use ($segment, $contacts) {
                 foreach ($contacts as $contact) {
+                    
                     // Using firstOrCreate to prevent duplicate entries in segment_contacts
-                    segment_contacts_model::firstOrCreate(
-                        [
-                            'segment_id' => $segment->id,
-                            'contact_id' => $contact->id,
-                            'date_added' => date("Y-m-d H:i:s"),
-                            'manually_removed' => 0,
-                            'manually_added' => 0
-                        ]
-                    );
+                    
+                    $rows = segment_contacts_model::where("segment_id", $segment->id)->where("contact_id", $contact->id)->get();
+                    
+                    if($rows->isEmpty()){
+                        
+                        segment_contacts_model::firstOrCreate(
+                            [
+                                'segment_id' => $segment->id,
+                                'contact_id' => $contact->id,
+                                'date_added' => date("Y-m-d H:i:s"),
+                                'manually_removed' => 0,
+                                'manually_added' => 0
+                            ]
+                        );
+                    }else{
+                        //contct already associated
+                        
+                    }
+                    
+                    
                 }
             });
         }

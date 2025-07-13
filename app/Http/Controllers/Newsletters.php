@@ -395,8 +395,8 @@ class Newsletters extends Controller
         // Format date fields
         if ($pages) {
             foreach ($pages as &$page) {
-                $page->PublishDate = date('M d, y', strtotime($page->PublishDate));
-                $page->PickupDate = date('M d, y', strtotime($page->PickupDate));
+                $page->PublishDate = date('d-m-Y', strtotime($page->PublishDate));
+                $page->PickupDate = date('d-m-Y', strtotime($page->PickupDate));
             }
         }
 

@@ -65,7 +65,7 @@ class Contacts extends Controller
     
         // Format contact data
         foreach ($contacts as &$contact) {
-            $contact->date_added = date('M d, y', strtotime($contact->date_added));
+            $contact->date_added = date('d-m-Y', strtotime($contact->date_added));
             $contact->tags = $tags[$contact->id] ?? [];
         }
     
