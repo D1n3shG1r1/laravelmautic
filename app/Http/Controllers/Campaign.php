@@ -328,17 +328,17 @@ class Campaign extends Controller
         channel_id //int //null
         failed_count //int (0,1,2,3,4,5...) number of times event is failed
         */
-
+        
         if($this->USERID > 0){
             $eventData = $request->input("eventData");
             $postData = [];
             parse_str($eventData,$postData); //unserialize form data
             //echo '<pre>'; print_r($postData); die;
             $campaignevent = $postData["campaignevent"];
-            $triggerMode = $postData["triggerMode"]; //immediate//interval//date
-            $triggerDate = $postData["triggerDate"]; //06-07-2025 
-            $triggerInterval = $postData["triggerInterval"];// 1
-            $triggerIntervalUnit = $postData["triggerIntervalUnit"]; // i(minute), h(hour), d(days), m(month), y(year)
+            $triggerMode = $campaignevent["triggerMode"]; //immediate//interval//date
+            $triggerDate = $campaignevent["triggerDate"]; //06-07-2025 
+            $triggerInterval = $campaignevent["triggerInterval"];// 1
+            $triggerIntervalUnit = $campaignevent["triggerIntervalUnit"]; // i(minute), h(hour), d(days), m(month), y(year)
             
             $temp_id = $campaignevent["eventId"]; //temporary id
             $campaignId = $campaignevent["campaignId"];

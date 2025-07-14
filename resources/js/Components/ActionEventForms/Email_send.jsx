@@ -134,6 +134,11 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
     const eventOrder = propJson.eventOrder;
     const content = propJson.content;
     const dataConnected = propJson.dataConnected;
+
+    const triggerMode = propJson.triggerMode;
+    const triggerDate = propJson.triggerDate;
+    const triggerInterval = propJson.triggerInterval;
+    const triggerIntervalUnit = propJson.triggerIntervalUnit;
     
     var classType = 'list-campaign-leadsource';
     if(type == 'decision'){
@@ -163,6 +168,30 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
     if(classType != ''){
         node.classList.add(classType);
     }
+
+  if(triggerMode == 'interval' || triggerMode == 'date'){
+      const intervalNode = document.createElement("span");
+      intervalNode.id = id + '-interval';
+      if(triggerMode == 'interval'){
+        intervalNode.innerText = 'Trigger after '+triggerInterval+' '+triggerIntervalUnit;
+      }else{
+        intervalNode.innerText = 'Trigger on '+triggerDate;
+      }
+        
+      intervalNode.style.border = '1px solid #fdb933';
+      intervalNode.style.top = '-45px';
+      intervalNode.style.left = '0';
+      intervalNode.style.width = '100%';
+      intervalNode.style.borderRadius = '3px';
+      intervalNode.style.textAlign = 'center';
+      intervalNode.style.boxShadow = '0px 0px 3px rgba(0, 0, 0, 0.2)';
+      intervalNode.style.backgroundColor = '#ffffff';
+      intervalNode.style.color = '#fdb933';
+      intervalNode.style.padding = '0px 5px 0 5px';
+      intervalNode.style.position = 'absolute';
+      node.appendChild(intervalNode);
+  }
+
 
     if (type === 'source') {
       const endpointBottomCenterHolder = document.createElement("div");
@@ -385,6 +414,11 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
                 var resp_eventName = resp_campaignevent.name;
                 var truncateEventName = resp_eventName;
 
+                var triggerMode = resp_campaignevent.triggerMode;
+                var triggerDate = resp_campaignevent.triggerDate;
+                var triggerInterval = resp_campaignevent.triggerInterval;
+                var triggerIntervalUnit = resp_campaignevent.triggerIntervalUnit;
+
                // create node
                const nodeIconMap = {
                 decision: '<i class="hidden-xs fa fa-random fa-lg" style="color:#00b49d"></i>',
@@ -409,7 +443,11 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
                     "parentNodeAnchor":resp_parentNodeAnchor,
                     "eventOrder":eventOrder,
                     "content":nodeContent,
-                    "dataConnected":dataConnected
+                    "dataConnected":dataConnected,
+                    "triggerMode" : triggerMode,
+                    "triggerDate" : triggerDate,
+                    "triggerInterval" : triggerInterval,
+                    "triggerIntervalUnit" : triggerIntervalUnit,
                 };
 
                 
@@ -462,6 +500,30 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
         [key]: value
       }));
     }
+  };
+
+  const handleKeyDown = (e) => {
+    // Allow: Backspace, Delete, Tab, Escape, Enter, Arrow keys, Ctrl/Cmd+A
+    if (
+      [46, 8, 9, 27, 13, 37, 38, 39, 40].includes(e.keyCode) ||
+      (e.keyCode === 65 && (e.ctrlKey || e.metaKey))
+    ) {
+      return;
+    }
+
+    // Block non-numeric keys
+    if (e.key < '0' || e.key > '9') {
+      e.preventDefault();
+    }
+  };
+
+  const handleInput = (e) => {
+    const min = parseInt(e.target.min);
+    const max = parseInt(e.target.max);
+    let val = parseInt(e.target.value);
+
+    if (val < min) e.target.value = min;
+    if (val > max) e.target.value = max;
   };
 
   return (
@@ -583,7 +645,9 @@ const DecisionModalContent = ({inputData, jsPlumbInstanceRef}) => {
                           <span className="input-group-prepend input-group-addon preaddon">
                           <i className="input-group-text bi bi-hash"></i>
                           </span>
-                          <TextInput autoComplete="false" type="text" id="campaignevent_triggerInterval" name="campaignevent[triggerInterval]" className="form-control" value={formValues.triggerInterval} onChange={handleInputChange}/>
+                          <TextInput autoComplete="false" type="number" id="campaignevent_triggerInterval" name="campaignevent[triggerInterval]" className="form-control" min="1" max="10" onKeyDown={handleKeyDown} onInput={handleInput}
+                          value={formValues.triggerInterval}
+                          onChange={handleInputChange}/>
                       </div>
                     </div>
                   </div>
