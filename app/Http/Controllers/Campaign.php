@@ -213,6 +213,45 @@ class Campaign extends Controller
                 //update campaignId in campaign-events
                 campaign_events_model::where("campaignId", $tempId)->update(array("campaignId" => $campaignId, "draft" => 0));
 
+                //$campaignId
+                //$activateat
+                //update email.send trigger-date if trigger-mode is 'interval'
+                $tempEventsObj = campaign_events_model::select("id", "trigger_interval", "trigger_interval_unit", "trigger_mode")
+                ->where("campaignId", $campaignId)
+                ->where("type", "email.send")
+                ->where("trigger_mode", "interval")
+                ->get();
+
+                if (!$tempEventsObj->isEmpty()) {
+                    foreach ($tempEventsObj as $tempEventRw) {
+                        $tmpEvt_id = $tempEventRw->id;
+                        $triggerInterval = $tempEventRw->trigger_interval;
+                        $triggerIntervalUnit = $tempEventRw->trigger_interval_unit;
+                        $triggerMode = $tempEventRw->trigger_mode;
+
+                        $triggerDate = null; // Default fallback
+
+                        if ($triggerMode === "interval") {
+                            switch ($triggerIntervalUnit) {
+                                case "d":
+                                    $triggerDate = date('Y-m-d', strtotime("$activateat +$triggerInterval days"));
+                                    break;
+                                case "m":
+                                    $triggerDate = date('Y-m-d', strtotime("$activateat +$triggerInterval months"));
+                                    break;
+                                case "y":
+                                    $triggerDate = date('Y-m-d', strtotime("$activateat +$triggerInterval years"));
+                                    break;
+                            }
+
+                            campaign_events_model::where("campaignId", $campaignId)
+                                ->where("id", $tmpEvt_id)
+                                ->update(["trigger_date" => $triggerDate]);
+                        }
+                    }
+                }
+
+
                 //update campaignId in campaign-segments
                 campaign_segments_model::where("campaign_id", $tempId)->update(array("campaign_id" => $campaignId));
 
