@@ -871,7 +871,7 @@ class Campaign extends Controller
                 //echo '$contactCounts:'.$contactCounts; die;
 
                 //get campaign events
-                $eventsObj = campaign_events_model::select("id", "campaignId", "parentId", "name", "description", "type", "eventType", "eventOrder", "xy_positions", "properties", "triggered", "triggered_on", "trigger_date", "decision_path", "channel", "channel_id", "trigger_count")
+                $eventsObj = campaign_events_model::select("id", "campaignId", "parentId", "name", "description", "type", "eventType", "eventOrder", "xy_positions", "properties", "triggered", "triggered_on", "trigger_date","trigger_interval", "trigger_interval_unit", "trigger_mode", "decision_path", "channel", "channel_id", "trigger_count")
                 ->where('campaignId', $campaignId)
                 ->orderBy("eventOrder","asc")
                 ->get();
@@ -889,6 +889,8 @@ class Campaign extends Controller
                         $eventRwTmp->failed = 0;
                         $eventRwTmp->completed = 0;
                         $eventRwTmp->pending = 0;
+
+                        $eventRwTmp->trigger_date = date('d-m-Y', strtotime($eventRwTmp->trigger_date));
 
                         //get parent event details
                         if($eventRwTmp->parentId > 0){

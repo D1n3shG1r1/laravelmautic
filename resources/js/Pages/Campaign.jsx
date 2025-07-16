@@ -213,6 +213,11 @@ const campaign = ({pageTitle,csrfToken,params}) => {
         const eventOrder = propJson.eventOrder;
         const content = propJson.content;
         const dataConnected = propJson.dataConnected;
+
+        const triggerMode = propJson.triggerMode;
+        const triggerDate = propJson.triggerDate;
+        const triggerInterval = propJson.triggerInterval;
+        const triggerIntervalUnit = propJson.triggerIntervalUnit;
         
         var classType = 'list-campaign-leadsource';
         if(type == 'decision'){
@@ -243,6 +248,30 @@ const campaign = ({pageTitle,csrfToken,params}) => {
             node.classList.add(classType);
         }
     
+        if(triggerMode == 'interval' || triggerMode == 'date'){
+            const intervalNode = document.createElement("span");
+            intervalNode.id = id + '-interval';
+            if(triggerMode == 'interval'){
+              intervalNode.innerText = 'Trigger after '+triggerInterval+' '+triggerIntervalUnit;
+            }else{
+              intervalNode.innerText = 'Trigger on '+triggerDate;
+            }
+              
+            intervalNode.style.border = '1px solid #fdb933';
+            intervalNode.style.top = '-45px';
+            intervalNode.style.left = '0';
+            intervalNode.style.width = '100%';
+            intervalNode.style.borderRadius = '3px';
+            intervalNode.style.textAlign = 'center';
+            intervalNode.style.boxShadow = '0px 0px 3px rgba(0, 0, 0, 0.2)';
+            intervalNode.style.backgroundColor = '#ffffff';
+            intervalNode.style.color = '#fdb933';
+            intervalNode.style.padding = '0px 5px 0 5px';
+            intervalNode.style.position = 'absolute';
+            node.appendChild(intervalNode);
+        }
+
+
         //add circles/buttons/endpoints
         document.getElementById("campaign-builder").appendChild(node);
         
@@ -391,6 +420,10 @@ const campaign = ({pageTitle,csrfToken,params}) => {
                 parentEventType: event.eventType,
                 parentEventTypeValue: event.type,
                 parentNodeAnchor: event.decision_path,
+                triggerMode : event.trigger_mode,
+                triggerDate : event.trigger_date,
+                triggerInterval : event.trigger_interval,
+                triggerIntervalUnit : event.trigger_interval_unit,
                 eventOrder: eventOrder,
                 content: nodeContent,
                 dataConnected: dataConnected,
@@ -431,9 +464,9 @@ const campaign = ({pageTitle,csrfToken,params}) => {
                                     <h2>Campaign</h2>
                                 </div>
                                 <div className={`${Styles.textAlignRight} col-md-6`}>
-                                    <NavLink className="btn cur-p btn-outline-primary" href="campaigns/new">
+                                    {/*<NavLink className="btn cur-p btn-outline-primary" href="campaigns/new">
                                         <i className={`${Styles.newBtnIcon} fa fa-plus`}></i> New
-                                    </NavLink>
+                                    </NavLink>*/}
                                 </div>
                             </div>
                         </div>
