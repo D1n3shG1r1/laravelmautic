@@ -78,7 +78,9 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         twitter: '',
         stage: '',
         contactowner: '',
-        tags: ''
+        tags: '',
+        reasonTocontact:'',
+        message:''
     });
 
     // Handle form values update
@@ -117,6 +119,8 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         const mobile = document.getElementById("mobile").value;
         const company = document.getElementById("company").value;
         const contactTags = selectedTags;
+        const reasonTocontact = document.getElementById("reasonTocontact").value;
+        const message = document.getElementById("message").value;
         
         /*
         const company = document.getElementById("company").value;
@@ -340,7 +344,9 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
             "country":country,
             "mobile":mobile,
             "company":company,
-            "tags":contactTags
+            "tags":contactTags,
+            "reasonTocontact":reasonTocontact,
+            "message":message
         };
         
         httpRequest(url, postJson, function(resp){
@@ -516,6 +522,23 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                                                     </div>
                                                     </div>
                                                     
+                                                    <div className="form-group mb-3">
+                                                    <div className="row mb-3">
+                                                    <div className="col-md-6">
+                                                        <InputLabel className="form-label" value="Reason to contact"/>
+
+                                                        <TextInput type="text" className="form-control" name="reasonTocontact" id="reasonTocontact" placeholder="Reason to contact" value={formValues.reasonTocontact} onChange={handleInputChange}/>
+                                                    </div>
+                                                    
+                                                    <div className="col-md-6">
+                                                        <InputLabel className="form-label" value="Message"/>
+
+                                                        <TextInput type="text" className="form-control" name="message" id="message" placeholder="Message" value={formValues.message} onChange={handleInputChange}/>
+                                                    </div>
+                                                    </div>
+                                                    </div>
+
+
 
                                                     <div className="form-group mb-3">
                                                     <div className="row mb-3">

@@ -414,10 +414,17 @@ class ProcessCampaignJob implements ShouldQueue
                         //get subject and html
                         $emailTemplateId = $eventProperties["email"][0];
                         
-                        $templateObj = emailsbuilder_model::select("subject","custom_html")->where("id", $emailTemplateId)->first();
+                        $templateObj = emailsbuilder_model::select("subject","custom_html", "attachment", "created_by_company")->where("id", $emailTemplateId)->first();
                         $subject = $templateObj->subject;
                         $custom_html = $templateObj->custom_html;
-
+                        $attachment = $templateObj->attachment;
+                        $companyId = $templateObj->created_by_company;
+                        if (!isset($attachment) || trim($attachment) === '') {
+                            // ❌ It's null, not set, empty, or just spaces
+                            $attachment = '';
+                        } else {
+                            // ✅ It's a valid non-empty value
+                        }
                         // create batch rows
                         $sendEmailContacts = array();
                         $batchRows = array();
@@ -435,6 +442,7 @@ class ProcessCampaignJob implements ShouldQueue
                             $batchRows[] = array(
                                 //'id'
                                 'campaignId' => $campaignId,
+                                'companyId' => $companyId,
                                 'emailId' => $emailTemplateId,
                                 'segmentId' => 0,
                                 'eventId' => $eventId,
@@ -443,6 +451,7 @@ class ProcessCampaignJob implements ShouldQueue
                                 'contactEmail' => $cntEml,
                                 'subject' => $subject,
                                 'html' => $custom_html,
+                                'attachment' => $attachment,
                                 'emailSent' => 0,
                                 'triggerDate' => date("Y-m-d",strtotime($trigger_date)),
                                 'emailBrevoEvents' => '',
@@ -627,10 +636,7 @@ class ProcessCampaignJob implements ShouldQueue
                             Log::warning("{$reportBatchInsert} report row inserted for campaign: {$campaignId}");
                         }
 
-                        
-
                     }
-
 
                 }
                 

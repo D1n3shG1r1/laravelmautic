@@ -65,6 +65,13 @@ use Illuminate\Support\Facades\Auth;
         }
     }
 
+    if(!function_exists('generateSecureAlphanumeric')){
+        function generateSecureAlphanumeric($length = 16) {
+            $bytes = random_bytes($length);
+            return substr(bin2hex($bytes), 0, $length);
+        }
+    }
+    
     if(!function_exists('get_client_ip')){
         function get_client_ip() {
             $ipaddress = '';

@@ -120,7 +120,7 @@ const SignUpHtml = ({pageTitle,csrfToken,params}) => {
                                 <div className={`field margin_0`}>
                                     <div className={`${Styles.textAlignRight} field margin_0`}>
                                         <NavLink href="signup" className="label_field" >Create an account? → Sign Up</NavLink>
-                                        <PrimaryButton type="submit" isLoading={isLoading} className="main_bt">Sing In</PrimaryButton>
+                                        <PrimaryButton type="submit" isLoading={isLoading} className="main_bt">Sign In</PrimaryButton>
                                     </div>
                                 </div>
                                 

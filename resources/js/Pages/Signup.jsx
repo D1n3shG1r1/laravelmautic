@@ -237,7 +237,7 @@ const SignUpHtml = ({pageTitle,csrfToken,params}) => {
                                 </div>*/}
                                 <div className={`${Styles.textAlignRight} field margin_0`}>
                                     <NavLink href="signin" className="label_field" >Already have an account? → Sign In</NavLink>
-                                    <PrimaryButton type="submit" isLoading={isLoading} className="main_bt">Sing Up</PrimaryButton>
+                                    <PrimaryButton type="submit" isLoading={isLoading} className="main_bt">Sign Up</PrimaryButton>
                                 </div>
                                 </fieldset>
                             </form>

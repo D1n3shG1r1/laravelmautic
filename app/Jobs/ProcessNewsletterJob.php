@@ -24,7 +24,7 @@ class ProcessNewsletterJob implements ShouldQueue
 {
     use Queueable;
 
-    public $EMAILID; //$CAMPAIGNID
+    public $EMAILID;
 
     /**
      * Create a new job instance.
@@ -53,10 +53,6 @@ class ProcessNewsletterJob implements ShouldQueue
         $published = 1; 
         $deleted = null;
         
-        /*$campaign = emailsbuilder_model::where("id", $this->EMAILID)
-        ->where("publish_up", $today)
-        ->where("is_published", $published)
-        ->first();*/
 
         $newsletterEmail = emailsbuilder_model::where("id", $this->EMAILID)->first();
         
@@ -164,6 +160,14 @@ class ProcessNewsletterJob implements ShouldQueue
             //get subject and html
             $subject = $newsletterEmail->subject;
             $custom_html = $newsletterEmail->custom_html;
+            $attachment = $newsletterEmail->attachment;
+            $companyId = $newsletterEmail->created_by_company;
+            if (!isset($attachment) || trim($attachment) === '') {
+                // ❌ It's null, not set, empty, or just spaces
+                $attachment = '';
+            } else {
+                // ✅ It's a valid non-empty value
+            }
 
             // create batch rows
             $sendEmailContacts = array();
@@ -180,6 +184,7 @@ class ProcessNewsletterJob implements ShouldQueue
                 $batchRows[] = array(
                     //'id'
                     'emailId' => $this->EMAILID,
+                    'companyId' => $companyId,
                     'segmentId' => 0,
                     'eventId' => 0,
                     'contactId' => $cntId,
@@ -187,6 +192,7 @@ class ProcessNewsletterJob implements ShouldQueue
                     'contactEmail' => $cntEml,
                     'subject' => $subject,
                     'html' => $custom_html,
+                    'attachment' => $attachment,
                     'emailSent' => 0,
                     'emailBrevoEvents' => '',
                     'brevoTransactionId' => '',

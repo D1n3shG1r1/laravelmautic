@@ -136,8 +136,10 @@ class Contacts extends Controller
             $mobile = $request->input("mobile");
             $company = $request->input("company");
             $tags = $request->input("tags");
+            $reasonTocontact = $request->input("reasonTocontact");
+            $message = $request->input("message");
             
-
+            
             // Define the validation rules
             $rules = [
                 'title' => 'required|string|min:2|max:50',
@@ -199,6 +201,8 @@ class Contacts extends Controller
                     $contactObj->created_by_user = $fullName; 
                     $contactObj->created_by_company = $userCompany;
                     $contactObj->points = 0;
+                    $contactObj->reasonToContact = $reasonTocontact;
+                    $contactObj->message = $message;
                     $saved = $contactObj->save();
                     $conatctId = $contactObj->id;
                     
@@ -460,6 +464,9 @@ class Contacts extends Controller
             $mobile = $request->input("mobile");
             $company = $request->input("company");
             $tags = $request->input("tags");
+            $reasonTocontact = $request->input("reasonTocontact");
+            $message = $request->input("message");
+
 
             // Define the validation rules
             $rules = [
@@ -506,7 +513,9 @@ class Contacts extends Controller
                     "company" => $company,
                     "date_modified" => $today,
                     "modified_by" => $this->USERID,
-                    "modified_by_user" => $fullName
+                    "modified_by_user" => $fullName,
+                    "reasonToContact" => $reasonTocontact,
+                    "message" => $message
                 );
 
                 

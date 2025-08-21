@@ -56,7 +56,7 @@ class Campaign extends Controller
             $isAdmin = $this->getSession('isAdmin');
 
             if ($isAdmin > 0) {
-                $campaignsObj = campaigns_model::where("created_by_company", $userCompany)->paginate(10)->toArray();
+                $campaignsObj = campaigns_model::where("created_by_company", $userCompany)->orderBy("date_added","desc")->paginate(10)->toArray();
                 
                 if(!empty($campaignsObj["data"])){
                     foreach($campaignsObj["data"] as &$obj){
@@ -64,7 +64,7 @@ class Campaign extends Controller
                     }
                 }
             } else {
-                $campaignsObj = campaigns_model::where("created_by", $this->USERID)->paginate(10)->toArray();
+                $campaignsObj = campaigns_model::where("created_by", $this->USERID)->orderBy("date_added","desc")->paginate(10)->toArray();
 
                 if(!empty($campaignsObj["data"])){
                     foreach($campaignsObj["data"] as &$obj){
@@ -247,6 +247,8 @@ class Campaign extends Controller
                             campaign_events_model::where("campaignId", $campaignId)
                                 ->where("id", $tmpEvt_id)
                                 ->update(["trigger_date" => $triggerDate]);
+                        }else if($triggerMode === "immediate"){
+                            $triggerDate = date('Y-m-d', strtotime($activateat)); 
                         }
                     }
                 }

@@ -1,5 +1,5 @@
 <?php
-
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Campaign;
 use App\Http\Controllers\Register;
@@ -11,11 +11,13 @@ use App\Http\Controllers\Emailsbuilder;
 use App\Http\Controllers\EmailReplies;
 use App\Http\Controllers\Newsletters;
 use App\Http\Controllers\Tags;
+use App\Http\Controllers\Widgets;
 use App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Media;
-
 use App\Http\Controllers\BrevoWebhookController;
+
+use App\Http\Controllers\LeadTrackingController;
 
 use App\Http\Controllers\Test;
 
@@ -23,6 +25,39 @@ use App\Http\Controllers\Test;
     return view('welcome');
 });*/
 
+Route::prefix('api')->name('api.')->group(function () {
+
+    //webform widget
+    Route::get('/contactform', [LeadTrackingController::class, 'contactform']);
+    Route::post('/contactformsubmit', [LeadTrackingController::class, 'handlecontactform']);
+
+    //webhook widget
+    Route::post('/webhook', [LeadTrackingController::class, 'handlewebhook']);
+
+
+    //popup widget
+    Route::get('/check-domain', function (Request $request) {
+        $partner = \App\Models\widgets_model::where('widgetKey', $request->key)->first();
+    
+        $isValid = 0;
+        if($partner && $partner->website === $request->domain){
+            $isValid = 1; //$partner && $partner->website === $request->domain;    
+        }
+        
+    
+        return response()->json([
+            'isValid' => $isValid,
+            'active' => $partner->active,
+            'verified' => $partner->validate,
+            'requiredInputs' => $partner->parameters,
+            'widgetType' => $partner->type,
+            'widgetHeading' => $partner->widgetHeading
+        ]);
+    });
+
+    Route::post('/track', [LeadTrackingController::class, 'track']);
+    Route::post('/verify-domain', [LeadTrackingController::class, 'verify']);
+});
 
 //Test Routes for Campaign Builder
 Route::get('/campaignbuilderidx',[Campaign::class, 'index']);
@@ -86,6 +121,7 @@ Route::post('/email/update',[Emailsbuilder::class,'update']);
 Route::post('/email/delete',[Emailsbuilder::class,'delete']);
 Route::get('/email/view/{id}',[Emailsbuilder::class,'view']);
 Route::post('/emailreplies',[EmailReplies::class,'getReplies']);
+Route::post('/email/saveattachment',[Emailsbuilder::class,'saveattachment']);
 
 
 Route::get('/news',[Newsletters::class,'getnews']);
@@ -103,6 +139,13 @@ Route::post('/tag/save',[Tags::class,'save']);
 Route::get('/tag/edit/{id}',[Tags::class,'tag']);
 Route::post('/tag/update',[Tags::class,'update']);
 Route::post('/tag/delete',[Tags::class,'delete']);
+
+Route::get('/widgets',[Widgets::class,'widgets']);
+Route::get('/widgets/new',[Widgets::class,'new']);
+Route::post('/widget/save',[Widgets::class,'save']);
+Route::get('/widget/edit/{id}',[Widgets::class,'edit']);
+Route::post('/widget/delete',[Widgets::class,'delete']);
+Route::post('/widget/Update',[Widgets::class,'update']);
 
 Route::get('/settings',[Settings::class,'settings']);
 Route::post('/emaildsn/update',[Settings::class,'updateEmaildsn']);

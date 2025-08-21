@@ -127,6 +127,7 @@ class Segments extends Controller
 
                 }
                 
+                $contactsQuery->orderBy("date_added","desc");
                 // Paginate the contacts based on the filters
                 $contacts = $contactsQuery->paginate(10);
 
@@ -209,8 +210,8 @@ class Segments extends Controller
             } else {
                 // When no filters are applied, display segments for the user
                 $segmentsObj = $isAdmin > 0
-                    ? segments_model::where("created_by_company", $userCompany)->paginate(10)
-                    : segments_model::where("created_by", $this->USERID)->paginate(10);
+                    ? segments_model::where("created_by_company", $userCompany)->orderBy("date_added","desc")->paginate(10)
+                    : segments_model::where("created_by", $this->USERID)->orderBy("date_added","desc")->paginate(10);
 
                 
                 // Check if there are any segments

@@ -1,12 +1,19 @@
-export default function Radiobutton({ className = '', ...props }) {
-    return (
-        <input
-            {...props}
-            type="radio"
-            className={
-                'rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 ' +
-                className
-            }
-        />
-    );
+export default function Radiobutton({ label, name, value, checked, onChange }) {
+  return (
+    <div className="form-check">
+      <input
+        className="form-check-input"
+        type="radio"
+        name={name}
+        value={value}
+        id={`${name}-${value}`}
+        checked={checked}
+        onChange={onChange}
+      />
+      <label className="form-check-label" htmlFor={`${name}-${value}`}>
+        {label}
+      </label>
+    </div>
+  );
 }
+

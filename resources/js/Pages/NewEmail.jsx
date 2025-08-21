@@ -158,9 +158,49 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
     setToggleValue(value);
   };
 
+  const [file, setFile] = useState(null);
+
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
+
+  const save_test = (event) => {
+    var formData = {};
+    if (file) {
+      formData = new FormData();
+
+      console.log("formData");
+      console.log(formData);
+
+      formData.append('file', file);
+
+      console.log("formData2");
+      console.log(formData);
+    }
+
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ':', pair[1]);
+    }
+
+    var url = "email/save";
+    var postJson = {
+      "mytoken":"123456",
+      "formData":formData
+    };
+    
+    console.log("postJson");
+    console.log(postJson);
+
+    httpRequest(url, postJson, function(resp){
+      console.log(resp);
+    }, false);
+  }
+
   const save = (event) => {
     //save email
+    console.log("save");
     event.preventDefault();
+    console.log("save2");
     
     const minLength = 2;
     const maxLength = 50;
@@ -199,6 +239,23 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
     const attachments = document.getElementById("attachments").value;
     const plaintext = document.getElementById("plaintext").value.trim();
 
+    console.log("save3");
+    /*console.log("file");
+    console.log(file);
+    var formData = {};
+    if (file) {
+      formData = new FormData();
+
+      console.log("formData");
+      console.log(formData);
+
+      formData.append('file', file);
+
+      console.log("formData2");
+      console.log(formData);
+    }*/
+
+    console.log("save4");
     //validate subject and internal-name
     if(!isRealVal(subject)){
         var err = 1;
@@ -207,12 +264,16 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
         return false;
     }
     
+    console.log("save5");
+
     if(subject.length < minLength){
       var err = 1;
       var msg = "Subject must be atleast "+minLength+" characters long.";
       showToastMsg(err, msg);
       return false;
     }
+
+    console.log("save6");
 
     if(subject.length > maxLength){
       var err = 1;
@@ -221,12 +282,16 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
       return false;
     }
 
+    console.log("save7");
+
     if(!validCharacters.test(subject)) {
       var err = 1;
       var msg = "Subject can only contain letters and spaces.";
       showToastMsg(err, msg);
       return false;
     }
+
+    console.log("save8");
 
     if(!isRealVal(internalname)){
       var err = 1;
@@ -235,12 +300,16 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
       return false;
     }
     
+    console.log("save9");
+
     if(internalname.length < minLength){
       var err = 1;
       var msg = "Internal name must be atleast "+minLength+" characters long.";
       showToastMsg(err, msg);
       return false;
     }
+
+    console.log("save10");
 
     if(internalname.length > maxLength){
       var err = 1;
@@ -249,12 +318,16 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
       return false;
     }
 
+    console.log("save11");
+
     if(!validCharacters.test(internalname)) {
       var err = 1;
       var msg = "Internal name can only contain letters and spaces.";
       showToastMsg(err, msg);
       return false;
     }
+
+    console.log("save12");
 
     if (emailType === 'list' && selectedSegments.length == 0){
       var err = 1;
@@ -263,12 +336,16 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
       return false;
     }
 
+    console.log("save13");
+
     if(!isRealVal(activateat)){
       var err = 1;
       var msg = "The activation date is required.";
       showToastMsg(err, msg);
       return false;
     }
+
+    console.log("save14");
 
     if(!isRealVal(deactivateat)){
       var err = 1;
@@ -277,6 +354,8 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
       return false;
     }
     
+    console.log("save15");
+
     //validate email address
     
     if(isRealVal(fromaddress) && !validateEmail(fromaddress)){
@@ -286,12 +365,16 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
       return false;
     }
 
+    console.log("save16");
+
     if(isRealVal(replytoaddress) && !validateEmail(replytoaddress)){
       var err = 1;
       var msg = "Enter valid `Replyto email address`.";
       showToastMsg(err, msg);
       return false;
     }
+
+    console.log("save17");
 
     if(isRealVal(bccaddress) && !validateEmail(bccaddress)){
       var err = 1;
@@ -300,7 +383,13 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
       return false;
     }
 
+    console.log("save17");
+
     setIsLoading(true);
+
+    /*for (let pair of formData.entries()) {
+      console.log(pair[0] + ':', pair[1]);
+    }*/
 
     var url = "email/save";
     var postJson = {
@@ -321,8 +410,12 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
       "bccaddress":bccaddress,
       "attachments":attachments,
       "plaintext":plaintext,
+      
     };
     
+    console.log("postJson");
+    console.log(postJson);
+
     httpRequest(url, postJson, function(resp){
         var C = resp.C;
         var error = resp.M.error;
@@ -330,8 +423,49 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
         var R = resp.R;
 
         if(C == 100 && error == 0){
-            showToastMsg(error, msg);
-            window.location.href = params.emailsUrl;
+            
+            // Append file
+            if (file) {
+
+              const emailId = R.id;
+              const token = R.token;
+
+              //post attachment
+              const formData = new FormData();
+
+              formData.append('file', file);
+              
+              // Append other fields manually
+              
+              formData.append('_token', token);
+              formData.append('emailId', emailId);
+
+              // Debug FormData content
+              for (let pair of formData.entries()) {
+                console.log(pair[0] + ':', pair[1]);
+              }
+
+              // Use native fetch (not custom httpRequest)
+              fetch(SERVICEURL + '/email/saveattachment', {
+                method: 'POST',
+                body: formData,
+              })
+              .then(response => response.json())
+              .then(data => {
+                
+                //showToastMsg(0, 'File uploaded successfully.');
+                showToastMsg(error, msg);
+                window.location.href = params.emailsUrl;
+              })
+              .catch(error => {
+                showToastMsg(1, error.message);    
+                //showToastMsg(1, 'Upload failed: ' + error.message);
+              });
+
+            }else{
+              showToastMsg(error, msg);
+              window.location.href = params.emailsUrl;
+            }
 
         }else{
             if(C == 102){
@@ -582,10 +716,10 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                                             </div>
                                         </div>
 
-                                        <div className="row mb-3 hide">
+                                        <div className="row mb-3">
                                             <div className="col-md-12">
                                                 <InputLabel className="form-label">
-                                                  Attachments&nbsp;<i
+                                                  Attachment&nbsp;<i
                                                   className="bi bi-question-circle"
                                                   data-bs-toggle="tooltip"
                                                   data-bs-placement="top"
@@ -593,7 +727,9 @@ const EmailComponent = ({pageTitle, csrfToken, params}) => {
                                                   style={{ cursor: "pointer" }}
                                                   ></i>
                                                 </InputLabel>
-                                                <TextInput type="text" className="form-control" name="attachments" id="attachments" placeholder="Attachments" value={formValues.attachments} onChange={handleInputChange} />
+                                                <TextInput type="file" className="form-control" name="attachments" id="attachments" placeholder="Attachments" onChange={handleFileChange} 
+                                                accept="application/pdf"/>
+                                                {/*value={formValues.attachments}*/}
                                             </div>
                                         </div>
                                           

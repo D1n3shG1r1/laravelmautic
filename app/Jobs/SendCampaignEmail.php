@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Mail;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class SendCampaignEmail implements ShouldQueue
 {
@@ -47,6 +48,7 @@ class SendCampaignEmail implements ShouldQueue
 
         /*
         $emailRow->id
+        $emailRow->emailId
         $emailRow->campaignId
         $emailRow->segmentId
         $emailRow->eventId
@@ -75,7 +77,7 @@ class SendCampaignEmail implements ShouldQueue
             $settings = settings_model::select("smtp","usescipsmtp")
             ->where("created_by_company", $companyId)
             ->first();
-        
+            
             if($settings){
 
                 $smtp = json_decode($settings["smtp"], true);
@@ -89,6 +91,7 @@ class SendCampaignEmail implements ShouldQueue
                     $senderEmail = $smtp["senderemail"];
                     $replyToName = $smtp["replytoname"];
                     $replyToEmail = $smtp["replytoemail"];
+                    
 
                 }else{
                     //own smtp
@@ -108,17 +111,75 @@ class SendCampaignEmail implements ShouldQueue
                 // we are using brevo api to send email instead of smtp
                 // if email is sent through api then we are able to track email events by brevo
                 
-                $apikey = config('brevo.apikey');
+                //$apikey = config('brevo.apikey');
+                
                 $smtp = config('brevo.smtp');
-                $senderName = $smtp["sendername"];
-                $senderEmail = $smtp["senderemail"];
-                $replyToName = $smtp["replytoname"];
-                $replyToEmail = $smtp["replytoemail"];
+                if($senderName == "" || $senderName == null){
+                    $senderName = $smtp["sendername"];
+                }
+                
+                if($senderEmail == "" || $senderEmail == null){
+                    $senderEmail = $smtp["senderEmail"];
+                }
 
+                if($replyToName == "" || $replyToName == null){
+                    $replyToName = $smtp["replyToName"];
+                }
+
+                if($replyToEmail == "" || $replyToEmail == null){
+                    $replyToEmail = $smtp["replyToEmail"];
+                }
+                
                 $toEmail = $emailRow->contactEmail;
                 $toName = $emailRow->contactName;
                 $subject = $emailRow->subject;
                 $message = $emailRow->html;
+                $filename = $emailRow->attachment;
+                $emailId = $emailRow->emailId;
+                $userCompany = $emailRow->companyId;
+                $attachmentJson = ''; // default: no attachment
+
+                if (isset($filename) && trim($filename) !== '') {
+                    $directory = "company-assets/{$userCompany}/emails/{$emailId}/attachments/";
+                    $filePath = $directory . $filename;
+                    
+                    $fullPath = storage_path("app/public/{$filePath}");
+                    
+                    
+                    if (Storage::disk('public')->exists($filePath)){
+                        
+                        $fileContent = Storage::disk('public')->get($filePath);
+
+                        if (strlen($fileContent) > 0) {
+                            $base64 = base64_encode($fileContent);
+                            Log::info("Base64 encoded content: " . substr($base64, 0, 100)); // Log the first 100 chars for debugging
+
+                            $base64 = base64_encode($fileContent);
+                        
+                            //Log::warning("File base64: " . $base64);
+
+                            //Build the JSON part for attachment
+                            $attachmentArray = [
+                                [
+                                    'name' => $filename,
+                                    'content' => $base64
+                                ]
+                            ];
+
+                            //Convert to JSON without escaping slashes/quotes unnecessarily
+                            $attachmentJson = ', "attachment": ' . json_encode($attachmentArray);
+                            
+                        } else {
+                            Log::warning("File content is empty for: " . $fileContent);
+                            
+                        }
+
+
+                    }else{
+                        Log::warning("File not found: " . $filePath);
+                    }
+                }
+                
                 $message = str_replace("{unsubscribe_text} | {webview_text}\n","",$message);
 
                 // Further escape single quotes for the shell
@@ -147,8 +208,10 @@ class SendCampaignEmail implements ShouldQueue
                     }],
                     \"subject\": \"$subject\",
                     \"htmlContent\": $escapedMessage
+                    $attachmentJson
                 }'";
 
+                
                 // Debug output to see the generated curl command
                 //echo "Generated cURL command: $cmd\n";
 

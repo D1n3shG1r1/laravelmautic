@@ -13,6 +13,7 @@ use App\Models\email_segments_model;
 use App\Models\newsletter_emails_queue_model;
 use App\Models\campaign_emails_queue_model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 //use App\Models\contacts_model;
 //use App\Models\role_model;
 
@@ -33,9 +34,9 @@ class Emailsbuilder extends Controller
             $isAdmin = $this->getSession('isAdmin');
 
             if ($isAdmin > 0) {
-                $emailsObj = emailsbuilder_model::where("created_by_company", $userCompany)->paginate(10)->toArray();
+                $emailsObj = emailsbuilder_model::where("created_by_company", $userCompany)->orderBy('id', 'desc')->paginate(10)->toArray();
             } else {
-                $emailsObj = emailsbuilder_model::where("created_by", $this->USERID)->paginate(10)->toArray();
+                $emailsObj = emailsbuilder_model::where("created_by", $this->USERID)->orderBy('id', 'desc')->paginate(10)->toArray();
             }
             
             if(!empty($emailsObj)){
@@ -187,7 +188,8 @@ class Emailsbuilder extends Controller
     function save(Request $request){
         
         if($this->USERID > 0){
-            
+            //dd($request);
+
             $userCompany = $this->getSession('companyId');
             $firstName = $this->getSession('firstName');
             $lastName = $this->getSession('lastName');
@@ -262,9 +264,9 @@ class Emailsbuilder extends Controller
             $response = [
                 'C' => 100,
                 'M' => $this->ERRORS[109],
-                'R' => [],
+                'R' => ["id"=>$emailId, "token" => csrf_token()],
             ];
-            
+
             /*
             id
             category_id
@@ -323,8 +325,63 @@ class Emailsbuilder extends Controller
             ];
         }
         return response()->json($response); die;
+        
+    }
+
+    function saveattachment(Request $request){
+        
+        $userId = $this->USERID;
+        $userCompany = $this->getSession('companyId');
+        $firstName = $this->getSession('firstName');
+        $lastName = $this->getSession('lastName');
+        $fullName = $firstName." ".$lastName; 
+        $isAdmin = $this->getSession('isAdmin');
+        
+        $token = $request->input("_token");
+        $emailId = $request->input("emailId");
+
+        if ($request->hasFile('file') && $request->file('file')->isValid()) {
+            $file = $request->file('file');
+
+            $originalName = $file->getClientOriginalName();
+            $mimeType = $file->getClientMimeType();
+            $size = $file->getSize();
+
+            $directory = "company-assets/{$userCompany}/emails/{$emailId}/attachments/";
+            $filePath = $directory . $originalName;
+
+            Storage::disk('public')->makeDirectory($directory);
+
+            Storage::disk('public')->putFileAs($directory, $file, $originalName);
+            $publicUrl = Storage::url($filePath);
+
+            //also update the attachment in emails table
+            $today = date("Y-m-d");
+            $updateData = [
+                "attachment" => $originalName,
+                "date_modified" => $today,
+                "modified_by" => $this->USERID,
+                "modified_by_user" => $fullName,
+            ];
+
+            $updated = emailsbuilder_model::where("id", $emailId)
+            ->update($updateData);
+
+            return response()->json([
+                'message' => 'File uploaded successfully',
+                'token' => $token,
+                'file' => [
+                    'name' => $originalName,
+                    'type' => $mimeType,
+                    'size' => $size,
+                    'path' => $filePath,
+                    'url' => $publicUrl,
+                ]
+            ], 200);
+        }
 
     }
+
 
     function email($id){
         if ($this->USERID > 0) {

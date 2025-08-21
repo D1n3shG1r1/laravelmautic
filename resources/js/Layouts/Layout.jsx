@@ -21,6 +21,7 @@ const Layout = ({ pageTitle, children }) => {
     const emailsReplies = window.url('emails');
     const newsUrl = window.url('news');
     const tagsUrl = window.url('tags');
+    const widgetsUrl = window.url('widgets');
     const settingsUrl = window.url('settings');
     const signoutUrl = window.url('signout');
 
@@ -115,6 +116,8 @@ const Layout = ({ pageTitle, children }) => {
                                 <li><a href={newsUrl}><i className="fa fa-newspaper-o orange_color"></i> <span>News</span></a></li>
 
                                 <li><a href={tagsUrl}><i className="fa fa-tags orange_color"></i> <span>Tags</span></a></li>
+
+                                <li><a href={widgetsUrl}><i className="bi bi-x-diamond-fill orange_color"></i> <span>Widgets</span></a></li>
                             </ul>
                         </div>
                     </nav>

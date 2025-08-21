@@ -52,7 +52,7 @@ class ProcessSegmentContactsJob implements ShouldQueue
         }
 
         $filtersArr = json_decode($filters, true);
-        //dd($filtersArr);
+        
         if(!empty($filtersArr)){
 
             // Get contacts based on the filters

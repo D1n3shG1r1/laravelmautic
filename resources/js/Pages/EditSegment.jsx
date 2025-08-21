@@ -13,6 +13,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 import Styles from "../../css/Modules/Segments.module.css"; // Import styles from the CSS module
 var filtersCount = 0;
+var filterIdxRef = 0;
 const newcontact = ({pageTitle,csrfToken,params}) => {
     
     const segement = params.segement;
@@ -73,6 +74,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
 
     
     const contactsOptions = JSON.parse(params.contactFilters);
+    
     const [filterIdx, setFilterIdx] = useState(0);
 
     useEffect(() => {
@@ -100,7 +102,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
 
                         if (field == drpDwnOptions[i].value) {
                             const panelParamsObj = {
-                                idx: filterIdx,
+                                idx: filterIdxRef,
                                 id: drpDwnOptions[i].getAttribute('id'),
                                 title: drpDwnOptions[i].getAttribute('title'),
                                 value: drpDwnOptions[i].getAttribute('value'),
@@ -114,14 +116,14 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                             };
 
                             const newPanelContainer = document.createElement('div');
-                            newPanelContainer.setAttribute('id', 'panel-container-' + filterIdx);
+                            newPanelContainer.setAttribute('id', 'panel-container-' + filterIdxRef);
                             newPanelContainer.classList.add('panelContainer');
                         
                             const panels = document.getElementsByClassName('panelContainer');
                             
                             // Create and render the new panel
                             const panel = <SegmentFilterPanel panelparams={panelParamsObj} totalPanels={panels.length}
-                            removePanel={() => removePanel(filterIdx)}/>;
+                            removePanel={() => removePanel(filterIdxRef)}/>;
                             const contactlistFilters = document.getElementById('contactlist_filters');
                             contactlistFilters.appendChild(newPanelContainer);
                         
@@ -129,7 +131,9 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
                             panelContainer.render(panel);
                         
                             // Increment filterIdx state to track the panel index
-                            setFilterIdx(prevIdx => prevIdx + 1);
+                            filterIdxRef = filterIdxRef + 1
+                            //setFilterIdx(prevIdx => prevIdx + 1);
+                            setFilterIdx(filterIdxRef);
                             filtersCount = filtersCount + 1;
 
                         }
@@ -162,7 +166,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
       // Avoiding duplicate code in handleSelectChange and getting only the selected option
       const selectedOption = event.target.selectedOptions[0];
       const panelParamsObj = {
-        idx: filterIdx,
+        idx: filterIdxRef,
         id: selectedOption.getAttribute('id'),
         title: selectedOption.getAttribute('title'),
         value: selectedOption.getAttribute('value'),
@@ -176,7 +180,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
       };
   
       const newPanelContainer = document.createElement('div');
-      newPanelContainer.setAttribute('id', 'panel-container-' + filterIdx);
+      newPanelContainer.setAttribute('id', 'panel-container-' + filterIdxRef);
       newPanelContainer.classList.add('panelContainer');
   
       const panels = document.getElementsByClassName('panelContainer');
@@ -191,6 +195,7 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
       panelContainer.render(panel);
   
       // Increment filterIdx state to track the panel index
+      filterIdxRef = filterIdxRef + 1
       setFilterIdx(prevIdx => prevIdx + 1);
       filtersCount = filtersCount + 1;
     };

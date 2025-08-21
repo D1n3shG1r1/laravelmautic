@@ -73,7 +73,10 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
 
         filtersCount = filtersCount - 1;
       } else {
-        console.log('Element not found!');
+        
+        var err = 1;
+        var msg = "Element not found!";
+        showToastMsg(err, msg);
       }   
     };
 
@@ -110,6 +113,9 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
       // Increment filterIdx state to track the panel index
       setFilterIdx(prevIdx => prevIdx + 1);
       filtersCount = filtersCount + 1;
+      
+      console.log("filterIdx:"+filterIdx);
+      console.log("filtersCount:"+filtersCount);
 
       document.getElementById("filterList").value = "";
     };
@@ -175,7 +181,11 @@ const newcontact = ({pageTitle,csrfToken,params}) => {
         // Check if the form exists
         const segmentForm = document.getElementById("segmentForm");
         if (!segmentForm) {
-            console.log("Form not found!");
+            
+            var err = 1;
+            var msg = "Form not found!";
+            showToastMsg(err, msg);
+            
             setIsLoading(false);
             return;
         }
