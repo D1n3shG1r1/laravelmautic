@@ -13,6 +13,7 @@ use App\Http\Controllers\Newsletters;
 use App\Http\Controllers\Tags;
 use App\Http\Controllers\Widgets;
 use App\Http\Controllers\Settings;
+use App\Http\Controllers\RoachWebsites;
 
 use App\Http\Controllers\Media;
 use App\Http\Controllers\BrevoWebhookController;
@@ -132,6 +133,13 @@ Route::post('/news/websiteupdate',[Newsletters::class,'update']);
 Route::post('/news/websitedelete',[Newsletters::class,'delete']);
 Route::post('/newsletters/getnewswebsites',[Newsletters::class,'getnewswebsites']);
 Route::post('/newsletters/createnewsletter',[Newsletters::class,'createnewsletter']);
+
+Route::get('/scrapwebsites',[RoachWebsites::class,'websites']);
+Route::get('/scrap/newwebsite',[RoachWebsites::class,'newwebsite']);
+Route::post('/scrap/newwebsitesave',[RoachWebsites::class,'newwebsitesave']);
+Route::get('/scrapwebsite/edit/{id}',[RoachWebsites::class,'editwebsite']); 
+Route::post('/scrapwebsite/update',[RoachWebsites::class,'websiteupdate']);
+Route::post('/scrapwebsite/websitedelete',[RoachWebsites::class,'delete']);
 
 Route::get('/tags',[Tags::class,'tags']);
 Route::get('/tags/new',[Tags::class,'new']);

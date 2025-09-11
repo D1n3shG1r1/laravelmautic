@@ -11,6 +11,7 @@
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.6",
+        "roach-php/laravel": "^3.2",
         "webklex/laravel-imap": "^6.2"
     },
     "require-dev": {

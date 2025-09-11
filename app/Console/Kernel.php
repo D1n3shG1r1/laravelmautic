@@ -4,6 +4,7 @@ namespace App\Console;
 
 use App\Console\Commands\ProcessSegmentContacts;
 use App\Console\Commands\ProcessCampaigns;
+use App\Console\Commands\RunLaravelDocsSpider;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -14,9 +15,11 @@ class Kernel extends ConsoleKernel
      *
      * @var array
      */
+    // Register the command
     protected $commands = [
         ProcessSegmentContacts::class,  // Register the command
         ProcessCampaigns::class,
+        RunLaravelDocsSpider::class,
     ];
 
     /**
@@ -58,6 +61,9 @@ class Kernel extends ConsoleKernel
         //## 6
         //$schedule->command('process:emailreplies')->daily();
 
+        //## 7 for web-scraping by using roach-spider
+        //$schedule->command('spider:run-laravel-docs')->daily();
+
         //run on terminal to test command
         //php artisan process:segment-contacts
         //php artisan process:campaigns
@@ -65,6 +71,8 @@ class Kernel extends ConsoleKernel
         //php artisan process:newsletters
         //php artisan process:send-newsletter-emails
         //php artisan process:emailreplies
+        //php artisan spider:run-laravel-docs
+
     }
 
     /**
