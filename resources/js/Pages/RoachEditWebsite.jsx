@@ -90,8 +90,12 @@ const NewNews = ({ pageTitle, csrfToken, params }) => {
             frequencyType(event);
         }
 
-    };
+        if(selectedFunction == "dayOfMonth"){
+            dayOfMonth(event);
+        }
 
+    };
+    
     const [selectedFrequency, setSelectedFrequency] = useState("");
 
     const frequencyType = (event) => {
@@ -110,6 +114,14 @@ const NewNews = ({ pageTitle, csrfToken, params }) => {
         if(optionVal === "monthly"){
             $("#monthlyOptions").removeClass("hide");
         }
+    };
+
+    const [selectedMonthDay, setSelectedMonthDay] = useState("");
+    const dayOfMonth = (event) => {
+        const sourceType = event.target.value;
+        const optionVal = event.target.selectedOptions[0].value;
+
+        setSelectedMonthDay(optionVal); // <-- Track selected month-day
     };
 
 
@@ -152,6 +164,11 @@ const NewNews = ({ pageTitle, csrfToken, params }) => {
     };
 
     const save = () => {
+
+        //selectedFrequency
+        //selectedMonthDay
+        
+
         //name purpose websiteLink description active
         const active = toggleValue;
         const { name, purpose, websiteLink, description} = formData;
@@ -273,32 +290,32 @@ const NewNews = ({ pageTitle, csrfToken, params }) => {
                                                     </div>
                                                     
                                                     <div className="col-md-2">
-                                                        <Checkbox className="row-check" name="days[]" value="Tuesday" />
+                                                        <Checkbox id="day_tuesday" className="row-check" name="days[]" value="Tuesday" />
                                                         <InputLabel className="mx-2" htmlFor="day_tuesday" value="Tuesday" />
                                                     </div>
 
                                                     <div className="col-md-2">    
-                                                        <Checkbox className="row-check" name="days[]" value="Wednesday" />
+                                                        <Checkbox id="day_wednesday" className="row-check" name="days[]" value="Wednesday" />
                                                         <InputLabel className="mx-2" htmlFor="day_wednesday" value="Wednesday" />
                                                     </div>    
                                                     
                                                     <div className="col-md-2">    
-                                                        <Checkbox className="row-check" name="days[]" value="Thursday" />
+                                                        <Checkbox id="day_thursday" className="row-check" name="days[]" value="Thursday" />
                                                         <InputLabel className="mx-2" htmlFor="day_thursday" value="Thursday" />
                                                     </div>
 
                                                     <div className="col-md-2">    
-                                                        <Checkbox className="row-check" name="days[]" value="Friday" />
+                                                        <Checkbox id="day_friday" className="row-check" name="days[]" value="Friday" />
                                                         <InputLabel className="mx-2" htmlFor="day_friday" value="Friday" />
                                                     </div>   
 
                                                     <div className="col-md-2">    
-                                                        <Checkbox className="row-check" name="days[]" value="Saturday" />
+                                                        <Checkbox id="day_saturday" className="row-check" name="days[]" value="Saturday" />
                                                         <InputLabel className="mx-2" htmlFor="day_saturday" value="Saturday" />
                                                     </div>
 
                                                     <div className="col-md-2">    
-                                                        <Checkbox className="row-check" name="days[]" value="Sunday" />
+                                                        <Checkbox id="day_sunday" className="row-check" name="days[]" value="Sunday" />
                                                         <InputLabel className="mx-2" htmlFor="day_sunday" value="Sunday" />
                                                     </div>
                                                     </div>

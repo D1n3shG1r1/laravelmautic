@@ -1,0 +1,85 @@
+System Requirements:
+
+PHP version: 8.2
+
+MySQL version: 8.0.43
+
+Node.js version: 22.13.1
+
+npm version: 10.9.2
+
+Server Size should be 8gb or more
+
+
+Commands Current version:
+node -v
+v22.13.1
+
+npm -v
+10.9.2
+
+npx vite --version
+vite/5.4.14 linux-x64 node-v22.13.1
+
+
+
+To install the specific versions of Node.js, npm, and Vite that you're asking for, follow the steps below:
+
+1. Install Node.js v22.13.1
+
+For specific versions of Node.js, you can use nvm (Node Version Manager) to easily install and switch between versions.
+
+Install nvm (if not installed yet):
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+
+
+After installation, restart your terminal or run the following command to load nvm:
+
+source ~/.bashrc  # Or source ~/.zshrc if using Zsh
+
+
+Now, to install Node.js version v22.13.1:
+
+nvm install 22.13.1
+
+
+To use that specific version:
+
+nvm use 22.13.1
+
+2. Install npm v10.9.2
+
+Once you have Node.js v22.13.1 installed, npm should be installed automatically with it. However, if you want to ensure that npm is at version 10.9.2, you can manually install the specific version by running:
+
+npm install -g npm@10.9.2
+
+3. Install Vite v5.4.14
+
+For Vite version 5.4.14, you can install it locally in your project directory:
+
+Navigate to your project folder (if you aren't already in one) and run:
+
+npm install vite@5.4.14
+
+
+Alternatively, to install Vite globally, run:
+
+npm install -g vite@5.4.14
+
+Verifying the Installation
+
+After installing, you can check the versions with:
+
+Node.js version:
+
+node -v
+
+
+npm version:
+
+npm -v
+
+
+Vite version:
+
+npx vite --version

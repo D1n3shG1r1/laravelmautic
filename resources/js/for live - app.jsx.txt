@@ -1,0 +1,31 @@
+// import './bootstrap';
+// import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+
+import { createRoot } from "react-dom/client";
+import { createInertiaApp } from "@inertiajs/react";
+
+// Helper for global base URL
+window.url = function (path = "") {
+    const baseUrl = window.location.origin;
+    return path ? `${baseUrl}/${path}` : baseUrl;
+};
+
+// Preload all pages so Vite includes them in manifest.json
+const pages = import.meta.glob("./Pages/**/*.jsx");
+
+createInertiaApp({
+    resolve: async (name) => {
+        const importPage = pages[`./Pages/${name}.jsx`];
+        if (!importPage) {
+            throw new Error(`Page not found: ${name}`);
+        }
+        const module = await importPage();
+        return module.default;
+    },
+    setup({ el, App, props }) {
+        const root = createRoot(el);
+        root.render(<App {...props} />);
+    },
+});
+

@@ -42,6 +42,41 @@ class Kernel extends ConsoleKernel
         */
 
         // You can schedule the command to run periodically if needed.
+        //## 1 — Minute 0
+        $schedule->command('process:segment-contacts')
+        ->everyFifteenMinutes()
+        ->withoutOverlapping();
+
+        //## 2 — Minute 2
+        $schedule->command('process:campaigns')
+            ->cron('2-59/15 * * * *') // Start at minute 2, then every 15 min
+            ->withoutOverlapping();
+
+        //## 3 — Minute 4
+        $schedule->command('process:send-campaign-emails')
+            ->cron('4-59/15 * * * *')
+            ->withoutOverlapping();
+
+        //## 4 — Minute 6
+        $schedule->command('process:newsletters')
+            ->cron('6-59/15 * * * *')
+            ->withoutOverlapping();
+
+        //## 5 — Minute 8
+        $schedule->command('process:send-newsletter-emails')
+            ->cron('8-59/15 * * * *')
+            ->withoutOverlapping();
+
+        //## 6 — Minute 10
+        $schedule->command('process:emailreplies')
+            ->cron('10-59/15 * * * *')
+            ->withoutOverlapping();
+
+        //## 7 — Minute 12
+        //$schedule->command('spider:run-laravel-docs')
+        //    ->cron('12-59/15 * * * *')
+        //    ->withoutOverlapping();
+        
         // please run these commands in following sequence
         //## 1
         // $schedule->command('process:segment-contacts')->daily();
