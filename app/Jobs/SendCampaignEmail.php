@@ -214,7 +214,8 @@ class SendCampaignEmail implements ShouldQueue
                 
                 // Debug output to see the generated curl command
                 //echo "Generated cURL command: $cmd\n";
-
+                
+                Log::info("Brevo Curl: {$cmd}");
                 // Execute the cURL command
                 exec($cmd, $out);
 

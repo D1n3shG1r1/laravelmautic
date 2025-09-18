@@ -12,8 +12,10 @@ class RunLaravelDocsSpider extends Command
 
     public function handle()
     {
+        //run this cron every minute
+        //LaravelDocsSpider will take care of scraping on the frequency basis
         $this->info("Starting LaravelDocsSpider...");
         Roach::startSpider(\App\Spiders\LaravelDocsSpider::class);
-        $this->info("Spider run complete.");
+        $this->info("Spider run complete.");        
     }
 }

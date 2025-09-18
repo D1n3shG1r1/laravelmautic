@@ -79,21 +79,78 @@ class LaravelDocsSpider extends BasicSpider
     }*/
 
     protected function initialRequests(): array
-{
-    $websites = roach_websites_model::where('active', 1)->get();
+    {
+        //with frequency
+        $websites = roach_websites_model::where('active', 1)->get();
 
-    $requests = [];
-    foreach ($websites as $website) {
-        $requests[] = new \RoachPHP\Http\Request(
-            'GET',
-            $website->websitelink,
-            [$this, 'parse'],
-            ['meta' => ['websiteId' => $website->id]]
-        );
+        $requests = [];
+        foreach ($websites as $website) {
+            //frequency monthday weekdays cronexpressions
+            $frequency = $website->frequency;
+            $monthday = $website->monthday;
+            $weekdays = $website->weekdays;
+            $cronexpressions = $website->cronexpressions;
+
+            if ($frequency == 'daily') {
+                $requests[] = new \RoachPHP\Http\Request(
+                    'GET',
+                    $website->websitelink,
+                    [$this, 'parse'],
+                    ['meta' => ['websiteId' => $website->id]]
+                );
+            } elseif ($frequency == 'weekly') {
+                // If frequency is 'weekly', check if today's day is in the list of weekdays
+                $days = json_decode($weekdays); // Decode the weekdays into an array
+                if (in_array(now()->format('l'), $days)) {
+                    $requests[] = new \RoachPHP\Http\Request(
+                        'GET',
+                        $website->websitelink,
+                        [$this, 'parse'],
+                        ['meta' => ['websiteId' => $website->id]]
+                    );
+                }
+            } elseif ($frequency == 'customweekdays') {
+                // If frequency is 'customweekdays', check if today's day is in the list of custom weekdays
+                $days = json_decode($weekdays); // Decode the weekdays into an array
+                if (in_array(now()->format('l'), $days)) {
+                    $requests[] = new \RoachPHP\Http\Request(
+                        'GET',
+                        $website->websitelink,
+                        [$this, 'parse'],
+                        ['meta' => ['websiteId' => $website->id]]
+                    );
+                }
+            } elseif ($frequency == 'monthly' && $monthday == now()->day) {
+                // Update records on the specified day of the month
+                $requests[] = new \RoachPHP\Http\Request(
+                    'GET',
+                    $website->websitelink,
+                    [$this, 'parse'],
+                    ['meta' => ['websiteId' => $website->id]]
+                );
+            }
+        }
+
+        return $requests;
     }
 
-    return $requests;
-}
+
+    protected function initialRequests__dd(): array{
+        //without frequency
+        $websites = roach_websites_model::where('active', 1)->get();
+
+        $requests = [];
+        foreach ($websites as $website) {
+            $requests[] = new \RoachPHP\Http\Request(
+                'GET',
+                $website->websitelink,
+                [$this, 'parse'],
+                ['meta' => ['websiteId' => $website->id]]
+            );
+        }
+
+        return $requests;
+    }
 
 
     // ✅ Correct way to return processors

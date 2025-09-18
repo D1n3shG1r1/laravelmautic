@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 
 use App\Models\roach_websites_model;
 use App\Models\role_model;
+use Carbon\Carbon;
 
 class RoachWebsites extends Controller
 {
@@ -109,6 +110,30 @@ class RoachWebsites extends Controller
             $description = $request->input("description");
             $active = $request->input("active");
 
+            $selectedFrequency = $request->input("selectedFrequency");
+            $selectedMonthDay = $request->input("selectedMonthDay");
+            $selectedWeekdays = $request->input("selectedWeekdays");
+            
+            // Determine when the website should be scrap
+            $cronExpressions = '';
+            $frequency = $selectedFrequency;
+            $days = $selectedWeekdays;
+            $dayOfMonth = $selectedMonthDay;
+
+            // Determine cron expression based on frequency
+            if ($frequency === 'daily') {
+                $cronExpressions = '0 0 * * *'; // Every day at midnight
+            } elseif ($frequency === 'weekly') {
+                $cronExpressions = '0 0 * * 1'; // Every Monday
+            } elseif ($frequency === 'customweekdays') {
+                foreach ($days as $day) {
+                    $cronExpressions = '0 0 * * ' . getCronDay($day); // Custom weekdays
+                }
+            } elseif ($frequency === 'monthly' && $dayOfMonth) {
+                $cronExpressions = "0 0 $dayOfMonth * *"; // On specific day of the month
+            }
+
+
             $websiteObj = new roach_websites_model();
             //$websiteObj->id = 
             $websiteObj->name = $name;
@@ -122,6 +147,10 @@ class RoachWebsites extends Controller
             $websiteObj->modified_by = $this->USERID;
             $websiteObj->modified_by_user = $fullName;
             $websiteObj->active = $active;
+            $websiteObj->frequency = $selectedFrequency;
+            $websiteObj->monthday = $selectedMonthDay;
+            $websiteObj->weekdays = json_encode($selectedWeekdays);
+            $websiteObj->cronexpressions = $cronExpressions;
             $saved = $websiteObj->save();
             
             if($saved){
@@ -159,9 +188,9 @@ class RoachWebsites extends Controller
             $isAdmin = $this->getSession('isAdmin');
             
             if ($isAdmin > 0) {
-                $websiteObj = roach_websites_model::select("id", "name", "purpose", "description", "websitelink", "date_added", "created_by", "created_by_user", "created_by_company", "date_modified", "modified_by", "modified_by_user", "active")->where("created_by_company", $userCompany)->where("id", $id)->first();
+                $websiteObj = roach_websites_model::select("id", "name", "purpose", "description", "websitelink", "date_added", "created_by", "created_by_user", "created_by_company", "date_modified", "modified_by", "modified_by_user", "active", "frequency", "monthday", "weekdays")->where("created_by_company", $userCompany)->where("id", $id)->first();
             }else{
-                $websiteObj = roach_websites_model::select("id", "name", "purpose", "description", "websitelink", "date_added", "created_by", "created_by_user", "created_by_company", "date_modified", "modified_by", "modified_by_user", "active")->where("created_by", $this->USERID)->where("id", $id)->first();
+                $websiteObj = roach_websites_model::select("id", "name", "purpose", "description", "websitelink", "date_added", "created_by", "created_by_user", "created_by_company", "date_modified", "modified_by", "modified_by_user", "active", "frequency", "monthday", "weekdays")->where("created_by", $this->USERID)->where("id", $id)->first();
             }
 
             // Prepare the data to send to the view
@@ -187,6 +216,8 @@ class RoachWebsites extends Controller
 
         if($this->USERID > 0){
             
+            //dd($request);
+      
             $csrfToken = csrf_token();
             $userCompany = $this->getSession('companyId');
             $isAdmin = $this->getSession('isAdmin');
@@ -201,6 +232,29 @@ class RoachWebsites extends Controller
             $websiteLink = $request->input("websiteLink");
             $description = $request->input("description");
             $active = $request->input("active");
+            $selectedFrequency = $request->input("selectedFrequency");
+            $selectedMonthDay = $request->input("selectedMonthDay");
+            $selectedWeekdays = $request->input("selectedWeekdays");
+            
+            // Determine when the website should be scrap
+            $cronExpressions = '';
+            $frequency = $selectedFrequency;
+            $days = $selectedWeekdays;
+            $dayOfMonth = $selectedMonthDay;
+
+            // Determine cron expression based on frequency
+            if ($frequency === 'daily') {
+                $cronExpressions = '0 0 * * *'; // Every day at midnight
+            } elseif ($frequency === 'weekly') {
+                $cronExpressions = '0 0 * * 1'; // Every Monday
+            } elseif ($frequency === 'customweekdays') {
+                foreach ($days as $day) {
+                    $cronExpressions = '0 0 * * ' . getCronDay($day); // Custom weekdays
+                }
+            } elseif ($frequency === 'monthly' && $dayOfMonth) {
+                $cronExpressions = "0 0 $dayOfMonth * *"; // On specific day of the month
+            }
+
 
             $updateData = array(
                 "name" => $name,
@@ -210,11 +264,15 @@ class RoachWebsites extends Controller
                 "date_modified" => $today,
                 "modified_by" => $this->USERID,
                 "modified_by_user" => $fullName,
-                "active" => $active
+                "active" => $active,
+                "frequency" => $selectedFrequency,
+                "monthday" => $selectedMonthDay,
+                "weekdays" => json_encode($selectedWeekdays),
+                "cronexpressions" => $cronExpressions
             );
             
             roach_websites_model::where("created_by_company",$userCompany)->where("id",$id)->update($updateData);
-                        
+            
             $response = [
                 'C' => 100,
                 'M' => $this->ERRORS[131],
@@ -233,126 +291,6 @@ class RoachWebsites extends Controller
 
         return response()->json($response); die;
 
-
-        /*
-         $request->validate([
-            'email' => 'required|email',
-            'frequency' => 'required',
-        ]);
-
-        $email = $request->input('email');
-        $frequency = $request->input('frequency');
-        $days = $request->input('days', []);
-        $dayOfMonth = $request->input('day-of-month');
-
-        // Determine when the email should be sent
-        $scheduleTime = Carbon::now();
-
-        switch ($frequency) {
-            case 'daily':
-                // Send daily at midnight
-                $scheduleTime->setTime(0, 0, 0);
-                dispatch((new SendScheduledEmail($email))->delay($scheduleTime->diffInSeconds(now())));
-                break;
-
-            case 'weekly':
-                // Send every Monday at midnight (example)
-                $scheduleTime->next(Carbon::MONDAY)->setTime(0, 0, 0);
-                dispatch((new SendScheduledEmail($email))->delay($scheduleTime->diffInSeconds(now())));
-                break;
-
-            case 'custom-weekdays':
-                // Schedule email on selected weekdays
-                foreach ($days as $day) {
-                    $scheduleTime->next(Carbon::parse($day)->dayOfWeek)->setTime(0, 0, 0);
-                    dispatch((new SendScheduledEmail($email))->delay($scheduleTime->diffInSeconds(now())));
-                }
-                break;
-
-            case 'monthly':
-                // Send on the selected day of the month
-                $scheduleTime->day($dayOfMonth)->setTime(0, 0, 0);
-                dispatch((new SendScheduledEmail($email))->delay($scheduleTime->diffInSeconds(now())));
-                break;
-        }
-
-        return redirect()->back()->with('success', 'Email schedule has been set!');
-        */
-
-        /*
-        $frequency = $request->input('frequency');
-        $days = $request->input('days', []);
-        $dayOfMonth = $request->input('day-of-month');
-
-        $cronExpressions = [];
-
-         if ($frequency === 'daily') {
-            $cronExpressions[] = '0 0 * * *'; // Every day at midnight
-        } elseif ($frequency === 'weekly') {
-            $cronExpressions[] = '0 0 * * 1'; // Every Monday
-        } elseif ($frequency === 'custom-weekdays') {
-            foreach ($days as $day) {
-                $cronExpressions[] = '0 0 * * ' . $this->getCronDay($day);
-            }
-        } elseif ($frequency === 'monthly' && $dayOfMonth) {
-            $cronExpressions[] = "0 0 $dayOfMonth * *";
-        }
-
-        // Store each schedule
-        foreach ($cronExpressions as $cron) {
-            EmailSchedule::create([
-                'email' => $email,
-                'frequency' => $frequency,
-                'days' => $days,
-                'day_of_month' => $dayOfMonth,
-                'cron_expression' => $cron,
-            ]);
-        }
-
-         private function getCronDay($day)
-    {
-        $map = [
-            'Sunday' => '0',
-            'Monday' => '1',
-            'Tuesday' => '2',
-            'Wednesday' => '3',
-            'Thursday' => '4',
-            'Friday' => '5',
-            'Saturday' => '6',
-        ];
-        return $map[$day] ?? '0';
-    }
-
-    4. Handle the Cron Execution (Scheduler)
-
-Open app/Console/Kernel.php:
-
-use App\Models\EmailSchedule;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\ScheduledEmail;
-use Cron\CronExpression;
-
-protected function schedule(Schedule $schedule)
-{
-    $schedule->call(function () {
-        $schedules = EmailSchedule::all();
-
-        foreach ($schedules as $scheduleItem) {
-            $cron = CronExpression::factory($scheduleItem->cron_expression);
-
-            if ($cron->isDue()) {
-                Mail::to($scheduleItem->email)->send(new ScheduledEmail());
-            }
-        }
-    })->everyMinute();
-}
-
-6. Add Cron Job to Server
-
-Edit your crontab:
-
-* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
-        */
     }
 
     function delete(Request $request){

@@ -416,7 +416,7 @@ class Campaign extends Controller
             $eventObj->draft = $draft;
 
             if($triggerMode == "immediate"){
-                $triggerDate = null;
+                $triggerDate = date('Y-m-d');
             }else if($triggerMode == "interval"){
                 if($triggerIntervalUnit == "d"){
                     $triggerDate = date('Y-m-d', strtotime("+$triggerInterval days"));

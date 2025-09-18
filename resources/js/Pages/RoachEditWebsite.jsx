@@ -17,7 +17,7 @@ const NewNews = ({ pageTitle, csrfToken, params }) => {
     const website = params.website;
     const websitesUrl = params.websitesUrl;
 
-/*id", "name", "purpose", "description", "websitelink", "date_added", "created_by", "created_by_user", "created_by_company", "date_modified", "modified_by", "modified_by_user", "active"*/
+/*id", "name", "purpose", "description", "websitelink", "date_added", "created_by", "created_by_user", "created_by_company", "date_modified", "modified_by", "modified_by_user", "active", "frequency", "monthday", "weekdays"*/
 
     const [formData, setFormData] = useState({
         id:website.id || 0,
@@ -26,8 +26,11 @@ const NewNews = ({ pageTitle, csrfToken, params }) => {
         websiteLink:website.websitelink || '',
         description:website.description || '',
         active:website.active || 0,
+        frequency:website.frequency || '',
+        monthday:website.monthday || '',
+        weekdays:website.weekdays || []
     });
-    
+
     const frequencyDropdownOptions = [
         {
             key: "daily",
@@ -75,30 +78,42 @@ const NewNews = ({ pageTitle, csrfToken, params }) => {
             title: "",
             value: i,
             label: `Day ${i}`,
-            function: "",
+            function: "dayOfMonth",
             className: "dayList",
             id: `day_${i}`
         });
     }
+
+
+    const [selectedFrequency, setSelectedFrequency] = useState(formData.frequency);
+    const [selectedMonthDay, setSelectedMonthDay] = useState(formData.monthday);
+    const [selectedWeekdays, setSelectedWeekdays] = useState(formData.weekdays);
+    const [toggleState, setToggleState] = useState(website.active);
+    const [toggleValue, setToggleValue] = useState(formData.active);
 
     const handleSelectChange = (event, value) => {
     
         const selectedOption = event.target.selectedOptions[0];
         const selectedFunction = selectedOption.getAttribute('data-function');
         
-        if(selectedFunction == "frequencyType"){
+        if(selectedFunction === "frequencyType"){
             frequencyType(event);
         }
 
-        if(selectedFunction == "dayOfMonth"){
+        if(selectedFunction === "dayOfMonth"){
             dayOfMonth(event);
         }
 
     };
     
-    const [selectedFrequency, setSelectedFrequency] = useState("");
+    
 
     const frequencyType = (event) => {
+        
+        // Uncheck all other checkboxes
+        $("input[name='days[]']").not(event.target).prop('checked', false);
+        
+        
         const sourceType = event.target.value;
         const optionVal = event.target.selectedOptions[0].value;
 
@@ -116,14 +131,11 @@ const NewNews = ({ pageTitle, csrfToken, params }) => {
         }
     };
 
-    const [selectedMonthDay, setSelectedMonthDay] = useState("");
+    
     const dayOfMonth = (event) => {
-        const sourceType = event.target.value;
-        const optionVal = event.target.selectedOptions[0].value;
-
-        setSelectedMonthDay(optionVal); // <-- Track selected month-day
+        const selectedValue = event.target.value;
+        setSelectedMonthDay(selectedValue);
     };
-
 
     useEffect(() => {
         const handler = (e) => {
@@ -141,7 +153,28 @@ const NewNews = ({ pageTitle, csrfToken, params }) => {
         };
     }, [selectedFrequency]);
 
-
+    
+    const handleCheckboxChange = (e) => {
+        const value = e.target.value;
+    
+        // Check frequency type before making changes
+        if (selectedFrequency === "weekly") {
+            // For weekly, only allow one checkbox to be checked at a time
+            setSelectedWeekdays([value]);
+        } else if (selectedFrequency === "customweekdays") {
+            // For custom weekdays, allow multiple checkboxes to be selected
+            setSelectedWeekdays((prevSelected) => {
+                if (prevSelected.includes(value)) {
+                    // Uncheck the checkbox
+                    return prevSelected.filter((day) => day !== value);
+                } else {
+                    // Check the checkbox
+                    return [...prevSelected, value];
+                }
+            });
+        }
+    };
+    
     const handleEditorChange = (field, data) => {
         setFormData((prevState) => ({
             ...prevState,
@@ -157,17 +190,11 @@ const NewNews = ({ pageTitle, csrfToken, params }) => {
         }));
     };
 
-    const [toggleState, setToggleState] = useState(website.active);
-    const [toggleValue, setToggleValue] = useState(formData.active);
     const handleToggle = (value) => {
         setToggleValue(value);
     };
 
     const save = () => {
-
-        //selectedFrequency
-        //selectedMonthDay
-        
 
         //name purpose websiteLink description active
         const active = toggleValue;
@@ -178,6 +205,20 @@ const NewNews = ({ pageTitle, csrfToken, params }) => {
         if (!websiteLink) return showToastMsg(1, 'Enter page link.');
         //if (!description) return showToastMsg(1, 'Enter description.');
         
+        // Frequency validation
+        if (!selectedFrequency) {
+            return showToastMsg(1, 'Please select a frequency.');
+        }
+
+        // If frequency is weekly or custom weekdays, validate weekdays selection
+        if ((selectedFrequency === "weekly" || selectedFrequency === "customweekdays") && selectedWeekdays.length === 0) {
+            return showToastMsg(1, 'Please select at least one weekday.');
+        }
+
+        // If frequency is monthly, validate the selected month-day
+        if (selectedFrequency === "monthly" && !selectedMonthDay) {
+            return showToastMsg(1, 'Please select a day of the month.');
+        }
 
         setIsLoading(true);
 
@@ -190,7 +231,10 @@ const NewNews = ({ pageTitle, csrfToken, params }) => {
             "purpose":purpose,
             "websiteLink":websiteLink,
             "description":description,
-            "active":active
+            "active":active,
+            "selectedFrequency": selectedFrequency,  // Add this
+            "selectedMonthDay": selectedMonthDay,  // Add this
+            "selectedWeekdays": selectedWeekdays,  // Add this
         };
         
         httpRequest(url, postJson, function(resp){
@@ -277,6 +321,7 @@ const NewNews = ({ pageTitle, csrfToken, params }) => {
                                                         data-function="selectFrequency"
                                                         options={frequencyDropdownOptions}
                                                         onChangeHandler={handleSelectChange}
+                                                        value={selectedFrequency}
                                                         placeholder="Select frequency"/>
                                                 </div> 
                                                 
@@ -285,37 +330,37 @@ const NewNews = ({ pageTitle, csrfToken, params }) => {
                                                     
                                                     <div className="row">
                                                     <div className="col-md-2">
-                                                        <Checkbox id="day_monday" className="row-check" name="days[]" value="Monday" />
+                                                        <Checkbox id="day_monday" className="row-check" name="days[]" value="Monday" checked={selectedWeekdays.includes('Monday')} onChange={handleCheckboxChange}/>
                                                         <InputLabel className="mx-2" htmlFor="day_monday" value="Monday" />
                                                     </div>
                                                     
                                                     <div className="col-md-2">
-                                                        <Checkbox id="day_tuesday" className="row-check" name="days[]" value="Tuesday" />
+                                                        <Checkbox id="day_tuesday" className="row-check" name="days[]" value="Tuesday" checked={selectedWeekdays.includes('Tuesday')} onChange={handleCheckboxChange}/>
                                                         <InputLabel className="mx-2" htmlFor="day_tuesday" value="Tuesday" />
                                                     </div>
 
                                                     <div className="col-md-2">    
-                                                        <Checkbox id="day_wednesday" className="row-check" name="days[]" value="Wednesday" />
+                                                        <Checkbox id="day_wednesday" className="row-check" name="days[]" value="Wednesday" checked={selectedWeekdays.includes('Wednesday')} onChange={handleCheckboxChange}/>
                                                         <InputLabel className="mx-2" htmlFor="day_wednesday" value="Wednesday" />
                                                     </div>    
                                                     
                                                     <div className="col-md-2">    
-                                                        <Checkbox id="day_thursday" className="row-check" name="days[]" value="Thursday" />
+                                                        <Checkbox id="day_thursday" className="row-check" name="days[]" value="Thursday" checked={selectedWeekdays.includes('Thursday')} onChange={handleCheckboxChange}/>
                                                         <InputLabel className="mx-2" htmlFor="day_thursday" value="Thursday" />
                                                     </div>
 
                                                     <div className="col-md-2">    
-                                                        <Checkbox id="day_friday" className="row-check" name="days[]" value="Friday" />
+                                                        <Checkbox id="day_friday" className="row-check" name="days[]" value="Friday" checked={selectedWeekdays.includes('Friday')} onChange={handleCheckboxChange}/>
                                                         <InputLabel className="mx-2" htmlFor="day_friday" value="Friday" />
                                                     </div>   
 
                                                     <div className="col-md-2">    
-                                                        <Checkbox id="day_saturday" className="row-check" name="days[]" value="Saturday" />
+                                                        <Checkbox id="day_saturday" className="row-check" name="days[]" value="Saturday" checked={selectedWeekdays.includes('Saturday')} onChange={handleCheckboxChange}/>
                                                         <InputLabel className="mx-2" htmlFor="day_saturday" value="Saturday" />
                                                     </div>
 
                                                     <div className="col-md-2">    
-                                                        <Checkbox id="day_sunday" className="row-check" name="days[]" value="Sunday" />
+                                                        <Checkbox id="day_sunday" className="row-check" name="days[]" value="Sunday" checked={selectedWeekdays.includes('Sunday')} onChange={handleCheckboxChange}/>
                                                         <InputLabel className="mx-2" htmlFor="day_sunday" value="Sunday" />
                                                     </div>
                                                     </div>
@@ -329,6 +374,7 @@ const NewNews = ({ pageTitle, csrfToken, params }) => {
                                                         data-function="dayOfMonth"
                                                         options={dayOfMonthOptions}
                                                         onChangeHandler={handleSelectChange}
+                                                        value={selectedMonthDay}
                                                         placeholder="Select Day of the Month"/>
                                                 </div>
         

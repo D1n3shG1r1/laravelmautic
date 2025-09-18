@@ -3,7 +3,7 @@
 //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
 return [
     //"apikey" => "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",
-    "apikey" => "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",
+    "apikey" => "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",
     "smtp" => [
         "host" => "smtp-relay.brevo.com",
         "port" => 587,
